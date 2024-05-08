@@ -1,0 +1,102 @@
+server:
+  port: 8444
+  undertow:
+    io-threads: 4
+    worker-threads: 20
+    buffer-size: 20MB
+    direct-buffers: true
+  servlet:
+    context-path: "/helloscala"
+
+logging:
+  level:
+    root: info
+    org:
+      springframework:
+        web: info
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+  data:
+    redis:
+      host: 192.168.1.8
+      port: 30379
+      database: 0
+
+  datasource:
+    url: jdbc:mysql://192.168.1.8:30006/hello_scala?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-open-prepared-statements: 20
+      filter:
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 1000
+  sa-token:
+    timeout: 60
+
+mybatis-plus:
+  mapper-locations: mapper/*.xml
+  type-aliases-package: com.helloscala.mapper
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      id-type: assign_id
+      table-prefix: b_
+      insert-strategy: not_empty
+      update-strategy: not_empty
+
+easy-es:
+  enable: true
+  global-config:
+    db-config:
+      refresh-policy: wait_until
+    print-dsl: true
+  address: 192.168.1.8:30200
+
+wechat:
+  appId: 123
+  secret: 123
+  token: 123
+  aesKey: 123
+
+task:
+  executor:
+    core_pool_size:  10
+    max_pool_size: 40
+    queue_capacity: 500
+    keep_alive_seconds: 300
+
+file:
+  upload-folder: ./asserts/
+  resource-prefix: /helloscala/asserts
+
+baidu.url: https://www.baidu.com
+
+ftp:
+  basePath: /helloscala/asserts/
+  host: 192.168.1.8
+  port: 21
+  username: ftpuser
+  password: howard123
+  httpPath: ftp://192.168.1.8
+  domain: http://127.0.0.1:8444

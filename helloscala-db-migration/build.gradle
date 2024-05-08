@@ -1,0 +1,36 @@
+import org.flywaydb.gradle.FlywayPlugin
+import org.flywaydb.gradle.task.AbstractFlywayTask
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.flywaydb:flyway-gradle-plugin:6.1.3'
+    }
+}
+
+apply plugin: FlywayPlugin
+
+
+tasks.withType(AbstractFlywayTask).configureEach {
+    doFirst {
+        flyway {
+            configurations = ['runtimeClasspath'] // use runtimeOnly scope in actual db-migration project
+            placeholderReplacement = false
+            assert project.file('src/main/resources/db/migration').exists()
+
+            def flywayProperties = 'src/main/resources/flyway.properties'
+            assert project.file(flywayProperties).exists()
+
+            def properties = new Properties()
+            project.file(flywayProperties).withInputStream {
+                properties.load(it)
+            }
+            properties.each { key, value ->
+                project.ext[key as String] = value
+            }
+        }
+    }
+}

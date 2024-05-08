@@ -1,0 +1,261 @@
+plugins {
+    id "idea"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-parameters")
+}
+
+tasks.withType(GroovyCompile).configureEach {
+    groovyOptions.parameters = true
+}
+
+subprojects {
+    apply plugin: "idea"
+    apply plugin: "java"
+
+    group = "com.helloscala"
+    version = "0.0.1-SNAPSHOT"
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+def SPRING_BOOT_VERSION = "3.2.2"
+def MYBATIS_VERSION = "3.0.3"
+def MYSQL_VERSION = "8.0.33"
+
+// todo adjust dependencies
+project(":helloscala-backend:common") {
+    dependencies {
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module:'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+        implementation 'com.github.oshi:oshi-core:6.6.0'
+        implementation 'net.java.dev.jna:jna:5.14.0'
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+        implementation 'commons-net:commons-net:3.10.0'
+    }
+}
+project(":helloscala-backend:admin") {
+    dependencies {
+        implementation project(":helloscala-backend:common")
+
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module:'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    }
+}
+
+project(":helloscala-backend:generate") {
+    dependencies {
+        implementation project(":helloscala-backend:common")
+
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module:'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+        implementation 'commons-io:commons-io:2.16.1'
+        implementation 'com.ibeetl:beetl-framework-starter:1.2.40.Beetl.RELEASE' // todo replace
+    }
+}
+
+project(":helloscala-backend:job") {
+    dependencies {
+        implementation project(":helloscala-backend:common")
+
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+        implementation 'org.quartz-scheduler:quartz:2.5.0-rc1'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    }
+}
+
+project(":helloscala-backend:server") {
+    dependencies {
+        implementation project(":helloscala-backend:common")
+        implementation project(":helloscala-backend:admin")
+        implementation project(":helloscala-backend:job")
+        implementation project(":helloscala-backend:generate")
+        implementation project(":helloscala-backend:web")
+
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-jdbc:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+        implementation 'me.zhyd.oauth:JustAuth:1.16.6'
+        implementation 'com.github.binarywang:weixin-java-mp:4.6.0'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+        implementation 'commons-net:commons-net:3.10.0'
+        implementation 'cn.hutool:hutool-extra:5.8.27'
+        implementation 'org.apache.commons:commons-pool2:2.12.0'
+    }
+}
+
+project(":helloscala-backend:web") {
+    dependencies {
+        implementation project(":helloscala-backend:common")
+
+        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        }
+        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-validation:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+        implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
+        implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
+        implementation 'io.netty:netty-all:4.1.109.Final'
+        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+        implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
+        implementation 'org.lionsoul:ip2region:2.7.0'
+        implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
+        implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.1.0'
+
+        implementation 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+        implementation 'me.zhyd.oauth:JustAuth:1.16.6'
+        implementation 'com.github.binarywang:weixin-java-mp:4.6.0'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    }
+}
+
+project(":helloscala-db-migration") {
+    dependencies {
+        implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
+    }
+}
