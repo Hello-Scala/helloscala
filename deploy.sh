@@ -26,10 +26,8 @@ current_path=$(pwd)
 echo "Current path '$current_path'"
 
 get_pid() {
-  echo "$(lsof -i:${port} | awk 'BEGIN {for (i=1;i<3;i++) {getline;pid=$2}} END {print pid}')"
+  echo "$(lsof -i:$port | awk 'BEGIN {for (i=1;i<3;i++) {getline;pid=$2}} END {print pid}')"
 }
-
-pid=$(get_pid)
 
 get_resource_path() {
   echo "./helloscala-backend/${app_name}/build/distributions/${app_version_name}.tar"
@@ -39,6 +37,8 @@ get_resource_path() {
 echo "resource path:$(get_resource_path)"
 
 kill_exist_app() {
+  pid=$(get_pid)
+
   if [ -n "$pid" ]; then
     echo "Existing app runing on pid:$pid"
     kill $pid
@@ -58,19 +58,22 @@ deploy_app() {
 
   nohup ./bin/${app_name} --server.port=$port > ${app_version_name}.log 2>&1 &
   echo "Waiting startup..."
-  sleep 15s
 
-  new_pid=$(get_pid)
-  echo "new pid: ${new_pid}"
-  if [ ! -n "$new_pid" ]; then
-    echo "Failed to start app:${app_name}"
-    exit 1
-  else
-    echo "Successfully start app: [${app_name}] on port [${port}], pid:[${new_pid}]"
-    echo "Deploy app: [$app_name] success!"
-    exit 0
-  fi
-
+  for i in {1..10};
+  do
+    new_pid=$(get_pid)
+    if [ ! -n "$new_pid" ]; then
+        sleep 1
+        echo -n "$i..."
+    else
+        echo "new pid: [$new_pid]"
+        echo "Successfully start app: [${app_name}] on port [${port}], pid:[${new_pid}]"
+        echo "Deploy app: [$app_name] success!"
+        return 0
+    fi
+  done
+  echo "Failed to start app:${app_name}"
 }
+
 kill_exist_app
 deploy_app $1
