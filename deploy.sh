@@ -73,6 +73,7 @@ deploy_app() {
   done;
   if [ ! -n "$new_pid" ]; then
     echo "Failed to start app:${app_name}"
+    exist 0
   fi
 }
 
