@@ -58,8 +58,7 @@ deploy_app() {
 
   nohup ./bin/${app_name} --server.port=$port > ${app_version_name}.log 2>&1 &
   echo "Waiting startup..."
-
-  for i in {1..10};
+  for i in {1..60};
   do
     new_pid=$(get_pid)
     if [ ! -n "$new_pid" ]; then
@@ -71,8 +70,11 @@ deploy_app() {
         echo "Deploy app: [$app_name] success!"
         return 0
     fi
-  done
-  echo "Failed to start app:${app_name}"
+  done;
+  if [ ! -n "$new_pid" ]; then
+    echo "Failed to start app:${app_name}"
+    exist 0
+  fi
 }
 
 kill_exist_app
