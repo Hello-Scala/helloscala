@@ -81,7 +81,7 @@ public class Application {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to start netty server!", e);
         } finally {
 //            //退出程序
             bossGroup.shutdownGracefully();
