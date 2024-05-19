@@ -61,17 +61,12 @@ import static com.helloscala.common.ResultCode.ERROR_PASSWORD;
 @Service
 @RequiredArgsConstructor
 public class ApiUserServiceImpl implements ApiUserService {
-
+    private final AesEncryptUtil aesEncryptUtil;
     private final UserMapper userMapper;
-
     private final ArticleMapper articleMapper;
-
     private final CollectMapper collectMapper;
-
     private final RedisService redisService;
-
     private final FollowedMapper followedMapper;
-
     private final EmailService emailService;
 
 
@@ -92,7 +87,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     @Override
     public ResponseResult emailLogin(EmailLoginDTO vo) {
 
-        User user = userMapper.selectNameAndPassword(vo.getEmail(), AesEncryptUtil.aesEncrypt(vo.getPassword()));
+        User user = userMapper.selectNameAndPassword(vo.getEmail(), aesEncryptUtil.aesEncrypt(vo.getPassword()));
         if (user == null) {
             throw new BusinessException(ERROR_PASSWORD.desc);
         }
@@ -291,7 +286,7 @@ public class ApiUserServiceImpl implements ApiUserService {
         // 保存账号信息
         User user = User.builder()
                 .username(emailRegisterDTO.getEmail())
-                .password(AesEncryptUtil.aesEncrypt(emailRegisterDTO.getPassword()))
+                .password(aesEncryptUtil.aesEncrypt(emailRegisterDTO.getPassword()))
                 .loginType(LoginTypeEnum.getType("email"))
                 .roleId(2)
                 .status(UserStatusEnum.normal.getCode())
@@ -309,7 +304,7 @@ public class ApiUserServiceImpl implements ApiUserService {
         if (!b) {
             throw new BusinessException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE);
         }
-        User user = User.builder().password(AesEncryptUtil.aesEncrypt(emailForgetPasswordDTO.getPassword())).build();
+        User user = User.builder().password(aesEncryptUtil.aesEncrypt(emailForgetPasswordDTO.getPassword())).build();
         userMapper.update(user,new LambdaQueryWrapper<User>().eq(User::getUsername,emailForgetPasswordDTO.getEmail()));
         return ResponseResult.success();
     }
@@ -349,7 +344,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             // 保存账号信息
             User user = User.builder()
                     .username(openId)
-                    .password(AesEncryptUtil.aesEncrypt(openId))
+                    .password(aesEncryptUtil.aesEncrypt(openId))
                     .nickname("WECHAT-" + RandomUtil.generationCapital(6))
                     .avatar(userAvatarList[RandomUtil.generationNumber(userAvatarList.length)])
                     .loginType(LoginTypeEnum.WECHAT.getType())

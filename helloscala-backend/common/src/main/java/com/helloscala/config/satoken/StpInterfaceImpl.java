@@ -12,6 +12,7 @@ import com.helloscala.mapper.RoleMenuMapper;
 import com.helloscala.mapper.UserMapper;
 import com.helloscala.vo.user.UserInfoVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -30,20 +31,34 @@ public class StpInterfaceImpl implements StpInterface {
     private final MenuMapper menuMapper;
     private final RoleMenuMapper roleMenuMapper;
     private final RoleMapper roleMapper;
+    @Value("${sys.admin.roleId:1}")
+    private Integer adminRoleId;
 
-
+    @Value("${sys.admin.hasAllPermission:true}")
+    private Boolean adminHasAllPermission;
     /**
-     * 返回一个账号所拥有的权限码集合
+     * admin have all menus' permission
      */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
         User user = userMapper.selectById(loginId.toString());
         Integer roleId = user.getRoleId();
+        if (adminHasAllPermission && adminRoleId.equals(roleId)) {
+            QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
+            menuQueryWrapper.lambda().select(Menu::getPerm);
+            List<Menu> menus = menuMapper.selectList(menuQueryWrapper);
+            return menus.stream()
+                .filter(Objects::nonNull)
+                .map(Menu::getPerm).distinct().toList();
+        }
+
         QueryWrapper<RoleMenu> roleMenuQueryWrapper = new QueryWrapper<>();
-        roleMenuQueryWrapper.lambda().select(RoleMenu::getMenuId).eq(RoleMenu::getRoleId, roleId);
+        roleMenuQueryWrapper.lambda()
+            .select(RoleMenu::getMenuId)
+            .eq(RoleMenu::getRoleId, roleId);
         List<RoleMenu> roleMenus = roleMenuMapper.selectList(roleMenuQueryWrapper);
 
-        Set<Integer> menuIdSet = roleMenus.stream().map(rm -> rm.getMenuId()).collect(Collectors.toSet());
+        Set<Integer> menuIdSet = roleMenus.stream().map(RoleMenu::getMenuId).collect(Collectors.toSet());
         if (menuIdSet.isEmpty()) {
             return new ArrayList<>();
         }
@@ -53,7 +68,7 @@ public class StpInterfaceImpl implements StpInterface {
         List<Menu> menus = menuMapper.selectList(menuQueryWrapper);
         return menus.stream()
             .filter(Objects::nonNull)
-            .map(m -> m.getPerm()).distinct().toList();
+            .map(Menu::getPerm).distinct().toList();
     }
 
     /**

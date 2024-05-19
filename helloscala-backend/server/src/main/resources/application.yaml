@@ -106,3 +106,10 @@ ftp:
   password: howard123
   httpPath: ftp://192.168.1.8
   domain: http://127.0.0.1:${server.port}
+
+sys:
+  admin:
+    hasAllPermission: true
+    roleId: 1
+  aesEncrypt:
+    key: helloscala2024
