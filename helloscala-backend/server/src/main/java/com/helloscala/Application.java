@@ -8,25 +8,29 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.dromara.easyes.starter.register.EsMapperScan;
 import org.dromara.x.file.storage.spring.EnableFileStorage;
 import org.mybatis.spring.annotation.MapperScan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * springboot启动类
  */
+@RestController
 @SpringBootApplication
 @MapperScan(basePackages = {"com.helloscala.mapper"})
 @EsMapperScan("com.helloscala.esmapper")
@@ -34,20 +38,21 @@ import java.util.concurrent.TimeUnit;
 @EnableAsync
 @EnableFileStorage
 public class Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
+
     public static void main(String[] args) throws UnknownHostException {
         ConfigurableApplicationContext application = SpringApplication.run(Application.class, args);
         Environment env = application.getEnvironment();
         String ip = InetAddress.getLocalHost().getHostAddress();
         String port = env.getProperty("server.port");
         String path = env.getProperty("server.servlet.context-path");
-        System.out.println("\n----------------------------------------------------------\n\t" +
-                "blog is running! Access URLs:\n\t" +
-                "Local: \t\thttp://localhost:" + port + path + "/\n\t" +
-                "External: \thttp://" + ip + ":" + port + path + "/\n\t" +
-                "Api documents: \thttp://" + ip + ":" + port + path + "/swagger-ui/index.html\n\t" +
-                "----------------------------------------------------------");
+        LOGGER.info("\n----------------------------------------------------------\n\t" +
+            "blog is running! Access URLs:\n\t" +
+            "Local: \t\thttp://localhost:" + port + path + "/\n\t" +
+            "External: \thttp://" + ip + ":" + port + path + "/\n\t" +
+            "Api documents: \thttp://" + ip + ":" + port + path + "/swagger-ui/index.html\n\t" +
+            "----------------------------------------------------------");
         startNettyMsgServer();
-
     }
 
     private static void startNettyMsgServer() {
@@ -69,11 +74,11 @@ public class Application {
             WebSocketInfoService webSocketInfoService = new WebSocketInfoService();
             //定时任务:扫描所有的Channel，关闭失效的Channel
             executorService.scheduleAtFixedRate(webSocketInfoService::scanNotActiveChannel,
-                    3, 60, TimeUnit.SECONDS);
+                3, 60, TimeUnit.SECONDS);
 
             //定时任务:向所有客户端发送Ping消息
             executorService.scheduleAtFixedRate(webSocketInfoService::sendPing,
-                    3, 10, TimeUnit.SECONDS);
+                3, 10, TimeUnit.SECONDS);
 
             ch.closeFuture().sync();
 
@@ -87,4 +92,8 @@ public class Application {
         }
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "Server started!";
+    }
 }
