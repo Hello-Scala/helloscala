@@ -1,16 +1,18 @@
 package com.helloscala.utils;
 
 import cn.dev33.satoken.secure.SaSecureUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class AesEncryptUtil {
 
-    // todo
-    final static String key = "helloscala2024";
+    @Value("${sys.aesEncrypt.key:helloscala2024}")
+    private String key;
     /**
      * 校验内容是否一致
      */
-    public static boolean validate(String target, String target1) {
+    public boolean validate(String target, String target1) {
         return target.equalsIgnoreCase(aesEncrypt(target1));
     }
 
@@ -20,11 +22,7 @@ public class AesEncryptUtil {
      * @param password：密码
      * @return
      */
-    public static String aesEncrypt(String password){
+    public String aesEncrypt(String password){
         return SaSecureUtil.aesEncrypt(key, password);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(aesEncrypt("123456"));
     }
 }

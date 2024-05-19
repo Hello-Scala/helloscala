@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SoftwareServiceImpl implements ApiSoftwareService {
+public class ApiSoftwareServiceImpl implements ApiSoftwareService {
 
     private final SoftwareMapper softwareMapper;
 
