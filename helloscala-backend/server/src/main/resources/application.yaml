@@ -7,7 +7,8 @@ server:
     direct-buffers: true
   servlet:
     context-path: "/helloscala"
-
+    encoding:
+      charset: UTF-8
 logging:
   level:
     root: info
@@ -56,6 +57,8 @@ spring:
           slow-sql-millis: 1000
   sa-token:
     timeout: 60
+  messages:
+    encoding: UTF-8
 
 mybatis-plus:
   mapper-locations: mapper/*.xml
