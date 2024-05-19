@@ -14,6 +14,9 @@ logging:
     org:
       springframework:
         web: info
+  charset:
+    console: UTF-8
+    file: UTF-8
 
 spring:
   servlet:
