@@ -68,7 +68,6 @@ deploy_app() {
         echo "new pid: [$new_pid]"
         echo "Successfully start app: [${app_name}] on port [${port}], pid:[${new_pid}]"
         echo "Deploy app: [$app_name] success!"
-        tail -f /dev/null
         return 0
     fi
   done;
