@@ -27,9 +27,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * springboot启动类
- */
 @RestController
 @SpringBootApplication
 @MapperScan(basePackages = {"com.helloscala.mapper"})
