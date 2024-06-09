@@ -56,10 +56,13 @@ spring:
         stat:
           log-slow-sql: true
           slow-sql-millis: 1000
-  sa-token:
-    timeout: 60
   messages:
     encoding: UTF-8
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: 3600
 
 mybatis-plus:
   mapper-locations: mapper/*.xml

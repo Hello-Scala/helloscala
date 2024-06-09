@@ -1,5 +1,6 @@
 package com.helloscala;
 
+import cn.dev33.satoken.SaManager;
 import com.helloscala.im.WebSocketChanneInitializer;
 import com.helloscala.im.WebSocketConstant;
 import com.helloscala.im.WebSocketInfoService;
@@ -8,11 +9,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.dromara.easyes.starter.register.EsMapperScan;
 import org.dromara.x.file.storage.spring.EnableFileStorage;
 import org.mybatis.spring.annotation.MapperScan;
@@ -26,6 +22,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @SpringBootApplication
@@ -49,6 +51,7 @@ public class Application {
             "External: \thttp://" + ip + ":" + port + path + "/\n\t" +
             "Api documents: \thttp://" + ip + ":" + port + path + "/swagger-ui/index.html\n\t" +
             "----------------------------------------------------------");
+        LOGGER.info("Sa-token config:" + SaManager.getConfig());
         startNettyMsgServer();
     }
 

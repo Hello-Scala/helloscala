@@ -33,7 +33,7 @@ public class MySaTokenListener implements SaTokenListener {
 
     private final RedisService redisService;
 
-    @Value("${spring.sa-token.timeout}")
+    @Value("${sa-token.timeout}")
     private Integer timeout;
 
     @Override
