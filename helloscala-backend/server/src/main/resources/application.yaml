@@ -56,7 +56,9 @@ spring:
           log-slow-sql: true
           slow-sql-millis: 1000
   sa-token:
-    timeout: 60
+    token-name: Authorization
+    token-prefix: Bearer
+    timeout: 3600
   messages:
     encoding: UTF-8
 
