@@ -68,7 +68,7 @@ public class ApiCommentServiceImpl implements ApiCommentService {
         comment.setUserId(StpUtil.getLoginIdAsString());
         int insert = commentMapper.insert(comment);
         if (insert == 0){
-            throw new BusinessException("评论失败");
+            throw new BusinessException("Comment failed!");
         }
         String toUserId =  comment.getReplyUserId();
         int mark = toUserId == null ? 2 : 1;

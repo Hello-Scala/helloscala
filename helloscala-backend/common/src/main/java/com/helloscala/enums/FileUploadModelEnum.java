@@ -56,7 +56,7 @@ public enum FileUploadModelEnum {
      */
     public static FileUploadModelEnum getStrategy(int type) {
         for (FileUploadModelEnum value : FileUploadModelEnum.values()) {
-            if (value.getType() == (type)) {
+            if (value.getType() == type) {
                 return value;
             }
         }

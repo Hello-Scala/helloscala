@@ -93,7 +93,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         for (Long id : list) {
             Long count = articleMapper.selectCount(new LambdaQueryWrapper<Article>().eq(Article::getCategoryId, id));
             if (count > 0) {
-                throw new BusinessException( id + " 分类下有文章，不能删除");
+                throw new BusinessException( id + "category delete failed, exist articles under this category!");
             }
             ids.add(id);
         }

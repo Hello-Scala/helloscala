@@ -48,7 +48,7 @@ public class ApiFriendLinkServiceImpl implements ApiFriendLinkService {
         FriendLink entity = friendLinkMapper.selectOne(new LambdaQueryWrapper<FriendLink>()
                 .eq(FriendLink::getUrl,friendLink.getUrl()));
         if (entity != null){
-            throw new BusinessException("友链已存在，如需修改请留言!");
+            throw new BusinessException("Friend link exist, please leave notes for modification!");
         }
         friendLink.setStatus(APPLY.getCode());
         friendLinkMapper.insert(friendLink);

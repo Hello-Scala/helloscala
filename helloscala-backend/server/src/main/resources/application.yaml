@@ -9,6 +9,7 @@ server:
     context-path: "/helloscala"
     encoding:
       charset: UTF-8
+      force: true
 logging:
   level:
     root: info

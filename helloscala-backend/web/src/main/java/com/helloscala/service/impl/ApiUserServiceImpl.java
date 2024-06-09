@@ -267,7 +267,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             emailService.sendCode(email);
             return ResponseResult.success();
         } catch (MessagingException e) {
-            throw new BusinessException("发送邮件失败");
+            throw new BusinessException("Email send failed!");
         }
     }
 
@@ -281,7 +281,7 @@ public class ApiUserServiceImpl implements ApiUserService {
         }
         Long count = userMapper.selectCount(new LambdaQueryWrapper<User>().eq(User::getUsername, emailRegisterDTO.getEmail()));
         if (count > 0) {
-            throw new BusinessException("该邮箱账号已经注册");
+            throw new BusinessException("Email registered, email={}!", emailRegisterDTO.getEmail());
         }
         // 保存账号信息
         User user = User.builder()

@@ -1,5 +1,6 @@
 package com.helloscala.exception;
 
+import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.ResultCode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,10 +40,22 @@ public class BusinessException extends RuntimeException {
         this.message = msg;
     }
 
+    public BusinessException(String msgFmt, Object... param) {
+        super(StrUtil.format(msgFmt, param));
+        this.code = ERROR_DEFAULT.getCode();
+        this.message = StrUtil.format(msgFmt, param);
+    }
+
     public BusinessException(Integer code, String msg) {
         super(msg);
         this.code = code;
         this.message = msg;
+    }
+
+    public BusinessException(Integer code, String msgFmt, Object... param) {
+        super(StrUtil.format(msgFmt, param));
+        this.code = code;
+        this.message = StrUtil.format(msgFmt, param);
     }
 
     public BusinessException(Integer code, String msg, Throwable cause) {

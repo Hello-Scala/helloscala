@@ -61,7 +61,7 @@ public class DictDataServiceImpl extends ServiceImpl<DictDataMapper, DictData> i
                 .eq(DictData::getLabel, dictData.getLabel())
                 .eq(DictData::getDictId, dictData.getDictId()));
         if (temp != null) {
-            throw new BusinessException(ResultCode.DATA_TAG_IS_EXIST);
+            throw new BusinessException(ResultCode.TAG_EXIST);
         }
         baseMapper.insert(dictData);
         return ResponseResult.success();
@@ -78,7 +78,7 @@ public class DictDataServiceImpl extends ServiceImpl<DictDataMapper, DictData> i
 
         DictData dictData = baseMapper.selectOne(new LambdaQueryWrapper<DictData>().eq(DictData::getLabel,sysDictData.getLabel()));
         if (dictData != null && !dictData.getId().equals(sysDictData.getId())){
-           throw new BusinessException(ResultCode.DATA_TAG_IS_EXIST);
+           throw new BusinessException(ResultCode.TAG_EXIST);
         }
 
         baseMapper.updateById(sysDictData);

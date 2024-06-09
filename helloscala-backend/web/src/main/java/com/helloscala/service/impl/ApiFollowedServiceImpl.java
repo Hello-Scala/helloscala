@@ -28,10 +28,10 @@ public class ApiFollowedServiceImpl implements ApiFollowedService {
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult addFollowedUser(String userId) {
         if (StringUtils.isBlank(userId)) {
-            throw new BusinessException("被关注用户id不能为空！");
+            throw new BusinessException("Followed user id is empty!");
         }
         if (userId.equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("不能关注自己哦！");
+            throw new BusinessException("Can not follow yourself!");
         }
         Followed followed = Followed.builder().userId(StpUtil.getLoginIdAsString()).followedUserId(userId).build();
         followedMapper.insert(followed);
@@ -44,7 +44,7 @@ public class ApiFollowedServiceImpl implements ApiFollowedService {
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult deleteFollowed(String userId) {
         if (StringUtils.isBlank(userId)) {
-            throw new BusinessException("被关注用户id不能为空！");
+            throw new BusinessException("Followed user id is empty!");
         }
         followedMapper.delete(new LambdaQueryWrapper<Followed>().eq(Followed::getUserId,StpUtil.getLoginIdAsString()).eq(Followed::getFollowedUserId,userId));
         return ResponseResult.success();

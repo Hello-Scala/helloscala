@@ -78,7 +78,7 @@ public class DateUtil {
             Date date = sf1.parse(dateString);
             return date;
         } catch (Exception e) {
-            throw new RuntimeException("时间转化格式错误" + "[dateString=" + dateString + "]" + "[FORMAT_STRING=" + FORMAT_STRING + "]");
+            throw new RuntimeException("Date format error, " + "[dateString=" + dateString + "]" + "[FORMAT_STRING=" + FORMAT_STRING + "]");
         }
     }
 
@@ -196,7 +196,7 @@ public class DateUtil {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             date = format.parse(dateTime);
         } catch (ParseException e) {
-            throw new BusinessException("时间格式解析错误！");
+            throw new BusinessException("Date time deserialize failed!", e);
         }
         return date;
     }
@@ -212,7 +212,7 @@ public class DateUtil {
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
             date = format.parse(dateTime);
         } catch (ParseException e) {
-            throw new BusinessException("时间格式解析错误！");
+            throw new BusinessException("Date time deserialize error!", e);
         }
         return date;
     }
