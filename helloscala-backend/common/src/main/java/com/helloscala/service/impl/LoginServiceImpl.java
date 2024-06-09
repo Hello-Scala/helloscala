@@ -27,6 +27,7 @@ import static com.helloscala.common.ResultCode.ERROR_PASSWORD;
 @Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
+    private final AesEncryptUtil aesEncryptUtil;
 
     private final UserMapper userMapper;
 
@@ -66,7 +67,7 @@ public class LoginServiceImpl implements LoginService {
         }
 
         //校验用户名和密码
-        User user = userMapper.selectNameAndPassword(dto.getUsername(), AesEncryptUtil.aesEncrypt(dto.getPassword()));
+        User user = userMapper.selectNameAndPassword(dto.getUsername(), aesEncryptUtil.aesEncrypt(dto.getPassword()));
         if (user == null){
             throw new BusinessException(ERROR_PASSWORD.desc);
         }

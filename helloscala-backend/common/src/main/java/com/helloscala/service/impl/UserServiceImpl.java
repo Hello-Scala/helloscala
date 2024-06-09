@@ -42,11 +42,10 @@ import static com.helloscala.common.ResultCode.ERROR_USER_NOT_EXIST;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
-
+    private final AesEncryptUtil aesEncryptUtil;
     private final MenuService menuService;
 
     private final RedisService redisService;
-
 
     /**
      * 用户列表
@@ -84,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException("Username exist!");
         }
         User user = BeanCopyUtil.copyObject(dto,User.class);
-        user.setPassword(AesEncryptUtil.aesEncrypt(user.getPassword()));
+        user.setPassword(aesEncryptUtil.aesEncrypt(user.getPassword()));
         baseMapper.insert(user);
         return ResponseResult.success(user);
     }
@@ -157,12 +156,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ERROR_USER_NOT_EXIST.getDesc());
         }
 
-        boolean isValid = AesEncryptUtil.validate(user.getPassword(),passwordDTO.getOldPassword());
+        boolean isValid = aesEncryptUtil.validate(user.getPassword(),passwordDTO.getOldPassword());
         if (!isValid) {
             throw new BusinessException("Original password invalid!");
         }
 
-        String newPassword = AesEncryptUtil.aesEncrypt(passwordDTO.getNewPassword());
+        String newPassword = aesEncryptUtil.aesEncrypt(passwordDTO.getNewPassword());
         user.setPassword(newPassword);
         baseMapper.updateById(user);
         return ResponseResult.success("Success!");
