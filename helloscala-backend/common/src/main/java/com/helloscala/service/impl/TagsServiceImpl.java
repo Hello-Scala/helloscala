@@ -90,14 +90,14 @@ public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tags> implements Ta
     private void validateTagIdIsExistArticle(Long id) {
         int count = baseMapper.validateTagIdIsExistArticle(id);
         if (count > 0){
-            throw new BusinessException("标签下有文章，无法删除");
+            throw new BusinessException("Delete tag failed, exist articles under this tag!");
         }
     }
 
     public void validateName(String name){
         Tags entity = baseMapper.selectOne(new LambdaQueryWrapper<Tags>().eq(Tags::getName,name));
         if (ObjectUtils.isNotEmpty(entity)) {
-            throw new BusinessException("标签名已存在");
+            throw new BusinessException("Tag exist!");
         }
     }
 }

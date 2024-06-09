@@ -46,7 +46,7 @@ public class ApiSignServiceImpl implements ApiSignService {
 
         Sign sign = signMapper.selctSignByUserIdAndTime(userId,time);
         if (sign != null) {
-            throw new BusinessException("当日已签到，无需再次签到！");
+            throw new BusinessException("You've already signed, no need sign again!");
         }
 
         sign = Sign.builder().userId(userId).createTime(DateUtil.strToDateTime(time,DateUtil.YYYY_MM_DD)).build();

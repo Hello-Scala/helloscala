@@ -180,7 +180,7 @@ public class GenerateService {
 
     public void download(String tableName,String downloadPath) throws IOException {
         if (StrUtil.isBlank(downloadPath)) {
-            throw new BusinessException("下载路径不能为空");
+            throw new BusinessException("Download path is empty!");
         }
         ClasspathResourceLoader resourceLoader = new ClasspathResourceLoader("beetl-back-end");
         Configuration cfg = Configuration.defaultConfiguration();

@@ -84,7 +84,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     public ResponseResult deleteDict(List<Long> ids) {
         Long count  = dictDataMapper.selectCount(new LambdaQueryWrapper<DictData>().in(DictData::getDictId,ids));
         if (count > 0) {
-            throw new BusinessException("所选字典类型中存在字典数据！");
+            throw new BusinessException("Dict delete failed, dict data exist！");
         }
         baseMapper.deleteBatchIds(ids);
         return ResponseResult.success();
@@ -95,7 +95,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     public void validateTypeIsExist(String type){
         Dict temp  = baseMapper.selectOne(new LambdaQueryWrapper<Dict>().eq(Dict::getType, type).last(Constants.LIMIT_ONE));
         if (temp != null) {
-            throw new BusinessException("字典标签已存在！");
+            throw new BusinessException("Dict type exist!");
         }
     }
 }

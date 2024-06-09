@@ -42,13 +42,14 @@ public class WebSocketInfoService {
      */
     public void scanNotActiveChannel() {
         Map<String, Channel> channelMap = SessionHolder.channelMap;
-        if (channelMap.size() == 0) {
+        if (channelMap.isEmpty()) {
             return;
         }
         for (Channel channel : channelMap.values()) {
             if (!channel.isOpen()
                 || !channel.isActive()) {
-                channelMap.remove(channel);
+                String userId = NettyAttrUtil.getUserId(channel);
+                channelMap.remove(userId);
                 SessionHolder.channelGroup.remove(channel);
                 if (channel.isOpen() || channel.isActive()) {
                     channel.close();

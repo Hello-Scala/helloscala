@@ -2,27 +2,18 @@ package com.helloscala.im;
 
 
 import cn.hutool.json.JSONUtil;
+import com.helloscala.exception.BusinessException;
 import com.helloscala.service.ApiImMessageService;
 import com.helloscala.utils.SpringUtil;
 import com.helloscala.vo.message.ImMessageVO;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -37,9 +28,9 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketSimpleChannelInboundHandler.class);
     // WebSocket 握手工厂类
-    private WebSocketServerHandshakerFactory factory = new WebSocketServerHandshakerFactory(WebSocketConstant.WEB_SOCKET_URL, null, false);
-    private WebSocketServerHandshaker handshaker;
-    private WebSocketInfoService websocketInfoService = new WebSocketInfoService();
+    private final WebSocketServerHandshakerFactory factory = new WebSocketServerHandshakerFactory(WebSocketConstant.WEB_SOCKET_URL, null, false);
+    private WebSocketServerHandshaker handShaker;
+    private final WebSocketInfoService websocketInfoService = new WebSocketInfoService();
 
     /**
      * 处理客户端与服务端之间的 websocket 业务
@@ -48,7 +39,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
         //判断是否是关闭 websocket 的指令
         if (frame instanceof CloseWebSocketFrame) {
             //关闭握手
-            handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
+            handShaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             websocketInfoService.clearSession(ctx.channel());
             return;
         }
@@ -64,13 +55,13 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
         }
         //判断是否是二进制消息，如果是二进制消息，抛出异常
         if (!(frame instanceof TextWebSocketFrame)) {
-            System.out.println("目前我们不支持二进制消息");
+            logger.error("binary msg unsupported!");
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-            throw new RuntimeException("【" + this.getClass().getName() + "】不支持消息");
+            throw new BusinessException("Message unsupported, " + this.getClass().getName());
         }
         // 获取并解析客户端向服务端发送的 json 消息
         String message = ((TextWebSocketFrame) frame).text();
-        logger.info("来自客户端的消息：{}", message);
+        logger.info("Received client msg:{}", message);
         try {
             ImMessageVO imMessageVO = JSONUtil.toBean(message, ImMessageVO.class);
             switch (imMessageVO.getCode()) {
@@ -109,8 +100,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
                 default:
             }
         } catch(Exception e) {
-            logger.error("转发消息异常:", e);
-            e.printStackTrace();
+            logger.error("Send msg failed:", e);
         }
     }
 
@@ -120,7 +110,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //创建新的 WebSocket 连接，保存当前 channel
-        logger.info("————客户端与服务端连接开启————");
+        logger.info("--channelActive--");
 //        // 设置高水位
 //        ctx.channel().config().setWriteBufferHighWaterMark();
 //        // 设置低水位
@@ -149,7 +139,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("异常:", cause);
+        logger.error("Error:", cause);
         ctx.close();
     }
 
@@ -185,8 +175,8 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
             return;
         }
         //新建一个握手
-        handshaker = factory.newHandshaker(request);
-        if (handshaker == null) {
+        handShaker = factory.newHandshaker(request);
+        if (handShaker == null) {
             //如果为空，返回响应：不受支持的 websocket 版本
             WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel());
         } else {
@@ -196,10 +186,10 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
             Channel channel = ctx.channel();
             NettyAttrUtil.setUserId(channel, userId);
             NettyAttrUtil.refreshLastHeartBeatTime(channel);
-            handshaker.handshake(ctx.channel(), request);
+            handShaker.handshake(ctx.channel(), request);
             SessionHolder.channelGroup.add(ctx.channel());
             SessionHolder.channelMap.put(userId, ctx.channel());
-            logger.info("握手成功，客户端请求uri：{}", request.uri());
+            logger.info("Handshake success, uri：{}", request.uri());
 
             // 推送用户上线消息，更新客户端在线用户列表
 //            Set<String> userList = SessionHolder.channelMap.keySet();
@@ -214,8 +204,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
 
     @NotNull
     private static ApiImMessageService getImMessageService() {
-        ApiImMessageService imMessageService = SpringUtil.getBean(ApiImMessageService.class);
-        return imMessageService;
+        return SpringUtil.getBean(ApiImMessageService.class);
     }
 
 

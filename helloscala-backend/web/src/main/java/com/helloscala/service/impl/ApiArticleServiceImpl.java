@@ -61,7 +61,7 @@ import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
 @Service
 @RequiredArgsConstructor
 public class ApiArticleServiceImpl implements ApiArticleService {
-    
+
     private final ArticleMapper articleMapper;
 
     private final RedisService redisService;
@@ -78,14 +78,15 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final SearchStrategyContext searchStrategyContext;
 
     /**
-     *  获取文章列表
+     * 获取文章列表
+     *
      * @return
      */
     @Override
-    public ResponseResult selectArticleList(Integer categoryId,Integer tagId,String orderByDescColumn) {
+    public ResponseResult selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
         Page<ApiArticleListVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
-                categoryId,tagId,orderByDescColumn);
-        articlePage.getRecords().forEach(item ->{
+                categoryId, tagId, orderByDescColumn);
+        articlePage.getRecords().forEach(item -> {
             setCommentAndLike(item);
 //            //获取文章
 //            int collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, item.getId()));
@@ -103,14 +104,15 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     /**
-     *  获取文章详情
+     * 获取文章详情
+     *
      * @return
      */
     @Override
     public ResponseResult selectArticleInfo(Integer id) {
         ApiArticleInfoVO apiArticleInfoVO = articleMapper.selectArticleByIdToVO(id);
         if (apiArticleInfoVO == null) {
-            throw new BusinessException("抱歉，文章不存在");
+            throw new BusinessException("Article not found, id={}!", id);
         }
         //获取收藏量
         Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, id));
@@ -124,24 +126,24 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         apiArticleInfoVO.setCommentCount(comments.size());
         //获取点赞数量
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
-        if (map!= null && map.size() > 0){
+        if (map != null && !map.isEmpty()) {
             apiArticleInfoVO.setLikeCount(map.get(id.toString()));
         }
         //获取当前登录用户是否点赞该文章
         Object userId = StpUtil.getLoginIdDefaultNull();
-        if (userId != null){
+        if (userId != null) {
             String articleLikeKey = ARTICLE_USER_LIKE + userId;
             if (redisService.sIsMember(articleLikeKey, id)) {
                 apiArticleInfoVO.setIsLike(true);
                 //校验文章用户是否已经点赞过
-                if(apiArticleInfoVO.getReadType() == ReadTypeEnum.LIKE.index){
+                if (apiArticleInfoVO.getReadType() == ReadTypeEnum.LIKE.index) {
                     apiArticleInfoVO.setActiveReadType(true);
                 }
             }
             //校验文章用户是否已经评论过
-            if(apiArticleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index){
+            if (apiArticleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index) {
                 Long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>().eq(Comment::getUserId, userId));
-                if(count != null && count > 0) {
+                if (count != null && count > 0) {
                     apiArticleInfoVO.setActiveReadType(true);
                 }
             }
@@ -157,7 +159,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         }
 
         //校验文章是否已经进行过扫码验证
-        if(apiArticleInfoVO.getReadType() == ReadTypeEnum.CODE.index){
+        if (apiArticleInfoVO.getReadType() == ReadTypeEnum.CODE.index) {
             List<Object> cacheList = redisService.getCacheList(RedisConstants.CHECK_CODE_IP);
             String ip = IpUtil.getIp();
             if (cacheList.contains(ip)) {
@@ -166,12 +168,13 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         }
 
         //增加文章阅读量
-        redisService.incrArticle(id.longValue(),ARTICLE_READING,IpUtil.getIp());
+        redisService.incrArticle(id.longValue(), ARTICLE_READING, IpUtil.getIp());
         return ResponseResult.success(apiArticleInfoVO);
     }
 
     /**
-     *  搜索文章
+     * 搜索文章
+     *
      * @return
      */
     @Override
@@ -189,7 +192,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     /**
-     *  获取归档
+     * 获取归档
+     *
      * @return
      */
     @Override
@@ -199,20 +203,21 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         Map<String, List<ApiArchiveVO>> resultList = articleList.stream().collect(Collectors.groupingBy(ApiArchiveVO::getTime));
         Object[] keyArr = resultList.keySet().toArray();  //获取resultList的所有key值数组
         Arrays.sort(keyArr);
-        List<Map<String,Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
         for (int i = keyArr.length - 1; i >= 0; i--) {
-            Map<String,Object> map = new HashMap<>();
-            map.put("time",keyArr[i]);
+            Map<String, Object> map = new HashMap<>();
+            map.put("time", keyArr[i]);
             List<ApiArchiveVO> list = resultList.get(keyArr[i]);
             Collections.sort(list, (o1, o2) -> o2.getFormatTime().compareTo(o1.getFormatTime()));
-            map.put("list",list);
+            map.put("list", list);
             result.add(map);
         }
-        return ResponseResult.success(result).putExtra("total",articleList.size());
+        return ResponseResult.success(result).putExtra("total", articleList.size());
     }
 
     /**
      * 文章点赞
+     *
      * @param articleId
      * @return
      */
@@ -238,6 +243,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
     /**
      * 用户添加文章
+     *
      * @param dto
      * @return
      */
@@ -248,8 +254,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         article.setUserId(StpUtil.getLoginIdAsString());
         int insert = articleMapper.insert(article);
         //添加标签
-        if (insert > 0){
-            tagsMapper.saveArticleTags(article.getId(),dto.getTagList());
+        if (insert > 0) {
+            tagsMapper.saveArticleTags(article.getId(), dto.getTagList());
         }
         return ResponseResult.success();
     }
@@ -259,14 +265,14 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult updateMyArticle(ArticlePostDTO dto) {
         Article article = BeanCopyUtil.copyObject(dto, Article.class);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("只能修改自己的文章！");
+            throw new BusinessException("Can only modify your own article!");
         }
         articleMapper.updateById(article);
 
         //先删出所有标签
         tagsMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
         //然后新增标签
-        tagsMapper.saveArticleTags(article.getId(),dto.getTagList());
+        tagsMapper.saveArticleTags(article.getId(), dto.getTagList());
         return ResponseResult.success();
     }
 
@@ -286,8 +292,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             inputStream.close();
 
         } catch (IOException e) {
-            log.error("文件读取失败,错误原因:{}", e);
-           throw new BusinessException("文件读取失败");
+            log.error("Failed to read markdown file!", e);
+            throw new BusinessException("Markdown file read failed!");
         }
         Map<String, Object> map = new HashMap<>();
         map.put("content", sb.toString());
@@ -298,8 +304,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     @Override
     public ResponseResult selectArticleByUserId(String userId, Integer type) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
-        Page<ApiArticleListVO> list = articleMapper.selectMyArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),userId,type);
-        list.getRecords().forEach(item ->{
+        Page<ApiArticleListVO> list = articleMapper.selectMyArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), userId, type);
+        list.getRecords().forEach(item -> {
             List<Tags> tags = tagsMapper.selectTagByArticleId(item.getId());
             item.setTagList(tags);
 
@@ -311,6 +317,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
     /**
      * 删除我的文章
+     *
      * @param id
      * @return
      */
@@ -319,7 +326,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult deleteMyArticle(Long id) {
         Article article = articleMapper.selectById(id);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("只能删除自己的文章！");
+            throw new BusinessException("Can only delete your own article!");
         }
         articleMapper.deleteById(id);
         tagsMapper.deleteByArticleIds(Collections.singletonList(id));
@@ -328,14 +335,15 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
     /**
      * 获取我的文章详情
+     *
      * @param id
      * @return
      */
     @Override
     public ResponseResult selectMyArticleInfo(Long id) {
-        ArticlePostDTO articlePostDTO =  articleMapper.selectMyArticleInfo(id);
+        ArticlePostDTO articlePostDTO = articleMapper.selectMyArticleInfo(id);
         if (!articlePostDTO.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("只能查看自己的文章！");
+            throw new BusinessException("Can only read your own article detail!");
         }
         List<Tags> tags = tagsMapper.selectTagByArticleId(id);
         List<Long> tagList = tags.stream().map(Tags::getId).collect(Collectors.toList());
@@ -344,7 +352,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     /**
-     *  校验文章验证码(验证码通过关注公众号获取)
+     * 校验文章验证码(验证码通过关注公众号获取)
+     *
      * @return
      */
     @Override
@@ -362,16 +371,16 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             cacheList = new ArrayList<>();
         }
         cacheList.add(IpUtil.getIp());
-        redisService.setCacheList(CHECK_CODE_IP,cacheList);
+        redisService.setCacheList(CHECK_CODE_IP, cacheList);
         //通过删除验证码
         redisService.deleteObject(key);
-        return ResponseResult.success("验证成功");
+        return ResponseResult.success("Verified!");
     }
-
 
 
     /**
      * 设置评论量和点赞量
+     *
      * @param item
      */
     private void setCommentAndLike(ApiArticleListVO item) {
@@ -380,7 +389,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
                 .eq(Comment::getArticleId, item.getId()));
         //获取点赞数量
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
-        if (map!= null && map.size() > 0){
+        if (map != null && !map.isEmpty()) {
             Object obj = map.get(item.getId().toString());
             item.setLikeCount(obj == null ? 0 : obj);
         }

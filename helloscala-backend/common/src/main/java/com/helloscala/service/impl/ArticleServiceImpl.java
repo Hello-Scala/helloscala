@@ -136,7 +136,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ResponseResult updateArticle(ArticleDTO article) {
         Article blogArticle = baseMapper.selectById(article.getId());
         if (ObjectUtil.isNull(blogArticle)) {
-            throw new BusinessException(ResultCode.ARTICLE_NOT_EXIST);
+            throw new BusinessException(ResultCode.ARTICLE_NOT_FOUND);
         }
         //只能修改属于当前登录用户的文章
         String loginId = StpUtil.getLoginIdAsString();
@@ -229,7 +229,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             Elements tags = document.getElementsByClass("tag-link");
             Elements content = document.getElementsByClass("article_content");
             if (StringUtils.isBlank(content.toString())) {
-                throw new BusinessException(ResultCode.CRAWLING_ARTICLE_FAILED.getDesc());
+                throw new BusinessException(ResultCode.FETCH_ARTICLE_FAILED.getDesc());
             }
 
             //爬取的是HTML内容，需要转成MD格式的内容

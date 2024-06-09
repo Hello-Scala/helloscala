@@ -166,7 +166,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
             scheduler.triggerJob(ScheduleUtil.getJobKey(jobId, jobGroup), dataMap);
             return ResponseResult.success();
         } catch (Exception e) {
-            throw new BusinessException("定时任务运行失败！失败原因:" + e.getMessage());
+            throw new BusinessException("Job run failed, msg={}!" + e.getMessage(), e);
         }
     }
 

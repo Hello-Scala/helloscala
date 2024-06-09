@@ -28,7 +28,7 @@ public class AccessLimitAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLimitAspect.class);
     @Resource
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Before("@annotation(accessLimit)")
     public void doBefore(JoinPoint joinPoint, AccessLimit accessLimit) throws Throwable {
@@ -51,8 +51,8 @@ public class AccessLimitAspect {
                 redisTemplate.opsForValue().set(key, maxTimes + 1, time, TimeUnit.SECONDS);
             } else {
                 // 请求过于频繁
-                logger.info("API请求限流拦截启动,{} 请求过于频繁", key);
-                throw new BusinessException("请求过于频繁,稍后重试");
+                logger.info("Request too frequently, {}", key);
+                throw new BusinessException("Request too frequently, please try it later!");
             }
     }
 }

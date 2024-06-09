@@ -81,7 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult addUser(SystemUserDTO dto) {
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<User>().eq(User::getUsername,dto.getUsername()));
         if (count > 0 ){
-            throw new BusinessException("用户名已存在!");
+            throw new BusinessException("Username exist!");
         }
         User user = BeanCopyUtil.copyObject(dto,User.class);
         user.setPassword(AesEncryptUtil.aesEncrypt(user.getPassword()));
@@ -159,13 +159,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         boolean isValid = AesEncryptUtil.validate(user.getPassword(),passwordDTO.getOldPassword());
         if (!isValid) {
-            throw new BusinessException("旧密码校验不通过");
+            throw new BusinessException("Original password invalid!");
         }
 
         String newPassword = AesEncryptUtil.aesEncrypt(passwordDTO.getNewPassword());
         user.setPassword(newPassword);
         baseMapper.updateById(user);
-        return ResponseResult.success("修改成功");
+        return ResponseResult.success("Success!");
     }
 
     /**

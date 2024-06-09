@@ -113,10 +113,10 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     public ResponseResult addRoom(String toUserId) {
         String fromUserId = StpUtil.getLoginIdAsString();
         if (StringUtils.isBlank(toUserId)) {
-            throw new BusinessException("请选择用户！");
+            throw new BusinessException("Please choose an user!");
         }
         if (toUserId.equals(fromUserId)) {
-            throw new BusinessException("不能跟自己聊天！");
+            throw new BusinessException("Can not chat with your self!");
         }
         ImRoom imRoom = imRoomMapper.selectOne(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, fromUserId)
                 .eq(ImRoom::getToUserId, toUserId));
@@ -225,10 +225,10 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     public ResponseResult withdraw(ImMessageVO message) {
         ImMessage entity = imMessageMapper.selectById(message.getId());
         if (DateUtil.getDiffDateToMinutes(entity.getCreateTime(), DateUtil.getNowDate()) >= 2) {
-            throw new BusinessException("撤回失败，只能撤回俩分钟以内的消息！");
+            throw new BusinessException("recall message failed, message sent over 2 minutes!");
         }
         if (!entity.getFromUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("只能撤回自己的消息哦！");
+            throw new BusinessException("Can only recall your own message!");
         }
         ImMessage imMessage = BeanCopyUtil.copyObject(message, ImMessage.class);
         imMessage.setIp(IpUtil.getIp());
