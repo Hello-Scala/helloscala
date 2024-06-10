@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DataEventPublisherService {
-
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
@@ -16,8 +15,8 @@ public class DataEventPublisherService {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    public void publishData(DataEventEnum dataEventEnum,Object data) {
-        DataEvent event = new DataEvent(this,dataEventEnum, data);
+    public <T> void publishData(DataEventEnum dataEventEnum, T data) {
+        DataEvent<DataEventPublisherService, T> event = new DataEvent<>(this, dataEventEnum, data);
         applicationEventPublisher.publishEvent(event);
     }
 }

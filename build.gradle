@@ -36,10 +36,12 @@ subprojects {
 
 def SPRING_BOOT_VERSION = "3.2.2"
 def MYSQL_VERSION = "8.0.33"
+def SA_TOKEN_VERSION = "1.38.0"
 
 project(":helloscala-backend:server") {
     dependencies {
-        implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
+        implementation "cn.dev33:sa-token-spring-boot3-starter:$SA_TOKEN_VERSION"
+        implementation "cn.dev33:sa-token-redis-jackson:$SA_TOKEN_VERSION"
         implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
         }

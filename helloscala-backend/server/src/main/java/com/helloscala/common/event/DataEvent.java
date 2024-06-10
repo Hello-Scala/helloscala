@@ -5,13 +5,18 @@ import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
-public class DataEvent extends ApplicationEvent {
-    private final Object data;
+public class DataEvent<S, T> extends ApplicationEvent {
+    private final Class<S> sClass;
+    private final T entity;
+    private final Class<T> tClass;
     private final DataEventEnum eventEnum;
 
-    public DataEvent(Object source, DataEventEnum eventEnum, Object data) {
+    @SuppressWarnings("unchecked")
+    public DataEvent(S source, DataEventEnum eventEnum, T data) {
         super(source);
-        this.data = data;
+        sClass = (Class<S>) source.getClass();
         this.eventEnum = eventEnum;
+        this.tClass = (Class<T>) data.getClass();
+        this.entity = data;
     }
 }

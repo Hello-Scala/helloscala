@@ -22,6 +22,7 @@ import com.helloscala.common.mapper.CategoryMapper;
 import com.helloscala.common.mapper.TagsMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.service.ArticleService;
+import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
@@ -52,26 +53,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
-
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
-
     private final TagsMapper tagsMapper;
-
     private final RestTemplate restTemplate;
-
-
     private final DataEventPublisherService dataEventPublisherService;
-
     @Value("${baidu.url}")
     private String baiduUrl;
 
-
-    /**
-     * 后台获取所有文章
-     *
-     * @return
-     */
     @Override
     public ResponseResult selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
         Page<SystemArticleListVO> data = baseMapper.selectArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), title, tagId, categoryId, isPublish);
@@ -82,11 +71,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.success(data);
     }
 
-    /**
-     * 后台获取文章详情
-     *
-     * @return
-     */
     @Override
     public ResponseResult selectArticleById(Long id) {
         ArticleDTO articleDTO = baseMapper.selectArticlePrimaryKey(id);
@@ -94,27 +78,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.success(articleDTO);
     }
 
-    /**
-     * 添加文章
-     *
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult addArticle(ArticleDTO article) {
         Article blogArticle = BeanCopyUtil.copyObject(article, Article.class);
         blogArticle.setUserId(StpUtil.getLoginIdAsString());
-        //添加分类
         Long categoryId = savaCategory(article.getCategoryName());
-        //添加标签
         List<Long> tagList = getTagsList(article);
 
         blogArticle.setCategoryId(categoryId);
 
         String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
-        if (StringUtils.isNotBlank(ipAddress)) {
-            String address = ipAddress.split("\\|")[1];
-            blogArticle.setAddress(address);
+        if ("UNKNOWN".equals(ipAddress)) {
+            blogArticle.setAddress("Earth");
+        } else if (StringUtils.isNotBlank(ipAddress)) {
+            String[] split = ipAddress.split("\\|");
+            if (ipAddress.length() > 1) {
+                String address = split[1];
+                blogArticle.setAddress(address);
+            } else {
+                blogArticle.setAddress("Earth");
+            }
         }
         int insert = baseMapper.insert(blogArticle);
         if (insert > 0) {
@@ -122,15 +106,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         //发布消息去同步es 不进行判断是否是发布状态了，因为后面修改成下架的话就还得去删除es里面的数据，多次一举了，在查询时添加条件发布状态为已发布
-        dataEventPublisherService.publishData(DataEventEnum.ES_ADD, blogArticle);
+        dataEventPublisherService.publishData(DataEventEnum.ES_ADD_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
         return ResponseResult.success();
     }
 
-    /**
-     * 修改文章
-     *
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult updateArticle(ArticleDTO article) {
@@ -144,47 +123,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BusinessException(ResultCode.NO_PERMISSION);
         }
 
-        //添加分类
         Long categoryId = savaCategory(article.getCategoryName());
-        //添加标签
         List<Long> tagList = getTagsList(article);
 
         blogArticle = BeanCopyUtil.copyObject(article, Article.class);
         blogArticle.setCategoryId(categoryId);
         baseMapper.updateById(blogArticle);
 
-        //先删出所有标签
         tagsMapper.deleteByArticleIds(Collections.singletonList(blogArticle.getId()));
-        //然后新增标签
         tagsMapper.saveArticleTags(blogArticle.getId(), tagList);
 
-        //发布消息去同步es
-        dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE, blogArticle);
+        dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
         return ResponseResult.success();
     }
 
-
-    /**
-     * 批量删除文章
-     *
-     * @param ids
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult deleteBatchArticle(List<Long> ids) {
         baseMapper.deleteBatchIds(ids);
         tagsMapper.deleteByArticleIds(ids);
-
-        dataEventPublisherService.publishData(DataEventEnum.ES_DELETE, ids);
+        dataEventPublisherService.publishData(DataEventEnum.ES_DELETE_ARTICLE, ids);
         return ResponseResult.success();
     }
 
-    /**
-     * 置顶文章
-     *
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult topArticle(ArticleDTO article) {
@@ -192,12 +153,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.success();
     }
 
-
-    /**
-     * 文章百度推送
-     *
-     * @return
-     */
     @Override
     public ResponseResult seoArticle(List<Long> ids) {
 
@@ -215,11 +170,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.success();
     }
 
-    /**
-     * 抓取文章
-     *
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult retch(String url) {
@@ -243,7 +193,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .title(title.get(0).text()).avatar("https://picsum.photos/500/300").content(newContent).build();
 
             baseMapper.insert(entity);
-            //为该文章添加标签
             List<Long> tagsId = new ArrayList<>();
             tags.forEach(item -> {
                 String tag = item.text();
@@ -256,18 +205,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             });
             tagsMapper.saveArticleTags(entity.getId(), tagsId);
 
-            log.info("文章抓取成功，内容为:{}", JSONUtil.toJsonStr(entity));
+            log.info("Fetch article success, content:{}", JSONUtil.toJsonStr(entity));
         } catch (IOException e) {
             throw new BusinessException(e);
         }
         return ResponseResult.success();
     }
 
-    /**
-     * 发布或下架文章
-     *
-     * @return
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult psArticle(Article article) {
@@ -275,18 +219,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.success();
     }
 
+    // todo config
     @Override
     public ResponseResult randomImg() {
         return ResponseResult.success("https://picsum.photos/500/300?random=" + System.currentTimeMillis());
     }
 
-
-    /**
-     * 将数据库不存在的标签新增
-     *
-     * @param article
-     * @return
-     */
     private List<Long> getTagsList(ArticleDTO article) {
         List<Long> tagList = new ArrayList<>();
         article.getTags().forEach(item -> {
@@ -300,12 +238,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return tagList;
     }
 
-    /**
-     * 如果分类不存在则新增
-     *
-     * @param categoryName
-     * @return
-     */
     private Long savaCategory(String categoryName) {
         Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>().eq(Category::getName, categoryName));
         if (category == null) {

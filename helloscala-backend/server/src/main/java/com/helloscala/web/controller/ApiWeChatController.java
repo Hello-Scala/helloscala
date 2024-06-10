@@ -48,7 +48,6 @@ public class ApiWeChatController {
 
     @PostMapping(produces = "application/xml; charset=UTF-8")
     public String handleMsg(HttpServletRequest request) {
-
         try {
             WxMpXmlMessage message = WxMpXmlMessage.fromXml(request.getInputStream());
             String content = message.getContent();

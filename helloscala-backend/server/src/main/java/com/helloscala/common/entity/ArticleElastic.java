@@ -26,7 +26,6 @@ public class ArticleElastic {
     @IndexField(fieldType = FieldType.INTEGER)
     private Integer isPublish;
 
-
     @IndexField(fieldType = FieldType.DATE, dateFormat = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
     private String createTime;
 }
