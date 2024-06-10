@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApiDocumentConfig {
-
     @Bean
     public OpenAPI springOpenApi() {
         Contact contact = new Contact()

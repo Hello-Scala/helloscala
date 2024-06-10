@@ -6,7 +6,7 @@
         from b_user_role
         where user_id = #{userId}
     </select>
-    <select id="queryByRoleMenu" resultType="java.lang.Integer">
+    <select id="getRoleMenuIdList" resultType="java.lang.Integer">
         select menu_id
         from b_role_menu
         where role_id = #{roleId}

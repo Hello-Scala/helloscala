@@ -184,12 +184,6 @@ project(":helloscala-backend:job") {
 
 project(":helloscala-backend:server") {
     dependencies {
-        implementation project(":helloscala-backend:common")
-        implementation project(":helloscala-backend:admin")
-        implementation project(":helloscala-backend:job")
-        implementation project(":helloscala-backend:generate")
-        implementation project(":helloscala-backend:web")
-
         implementation 'cn.dev33:sa-token-spring-boot3-starter:1.37.0'
         implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
@@ -225,6 +219,16 @@ project(":helloscala-backend:server") {
         implementation 'commons-net:commons-net:3.10.0'
         implementation 'cn.hutool:hutool-extra:5.8.27'
         implementation 'org.apache.commons:commons-pool2:2.12.0'
+        implementation 'org.quartz-scheduler:quartz:2.5.0-rc1'
+
+        implementation 'com.github.oshi:oshi-core:6.6.0'
+        implementation 'net.java.dev.jna:jna:5.14.0'
+
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+        implementation 'commons-net:commons-net:3.10.0'
+
+        implementation 'commons-io:commons-io:2.16.1'
+        implementation 'com.ibeetl:beetl-framework-starter:1.2.40.Beetl.RELEASE' // todo replace
     }
 }
 
