@@ -119,7 +119,7 @@ public class ApiUserServiceImpl implements ApiUserService {
         Object value =redisService.getCacheObject(RedisConstants.WX_LOGIN_USER + loginCode);
 
         if (value == null) {
-            return ResponseResult.error("用户未被授权");
+            return ResponseResult.error("user unauthorized");
         }
         UserInfoVO user = objectMapper.convertValue(value, UserInfoVO.class);
         StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
@@ -138,7 +138,7 @@ public class ApiUserServiceImpl implements ApiUserService {
         //先判断登录码是否已过期
         boolean loginFlag = redisService.hasKey(RedisConstants.WX_LOGIN_USER_STATUE + content);
         if (!loginFlag) {
-            return "验证码已过期";
+            return "verify code expired!";
         }
         UserInfoVO userInfoVO = wechatLogin(message.getFromUser());
 

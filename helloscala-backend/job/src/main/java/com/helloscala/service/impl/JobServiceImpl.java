@@ -202,7 +202,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
      */
     private void checkCronIsValid(Job job) {
         boolean valid = CronUtil.isValid(job.getCronExpression());
-        Assert.isTrue(valid,"Cron表达式无效!");
+        Assert.isTrue(valid,"Invalid Cron expression!");
     }
 
     /**

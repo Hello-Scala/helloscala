@@ -1,6 +1,7 @@
 package com.helloscala.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.Constants;
 import com.helloscala.common.ResponseResult;
@@ -89,7 +90,7 @@ public class FileServiceImpl implements FileService {
         getFileUploadWay();
         Boolean isSuccess = fileUploadStrategyContext.executeDelete(strategy.getStrategy(), key);
         if (!isSuccess) {
-            throw new BusinessException("Delete file failed, keys=[{}]!", StrUtil.join(",", key));
+            throw new BusinessException("Delete file failed, keys=[{}]!", StrUtil.join(",", ListUtil.of(key)));
         }
         return ResponseResult.success();
     }

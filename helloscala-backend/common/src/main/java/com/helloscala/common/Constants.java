@@ -6,7 +6,7 @@ public class Constants {
     /**
      * 未知的
      */
-    public static final String UNKNOWN = "未知";
+    public static final String UNKNOWN = "UNKNOWN";
 
     /**
      * 高亮前缀

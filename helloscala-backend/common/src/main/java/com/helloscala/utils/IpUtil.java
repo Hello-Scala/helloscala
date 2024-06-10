@@ -195,7 +195,7 @@ public class IpUtil {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
         }
-        return "未知";
+        return "UNKNOWN";
     }
 
     /**

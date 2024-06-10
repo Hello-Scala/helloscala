@@ -20,23 +20,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/system/adminLog")
 @RequiredArgsConstructor
-@Tag(name = "操作日志管理")
+@Tag(name = "Admin log")
 public class AdminLogController {
 
     private final AdminLogService adminLogService;
 
     @GetMapping(value = "/list")
-    @Operation(summary = "操作日志列表", method = "GET")
+    @Operation(summary = "list admin log", method = "GET")
     @ApiResponse(responseCode = "200", description = "操作日志列表")
     public ResponseResult selectAdminLogPage() {
         return adminLogService.selectAdminLogPage();
     }
 
     @DeleteMapping(value = "/delete")
-    @OperationLogger(value = "删除操作日志")
+    @OperationLogger(value = "delete admin log")
     @SaCheckPermission("system:adminLog:delete")
-    @Operation(summary = "删除操作日志", method = "DELETE")
-    @ApiResponse(responseCode = "200", description = "删除操作日志")
+    @Operation(summary = "delete admin operation log", method = "DELETE")
+    @ApiResponse(responseCode = "200", description = "delete admin operation log")
     public ResponseResult deleteAdminLog(@RequestBody List<Long> ids) {
         return adminLogService.deleteAdminLog(ids);
     }

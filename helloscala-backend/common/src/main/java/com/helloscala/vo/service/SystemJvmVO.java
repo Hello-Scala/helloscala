@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Data
@@ -74,31 +75,21 @@ public class SystemJvmVO implements Serializable {
     }
 
     /**
-     * JDK启动时间
+     * JDK start time
      */
-    public String getStartTime() {
+    public ZonedDateTime getStartTime() {
         long time = ManagementFactory.getRuntimeMXBean().getStartTime();
         Date date = new Date(time);
-        return DateUtil.formatDateTime(date);
+        return ZonedDateTime.from(date.toInstant());
     }
 
     /**
-     * JDK运行时间
+     * JDK running duration
      */
-    public String getRunTime() {
+    public DurationView getRunTime() {
         long time = ManagementFactory.getRuntimeMXBean().getStartTime();
         Date date = new Date(time);
-
-        //运行多少分钟
-        long runMS = DateUtil.between(date, new Date(), DateUnit.MS);
-
-        long nd = 1000 * 24 * 60 * 60;
-        long nh = 1000 * 60 * 60;
-        long nm = 1000 * 60;
-
-        long day = runMS / nd;
-        long hour = runMS % nd / nh;
-        long min = runMS % nd % nh / nm;
-        return day + "天" + hour + "小时" + min + "分钟";
+        long runMS = DateUtil.between(date, new Date(), DateUnit.SECOND);
+        return new DurationView(runMS);
     }
 }
