@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.RedisServerCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -23,15 +24,17 @@ import java.util.*;
 @RequiredArgsConstructor
 @Tag(name = "System cache")
 public class CacheController {
-
-    private final RedisTemplate<String,String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @GetMapping(value = "/getCacheInfo")
     @Operation(summary = "get cache info", method = "GET")
     @ApiResponse(responseCode = "200", description = "get cache info")
     public ResponseResult getCacheInfo() {
         Properties info = (Properties) redisTemplate.execute((RedisCallback<Object>) RedisServerCommands::info);
-        Properties commandStats = (Properties) redisTemplate.execute((RedisCallback<Object>) connection -> connection.info("commandstats"));
+        Properties commandStats = (Properties) redisTemplate.execute((RedisCallback<Object>) connection -> connection.serverCommands().info("commandstats"));
+        if (Objects.isNull(commandStats)) {
+            return ResponseResult.error("Failed to get cache info!");
+        }
         Object dbSize = redisTemplate.execute((RedisCallback<Object>) RedisServerCommands::dbSize);
 
         Map<String, Object> result = new HashMap<>(3);
@@ -81,8 +84,8 @@ public class CacheController {
     @Operation(summary = "Get by key", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get by key")
     public ResponseResult getValue(@PathVariable(value = "key") String key) {
-        String type = (String) redisTemplate.execute(
-                (RedisCallback<String>) connection -> String.valueOf(connection.type(key.getBytes()))
+        String type = redisTemplate.execute(
+                (RedisCallback<String>) connection -> String.valueOf(connection.keyCommands().type(key.getBytes()))
         );
 
         Object data = null;
