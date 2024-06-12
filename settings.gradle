@@ -1,10 +1,5 @@
 rootProject.name = 'helloscala'
 include 'helloscala-backend',
-        'helloscala-backend:common',
-        'helloscala-backend:admin',
-        'helloscala-backend:generate',
-        'helloscala-backend:job',
         'helloscala-backend:server',
-        'helloscala-backend:web',
         'helloscala-db-migration'
 

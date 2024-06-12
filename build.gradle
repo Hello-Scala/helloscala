@@ -34,18 +34,21 @@ subprojects {
     }
 }
 
-def SPRING_BOOT_VERSION = "3.2.2"
+def SPRING_BOOT_VERSION = "3.3.0"
 def MYSQL_VERSION = "8.0.33"
 def SA_TOKEN_VERSION = "1.38.0"
 
 project(":helloscala-backend:server") {
     dependencies {
-        implementation "cn.dev33:sa-token-spring-boot3-starter:$SA_TOKEN_VERSION"
-        implementation "cn.dev33:sa-token-redis-jackson:$SA_TOKEN_VERSION"
-        implementation ("org.springframework.boot:spring-boot-starter-web:$SPRING_BOOT_VERSION") {
-            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        implementation("cn.dev33:sa-token-spring-boot3-starter:$SA_TOKEN_VERSION") {
+            exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-web')
         }
-        implementation "org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION"
+        implementation ("cn.dev33:sa-token-redis-jackson:$SA_TOKEN_VERSION") {
+            exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-data-redis')
+        }
+        implementation("org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION") {
+            exclude(group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket')
+        }
 
         implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-jdbc:$SPRING_BOOT_VERSION"
@@ -59,8 +62,8 @@ project(":helloscala-backend:server") {
         implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
         implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
         implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
-        implementation 'io.netty:netty-all:4.1.109.Final'
-        implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'io.netty:netty-all:4.1.111.Final'
+        implementation 'cn.hutool:hutool-all:5.8.28'
         implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
         implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
         implementation 'org.lionsoul:ip2region:2.7.0'
@@ -72,7 +75,9 @@ project(":helloscala-backend:server") {
         implementation 'me.zhyd.oauth:JustAuth:1.16.6'
         implementation 'com.github.binarywang:weixin-java-mp:4.6.0'
 
-        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+        implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0') {
+            exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat')
+        }
         implementation 'commons-net:commons-net:3.10.0'
         implementation 'cn.hutool:hutool-extra:5.8.27'
         implementation 'org.apache.commons:commons-pool2:2.12.0'
@@ -81,12 +86,11 @@ project(":helloscala-backend:server") {
         implementation 'com.github.oshi:oshi-core:6.6.0'
         implementation 'net.java.dev.jna:jna:5.14.0'
 
-        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
-        implementation 'commons-net:commons-net:3.10.0'
-
         implementation 'commons-io:commons-io:2.16.1'
         implementation 'com.ibeetl:beetl-framework-starter:1.2.40.Beetl.RELEASE' // todo replace
+
     }
+
 }
 
 project(":helloscala-db-migration") {
