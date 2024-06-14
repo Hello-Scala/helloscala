@@ -56,6 +56,7 @@ project(":helloscala-backend:server") {
         implementation "org.springframework.boot:spring-boot-starter-test:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-thymeleaf:$SPRING_BOOT_VERSION"
         implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
 
         implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
