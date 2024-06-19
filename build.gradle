@@ -64,7 +64,7 @@ project(":helloscala-backend:server") {
         implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
         implementation 'com.qiniu:qiniu-java-sdk:7.15.0'
         implementation 'io.netty:netty-all:4.1.111.Final'
-        implementation 'cn.hutool:hutool-all:5.8.28'
+        implementation 'cn.hutool:hutool-all:5.8.27'
         implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
         implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.4'
         implementation 'org.lionsoul:ip2region:2.7.0'

@@ -129,8 +129,8 @@ ftp:
   port: 21
   username: ftpuser
   password: howard123
-  httpPath: ftp://192.168.1.8
-  domain: https://helloscala.cpolar.top
+  httpPath: http://localhost:8444
+  domain: https://helloscala.cpolar.top/helloscala/asserts/
 
 sys:
   admin:

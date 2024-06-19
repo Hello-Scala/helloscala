@@ -1,5 +1,6 @@
 package com.helloscala.common.strategy.imp;
 
+import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.config.FtpConfig;
 import com.helloscala.common.entity.SystemConfig;
 import com.helloscala.common.service.SystemConfigService;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,20 +36,20 @@ public class FtpFileStrategyImpl implements FileStrategy {
     @PostConstruct
     private void init(){
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
-
         FileStorageProperties.FtpConfig config = new FileStorageProperties.FtpConfig();
         config.setPlatform(platform);
         config.setHost(ftpConfig.getHost());
         config.setPort(ftpConfig.getPort());
         config.setUser(ftpConfig.getUsername());
         config.setPassword(ftpConfig.getPassword());
-        config.setBasePath(ftpConfig.getBasePath());
+//        config.setBasePath(ftpConfig.getBasePath());
+        config.setStoragePath(ftpConfig.getBasePath());
 
         config.setDomain(ftpConfig.getDomain());
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
         service.getFileStorageList().addAll(ftpFileStorages);
 
-        baseUrl = systemConfig.getQiNiuPictureBaseUrl();
+        baseUrl = ftpConfig.getDomain();
         logger.info("------init ftp settings success-----");
     }
 
@@ -76,10 +76,10 @@ public class FtpFileStrategyImpl implements FileStrategy {
     public void download(String key, ServletResponse response) {
         FileInfo fileInfo = new FileInfo()
             .setPlatform(platform)
-            .setFilename(key);
+            .setFilename(StrUtil.removePrefix(key, "/"));
         try {
             service.download(fileInfo).outputStream(response.getOutputStream());
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

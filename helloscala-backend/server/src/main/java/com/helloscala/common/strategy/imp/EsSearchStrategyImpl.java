@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service("elasticsearch")
+@Service("EsSearchStrategyImpl")
 public class EsSearchStrategyImpl implements SearchStrategy {
     private static final Logger logger = LoggerFactory.getLogger(EsSearchStrategyImpl.class);
     @Resource

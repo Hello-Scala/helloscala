@@ -1,10 +1,10 @@
 package com.helloscala.common.event;
 
+import com.alibaba.fastjson.JSONObject;
 import com.helloscala.common.entity.ArticleElastic;
 import com.helloscala.common.entity.FriendLink;
 import com.helloscala.common.entity.Resource;
 import com.helloscala.common.esmapper.EasyesMapper;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ResourceMapper;
 import com.helloscala.common.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class DataListener {
-    private final EasyesMapper easyesMapper;
+    private final EasyesMapper easyESMapper;
     private final ResourceMapper resourceMapper;
     private final EmailService emailService;
 
@@ -32,7 +32,11 @@ public class DataListener {
             log.error("Event and Event data must not be null.");
             return;
         }
+        log.info("event={}, entity={}", event.getEventEnum(), JSONObject.toJSONString(event.getEntity()));
+        handleEvent(event);
+    }
 
+    private void handleEvent(DataEvent<?, ?> event) {
         try {
             switch (event.getEventEnum()) {
                 case ES_ADD_ARTICLE:
@@ -42,7 +46,7 @@ public class DataListener {
                 case ES_DELETE_ARTICLE:
                     @SuppressWarnings("unchecked")
                     List<Long> ids = (List<Long>) event.getEntity();
-                    easyesMapper.deleteBatchIds(ids);
+                    easyESMapper.deleteBatchIds(ids);
                     break;
                 case RESOURCE_ADD:
                     resourceMapper.insert((Resource) event.getEntity());
@@ -61,9 +65,9 @@ public class DataListener {
 
     private void updateOrAdd(ArticleElastic articleElastic) {
         if (articleElastic.getId() == null) {
-            easyesMapper.insert(articleElastic);
+            easyESMapper.insert(articleElastic);
         } else {
-            easyesMapper.updateById(articleElastic);
+            easyESMapper.updateById(articleElastic);
         }
     }
 }
