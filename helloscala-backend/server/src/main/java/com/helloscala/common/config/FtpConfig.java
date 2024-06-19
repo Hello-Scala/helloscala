@@ -14,7 +14,6 @@ public class FtpConfig {
 
     private int port;
 
-
     private String basePath;
 
     private String httpPath;
