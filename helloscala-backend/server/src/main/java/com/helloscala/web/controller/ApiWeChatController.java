@@ -41,6 +41,7 @@ public class ApiWeChatController {
                                  @RequestParam(name = "nonce", required = true) String nonce,
                                  @RequestParam(name = "echostr", required = true) String echostr) {
         if (wxMpService.checkSignature(timestamp, nonce, signature)) {
+            log.info("Wechat check signature success!");
             return echostr;
         }
         return "Invalid signature";
