@@ -62,9 +62,9 @@ import static com.helloscala.common.ResultCode.ERROR_PASSWORD;
 @Service
 @RequiredArgsConstructor
 public class ApiUserServiceImpl implements ApiUserService {
-    private final static String[] userAvatarList = {"/asserts/avatars/buxie.png","/asserts/avatars/daizhi.png",
-            "/asserts/avatars/fennu.png","/asserts/avatars/jingxi.png","/asserts/avatars/kaixin.png",
-            "/asserts/avatars/shuashuai.png"};
+    private final static String[] userAvatarList = {"/asserts/20240505/buxie.png","/asserts/20240505/daizhi.png",
+            "/asserts/20240505/fennu.png","/asserts/20240505/jingxi.png","/asserts/20240505/kaixin.png",
+            "/asserts/20240505/shuashuai.png"};
     private final AesEncryptUtil aesEncryptUtil;
     private final UserMapper userMapper;
     private final ArticleMapper articleMapper;
@@ -159,7 +159,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     public void authLogin(AuthResponse response, String source,  HttpServletResponse httpServletResponse) throws IOException {
         if (response.getData() == null) {
             log.info("User canceled login via source={}",source);
-            httpServletResponse.sendRedirect("https://www.helloscala.com");
+            httpServletResponse.sendRedirect("https://blog.helloscala.com");
             return;
         }
         String result = JSONUtil.toJsonStr(response.getData());
@@ -193,7 +193,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             userMapper.insert(user);
         }
         StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
-        httpServletResponse.sendRedirect("https://www.helloscala.com/?token=" + StpUtil.getTokenValueByLoginId(user.getId()));
+        httpServletResponse.sendRedirect("https://blog.helloscala.com/?token=" + StpUtil.getTokenValueByLoginId(user.getId()));
     }
 
     @Override
