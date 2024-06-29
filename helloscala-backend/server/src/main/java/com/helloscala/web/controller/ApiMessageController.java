@@ -28,8 +28,8 @@ ApiMessageController {
     @RequestMapping(value = "/",method = RequestMethod.GET)
     @Operation(summary = "Website list message", method = "GET")
     @ApiResponse(responseCode = "200", description = "Website list message")
-    public ResponseResult selectMessageList(){
-        return messageService.selectMessageList();
+    public ResponseResult list(){
+        return messageService.list();
     }
 
 

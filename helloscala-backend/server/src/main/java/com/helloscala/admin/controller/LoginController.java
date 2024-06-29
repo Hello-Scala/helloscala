@@ -35,7 +35,6 @@ public class LoginController {
         return loginService.login(vo);
     }
 
-    @OperationLogger(value = "Logout")
     @GetMapping("logout")
     public ResponseResult logout() {
         StpUtil.logout();

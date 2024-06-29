@@ -125,12 +125,12 @@ public class ApiUserServiceImpl implements ApiUserService {
         String content = message.getContent().toUpperCase();
         boolean loginFlag = redisService.hasKey(RedisConstants.WX_LOGIN_USER_STATUE + content);
         if (!loginFlag) {
-            return "verify code expired!";
+            return "验证码已过期，请重试！";
         }
         UserInfoVO userInfoVO = wechatLogin(message.getFromUser());
 
         redisService.setCacheObject(RedisConstants.WX_LOGIN_USER + content,userInfoVO, 60, TimeUnit.SECONDS);
-        return "Login success, if no response long time, please refresh page!";
+        return "登录成功，若长时间无响应请刷新页面！";
     }
 
     @Override

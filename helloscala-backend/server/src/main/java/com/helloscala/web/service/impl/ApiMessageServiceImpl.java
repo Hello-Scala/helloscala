@@ -19,7 +19,7 @@ public class ApiMessageServiceImpl implements ApiMessageService {
     private final MessageMapper messageMapper;
 
     @Override
-    public ResponseResult selectMessageList() {
+    public ResponseResult list() {
         List<Message> messageList = messageMapper.selectList(new LambdaQueryWrapper<Message>()
                 .select(Message::getId, Message::getNickname, Message::getAvatar,
                         Message::getContent, Message::getTime));

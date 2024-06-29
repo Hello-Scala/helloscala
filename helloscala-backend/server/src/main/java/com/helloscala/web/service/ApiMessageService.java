@@ -5,7 +5,7 @@ import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Message;
 
 public interface ApiMessageService {
-    ResponseResult selectMessageList();
+    ResponseResult list();
 
     ResponseResult addMessage(Message message);
 }
