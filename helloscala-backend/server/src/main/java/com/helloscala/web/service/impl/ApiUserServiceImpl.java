@@ -11,6 +11,7 @@ import com.helloscala.common.Constants;
 import com.helloscala.common.RedisConstants;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.ResultCode;
+import com.helloscala.common.config.FtpConfig;
 import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
 import com.helloscala.common.dto.user.EmailLoginDTO;
 import com.helloscala.common.dto.user.EmailRegisterDTO;
@@ -37,6 +38,7 @@ import com.helloscala.common.vo.user.UserInfoVO;
 import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,8 @@ import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.zhyd.oauth.model.AuthResponse;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +69,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     private final static String[] userAvatarList = {"/asserts/20240505/buxie.png","/asserts/20240505/daizhi.png",
             "/asserts/20240505/fennu.png","/asserts/20240505/jingxi.png","/asserts/20240505/kaixin.png",
             "/asserts/20240505/shuashuai.png"};
+    private final FtpConfig ftpConfig;
     private final AesEncryptUtil aesEncryptUtil;
     private final UserMapper userMapper;
     private final ArticleMapper articleMapper;
@@ -73,6 +78,15 @@ public class ApiUserServiceImpl implements ApiUserService {
     private final FollowedMapper followedMapper;
     private final EmailService emailService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private String imagePrefix;
+
+
+    @PostConstruct
+    public void init() {
+        if (Objects.isNull(imagePrefix)) {
+            imagePrefix = ftpConfig.getHttpPath() + "/helloscala";
+        }
+    }
 
     @Override
     public ResponseResult emailLogin(EmailLoginDTO vo) {
@@ -278,7 +292,7 @@ public class ApiUserServiceImpl implements ApiUserService {
                     .username(openId)
                     .password(aesEncryptUtil.aesEncrypt(openId))
                     .nickname("WECHAT-" + RandomUtil.generationCapital(6))
-                    .avatar(userAvatarList[RandomUtil.generationNumber(userAvatarList.length)])
+                    .avatar(randomAvatar())
                     .loginType(LoginTypeEnum.WECHAT.getType())
                     .lastLoginTime(DateUtil.getNowDate())
                     .ipAddress(ip)
@@ -289,6 +303,11 @@ public class ApiUserServiceImpl implements ApiUserService {
             userInfo = BeanCopyUtil.copyObject(user,UserInfoVO.class);
         }
         return userInfo;
+    }
+
+    @NotNull
+    private String randomAvatar() {
+        return imagePrefix + userAvatarList[RandomUtil.generationNumber(userAvatarList.length)];
     }
 
 }
