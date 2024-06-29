@@ -56,7 +56,7 @@ deploy_app() {
   tar -xvf ./${app_version_name}.tar
   cd ${app_version_name}/
 
-  nohup ./bin/${app_name} --server.port=$port --wechat.appId=$WECHAT_APPID --wechat.secret=$WECHAT_SECRET --wechat.token=$WECHAT_TOKEN --wechat.aesKey=$WECHAT_AESKEY > ${app_version_name}.log 2>&1 &
+  nohup ./bin/${app_name} --server.port=$port --spring.profiles.active=prod --wechat.appId=$WECHAT_APPID --wechat.secret=$WECHAT_SECRET --wechat.token=$WECHAT_TOKEN --wechat.aesKey=$WECHAT_AESKEY > ${app_version_name}.log 2>&1 &
   echo "Waiting startup..."
   for i in {1..60};
   do
