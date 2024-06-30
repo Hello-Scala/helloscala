@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Collect;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.mapper.CollectMapper;
 import com.helloscala.common.mapper.TagsMapper;
 import com.helloscala.common.utils.PageUtil;
@@ -31,7 +31,7 @@ public class ApiCollectServiceImpl implements ApiCollectService {
     public ResponseResult selectCollectList() {
         Page<ApiArticleListVO> list = collectMapper.selectCollectList(new Page<ApiArticleListVO>(PageUtil.getPageNo(), PageUtil.getPageSize()),StpUtil.getLoginIdAsString());
         list.getRecords().forEach(item ->{
-            List<Tags> tags = tagsMapper.selectTagByArticleId(item.getId());
+            List<Tag> tags = tagsMapper.selectTagByArticleId(item.getId());
             item.setTagList(tags);
         });
         return ResponseResult.success(list);

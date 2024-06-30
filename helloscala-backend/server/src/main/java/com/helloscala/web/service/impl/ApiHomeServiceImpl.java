@@ -3,7 +3,7 @@ package com.helloscala.web.service.impl;
 
 import com.helloscala.common.RedisConstants;
 import com.helloscala.common.ResponseResult;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.entity.WebConfig;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.TagsMapper;
@@ -56,7 +56,7 @@ public class ApiHomeServiceImpl implements ApiHomeService {
 
     public ResponseResult getHomeData() {
         List<SystemArticleListVO> articles = articleMapper.selectListByBanner();
-        List<Tags> tags = tagsMapper.selectList(null);
+        List<Tag> tags = tagsMapper.selectList(null);
         List<ApiArticleListVO> apiArticleListVOS = articleMapper.selectRecommendArticle();
         return ResponseResult.success().putExtra("articles",articles).putExtra("newArticleList",apiArticleListVOS).putExtra("tagCloud",tags);
     }

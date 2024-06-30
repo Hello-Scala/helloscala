@@ -17,11 +17,11 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Schema(name="Dict对象", description="字典表")
+@Schema(name = "Dict对象", description = "字典表")
 @TableName("b_dict")
 public class Dict implements Serializable {
     @Schema(name = "主键")
-      @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @Schema(name = "字典名称")
@@ -38,12 +38,12 @@ public class Dict implements Serializable {
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "修改时间")
     @TableField(fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 
     @Schema(name = "排序")

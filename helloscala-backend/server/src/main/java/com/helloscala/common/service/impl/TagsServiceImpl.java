@@ -3,13 +3,12 @@ package com.helloscala.common.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.common.ResponseResult;
-import com.helloscala.common.entity.Tags;
-import com.helloscala.common.exception.BusinessException;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.mapper.TagsMapper;
 import com.helloscala.common.service.TagsService;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.tag.SystemTagListVo;
+import com.helloscala.common.web.exception.ConflictException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,62 +16,57 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 
-
 @Service
-public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tags> implements TagsService {
+public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tag> implements TagsService {
 
     @Override
-    public ResponseResult selectTagsPage(String name) {
-        Page<SystemTagListVo> list = baseMapper.selectPageRecord(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),name);
-        return ResponseResult.success(list);
+    public Page<SystemTagListVo> selectByName(String name) {
+        Page<Tag> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        return baseMapper.selectPageRecord(page, name);
     }
 
     @Override
-    public ResponseResult getTagsById(Long id) {
-        Tags tags = baseMapper.selectById(id);
-        return ResponseResult.success(tags);
+    public Tag getTagsById(Long id) {
+        return baseMapper.selectById(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addTags(Tags tags) {
+    public void addTags(Tag tags) {
         validateName(tags.getName());
         baseMapper.insert(tags);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateTag(Tags tags) {
-        Tags entity = baseMapper.selectById(tags.getId());
-        if (!entity.getName().equalsIgnoreCase(tags.getName())){
+    public void updateTag(Tag tags) {
+        Tag tag = baseMapper.selectById(tags.getId());
+        if (!tag.getName().equalsIgnoreCase(tags.getName())) {
             validateName(tags.getName());
         }
         baseMapper.updateById(tags);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteTags(List<Long> ids) {
+    public void deleteTags(List<Long> ids) {
         for (Long id : ids) {
             validateTagIdIsExistArticle(id);
         }
         baseMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 
     private void validateTagIdIsExistArticle(Long id) {
         int count = baseMapper.validateTagIdIsExistArticle(id);
-        if (count > 0){
-            throw new BusinessException("Delete tag failed, exist articles under this tag!");
+        if (count > 0) {
+            throw new ConflictException("Delete tag failed, exist articles under this tag!");
         }
     }
 
-    public void validateName(String name){
-        Tags entity = baseMapper.selectOne(new LambdaQueryWrapper<Tags>().eq(Tags::getName,name));
+    public void validateName(String name) {
+        Tag entity = baseMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, name));
         if (ObjectUtils.isNotEmpty(entity)) {
-            throw new BusinessException("Tag exist!");
+            throw new ConflictException("Tag exist!");
         }
     }
 }

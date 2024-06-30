@@ -1,31 +1,33 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
+import com.helloscala.common.vo.article.SystemArticleListVO;
 
 import java.util.List;
 
 public interface ArticleService extends IService<Article> {
-    ResponseResult selectArticlePage(String title,Integer tagId,Integer categoryId,Integer isPublish);
+    Page<SystemArticleListVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish);
 
-    ResponseResult selectArticleById(Long id);
+    ArticleDTO selectArticleById(Long id);
 
-    ResponseResult addArticle(ArticleDTO article);
+    void addArticle(ArticleDTO article);
 
-    ResponseResult updateArticle(ArticleDTO article);
+    void updateArticle(ArticleDTO article);
 
-    ResponseResult deleteBatchArticle(List<Long> ids);
+    void deleteBatchArticle(List<Long> ids);
 
-    ResponseResult topArticle(ArticleDTO article);
+    void topArticle(ArticleDTO article);
 
-    ResponseResult psArticle(Article article);
+    void psArticle(Article article);
 
-    ResponseResult seoArticle(List<Long> ids);
+    void seoArticle(List<Long> ids);
 
-    ResponseResult retch(String url);
+    void retch(String url);
 
-    ResponseResult randomImg();
+    String randomImg();
 
 }

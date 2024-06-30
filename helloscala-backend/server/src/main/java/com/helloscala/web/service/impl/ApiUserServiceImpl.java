@@ -22,7 +22,6 @@ import com.helloscala.common.entity.Followed;
 import com.helloscala.common.entity.User;
 import com.helloscala.common.enums.LoginTypeEnum;
 import com.helloscala.common.enums.UserStatusEnum;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CollectMapper;
 import com.helloscala.common.mapper.FollowedMapper;
@@ -35,6 +34,10 @@ import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.vo.user.UserInfoVO;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.common.web.exception.ConflictException;
+import com.helloscala.common.web.exception.FailedDependencyException;
+import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
@@ -92,10 +95,10 @@ public class ApiUserServiceImpl implements ApiUserService {
     public ResponseResult emailLogin(EmailLoginDTO vo) {
         User user = userMapper.selectNameAndPassword(vo.getEmail(), aesEncryptUtil.aesEncrypt(vo.getPassword()));
         if (user == null) {
-            throw new BusinessException(ERROR_PASSWORD.desc);
+            throw new BadRequestException(ERROR_PASSWORD.desc);
         }
         if (user.getStatus() == UserStatusEnum.DISABLED.code) {
-            throw new BusinessException(DISABLE_ACCOUNT.desc);
+            throw new BadRequestException(DISABLE_ACCOUNT.desc);
         }
 
         StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
@@ -152,7 +155,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     public ResponseResult updateUser(UserInfoDTO vo) {
         User user = userMapper.selectById(StpUtil.getLoginIdAsString());
         if (ObjectUtils.isEmpty(user)) {
-            throw  new BusinessException("User not found!");
+            throw  new NotFoundException("User not found!");
         }
         user = BeanCopyUtil.copyObject(vo, User.class);
         user.setId(StpUtil.getLoginIdAsString());
@@ -216,7 +219,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             emailService.sendCode(email);
             return ResponseResult.success();
         } catch (MessagingException e) {
-            throw new BusinessException("Email send failed!");
+            throw new FailedDependencyException("Email send failed!");
         }
     }
 
@@ -225,11 +228,11 @@ public class ApiUserServiceImpl implements ApiUserService {
     public ResponseResult emailRegister(EmailRegisterDTO emailRegisterDTO) {
         boolean b = redisService.hasKey(RedisConstants.EMAIL_CODE + emailRegisterDTO.getEmail());
         if (!b) {
-            throw new BusinessException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE);
+            throw new BadRequestException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE.desc);
         }
         Long count = userMapper.selectCount(new LambdaQueryWrapper<User>().eq(User::getUsername, emailRegisterDTO.getEmail()));
         if (count > 0) {
-            throw new BusinessException("Email registered, email={}!", emailRegisterDTO.getEmail());
+            throw new ConflictException("Email registered, email={}!", emailRegisterDTO.getEmail());
         }
         User user = User.builder()
                 .username(emailRegisterDTO.getEmail())
@@ -248,7 +251,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     public ResponseResult forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO) {
         boolean b = redisService.hasKey(RedisConstants.EMAIL_CODE + emailForgetPasswordDTO.getEmail());
         if (!b) {
-            throw new BusinessException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE);
+            throw new BadRequestException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE.desc);
         }
         User user = User.builder().password(aesEncryptUtil.aesEncrypt(emailForgetPasswordDTO.getPassword())).build();
         userMapper.update(user,new LambdaQueryWrapper<User>().eq(User::getUsername,emailForgetPasswordDTO.getEmail()));

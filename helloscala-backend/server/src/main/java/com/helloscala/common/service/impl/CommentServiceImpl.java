@@ -2,7 +2,6 @@ package com.helloscala.common.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Comment;
 import com.helloscala.common.mapper.CommentMapper;
 import com.helloscala.common.service.CommentService;
@@ -18,14 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
     @Override
-    public ResponseResult selectCommentPage(String keywords) {
-        Page<SystemCommentVO> dtoPage = baseMapper.selectPageList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), keywords);
-        return ResponseResult.success(dtoPage);
+    public Page<SystemCommentVO> selectCommentPage(String keywords) {
+        return baseMapper.selectPageList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), keywords);
     }
 
     @Override
-    public ResponseResult deleteComment(List<Integer> ids) {
+    public void deleteComment(List<Integer> ids) {
         baseMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 }

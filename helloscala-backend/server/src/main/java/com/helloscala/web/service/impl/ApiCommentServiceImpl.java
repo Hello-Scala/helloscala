@@ -7,7 +7,6 @@ import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.entity.Comment;
 import com.helloscala.common.entity.User;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CommentMapper;
 import com.helloscala.common.mapper.UserMapper;
@@ -15,6 +14,7 @@ import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.ApiArticleListVO;
 import com.helloscala.common.vo.message.ApiCommentListVO;
+import com.helloscala.common.web.exception.GenericException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.handle.SystemNoticeHandle;
 import com.helloscala.web.im.MessageConstant;
@@ -58,7 +58,7 @@ public class ApiCommentServiceImpl implements ApiCommentService {
         comment.setUserId(StpUtil.getLoginIdAsString());
         int insert = commentMapper.insert(comment);
         if (insert == 0){
-            throw new BusinessException("Comment failed!");
+            throw new GenericException("Comment failed!");
         }
         String toUserId =  comment.getReplyUserId();
         int mark = toUserId == null ? 2 : 1;

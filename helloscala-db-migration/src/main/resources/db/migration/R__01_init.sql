@@ -20,8 +20,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 -- Table structure for b_admin_log
 -- ----------------------------
-DROP TABLE IF EXISTS `b_admin_log`;
-CREATE TABLE `b_admin_log`  (
+CREATE TABLE IF NOT EXISTS `b_admin_log`  (
                                 `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                 `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '操作用户',
                                 `request_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '请求接口',
@@ -40,8 +39,7 @@ CREATE TABLE `b_admin_log`  (
 -- ----------------------------
 -- Table structure for b_article
 -- ----------------------------
-DROP TABLE IF EXISTS `b_article`;
-CREATE TABLE `b_article`  (
+CREATE TABLE IF NOT EXISTS `b_article`  (
                               `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
                               `user_id` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户id',
                               `category_id` bigint NULL DEFAULT NULL COMMENT '分类id',
@@ -70,8 +68,7 @@ CREATE TABLE `b_article`  (
 -- ----------------------------
 -- Table structure for b_article_tag
 -- ----------------------------
-DROP TABLE IF EXISTS `b_article_tag`;
-CREATE TABLE `b_article_tag`  (
+CREATE TABLE IF NOT EXISTS `b_article_tag`  (
                                   `id` int NOT NULL AUTO_INCREMENT,
                                   `article_id` int NOT NULL COMMENT '文章id',
                                   `tag_id` int NOT NULL COMMENT '标签id',
@@ -213,8 +210,7 @@ INSERT INTO `b_article_tag` VALUES (1268, 264, 73);
 -- ----------------------------
 -- Table structure for b_category
 -- ----------------------------
-DROP TABLE IF EXISTS `b_category`;
-CREATE TABLE `b_category`  (
+CREATE TABLE IF NOT EXISTS `b_category`  (
                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
                                `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '分类名称',
                                `click_volume` int NULL DEFAULT 0,
@@ -242,8 +238,7 @@ INSERT INTO `b_category` VALUES (35, '发撒发撒', 0, 1, '2024-03-27 15:10:24'
 -- ----------------------------
 -- Table structure for b_collect
 -- ----------------------------
-DROP TABLE IF EXISTS `b_collect`;
-CREATE TABLE `b_collect`  (
+CREATE TABLE IF NOT EXISTS `b_collect`  (
                               `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                               `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
                               `article_id` bigint NOT NULL COMMENT '文章id',
@@ -255,8 +250,7 @@ CREATE TABLE `b_collect`  (
 -- ----------------------------
 -- Table structure for b_comment
 -- ----------------------------
-DROP TABLE IF EXISTS `b_comment`;
-CREATE TABLE `b_comment`  (
+CREATE TABLE IF NOT EXISTS `b_comment`  (
                               `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
                               `user_id` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '评论人ID',
                               `article_id` bigint NOT NULL COMMENT '文章id',
@@ -276,8 +270,7 @@ CREATE TABLE `b_comment`  (
 -- ----------------------------
 -- Table structure for b_dict
 -- ----------------------------
-DROP TABLE IF EXISTS `b_dict`;
-CREATE TABLE `b_dict`  (
+CREATE TABLE IF NOT EXISTS `b_dict`  (
                            `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
                            `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '字典名称',
                            `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '字典类型',
@@ -307,8 +300,7 @@ INSERT INTO `b_dict` VALUES (13, '发撒发发', '发', 0, NULL, '2024-03-29 13:
 -- ----------------------------
 -- Table structure for b_dict_data
 -- ----------------------------
-DROP TABLE IF EXISTS `b_dict_data`;
-CREATE TABLE `b_dict_data`  (
+CREATE TABLE IF NOT EXISTS `b_dict_data`  (
                                 `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
                                 `dict_id` bigint NOT NULL COMMENT '字典类型id',
                                 `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '字典标签',
@@ -355,8 +347,7 @@ INSERT INTO `b_dict_data` VALUES (28, 12, 'FASFF1', 'ASFF1', 'success', '1', 2, 
 -- ----------------------------
 -- Table structure for b_exception_log
 -- ----------------------------
-DROP TABLE IF EXISTS `b_exception_log`;
-CREATE TABLE `b_exception_log`  (
+CREATE TABLE IF NOT EXISTS `b_exception_log`  (
                                     `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户名',
                                     `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'IP',
@@ -373,8 +364,7 @@ CREATE TABLE `b_exception_log`  (
 -- ----------------------------
 -- Table structure for b_feed_back
 -- ----------------------------
-DROP TABLE IF EXISTS `b_feed_back`;
-CREATE TABLE `b_feed_back`  (
+CREATE TABLE IF NOT EXISTS `b_feed_back`  (
                                 `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
                                 `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
                                 `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '标题',
@@ -389,22 +379,20 @@ CREATE TABLE `b_feed_back`  (
 -- ----------------------------
 -- Table structure for b_followed
 -- ----------------------------
-DROP TABLE IF EXISTS `b_followed`;
-CREATE TABLE `b_followed`  (
+CREATE TABLE IF NOT EXISTS `b_followed`  (
                                `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
-                               `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NOT NULL COMMENT '用户id',
-                               `followed_user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '关注的用户id',
+                               `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
+                               `followed_user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '关注的用户id',
                                `create_time` datetime(0) NULL DEFAULT NULL COMMENT '关注时间',
                                PRIMARY KEY (`id`) USING BTREE,
                                INDEX `user_id`(`user_id`) USING BTREE,
                                INDEX `followed_user_id`(`followed_user_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 142 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_german2_ci COMMENT = '用户关注表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 142 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户关注表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for b_friend_link
 -- ----------------------------
-DROP TABLE IF EXISTS `b_friend_link`;
-CREATE TABLE `b_friend_link`  (
+CREATE TABLE IF NOT EXISTS `b_friend_link`  (
                                   `id` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '网站名称',
                                   `url` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '网站地址',
@@ -428,16 +416,15 @@ INSERT INTO `b_friend_link` VALUES (4, 'Hello Scala', 'https://www.helloscala.co
 -- ----------------------------
 -- Table structure for b_im_message
 -- ----------------------------
-DROP TABLE IF EXISTS `b_im_message`;
-CREATE TABLE `b_im_message`  (
-                                 `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NOT NULL COMMENT '主键',
-                                 `to_user_id` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '发送用户id',
-                                 `from_user_id` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '接收用户id',
-                                 `to_user_avatar` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '发送用户头像',
-                                 `content` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL COMMENT '发送内容',
+CREATE TABLE IF NOT EXISTS `b_im_message`  (
+                                 `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键',
+                                 `to_user_id` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '发送用户id',
+                                 `from_user_id` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '接收用户id',
+                                 `to_user_avatar` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '发送用户头像',
+                                 `content` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '发送内容',
                                  `create_time` datetime(0) NULL DEFAULT NULL COMMENT '发送时间',
-                                 `ip_source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT 'ip地址',
-                                 `ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '发送用户ip',
+                                 `ip_source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
+                                 `ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '发送用户ip',
                                  `is_withdraw` int NULL DEFAULT 0 COMMENT '消息是否撤回 0：未撤回  1：撤回',
                                  `is_read` int NULL DEFAULT 0 COMMENT '是否已读',
                                  `type` int NULL DEFAULT NULL COMMENT '消息类型 1普通消息 2图片',
@@ -445,15 +432,14 @@ CREATE TABLE `b_im_message`  (
                                  `article_id` int NULL DEFAULT NULL COMMENT '文章id',
                                  `notice_type` int NULL DEFAULT NULL COMMENT '通知类型 0系统通知 1：评论 2：关注 3点赞 4收藏 5私信',
                                  `comment_mark` int NULL DEFAULT NULL COMMENT '评论标记 1回复评论 2发表评论',
-                                 `at_user_id` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL DEFAULT NULL COMMENT '@用户id',
+                                 `at_user_id` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '@用户id',
                                  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_german2_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for b_im_room
 -- ----------------------------
-DROP TABLE IF EXISTS `b_im_room`;
-CREATE TABLE `b_im_room`  (
+CREATE TABLE IF NOT EXISTS `b_im_room`  (
                               `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键',
                               `type` int NOT NULL COMMENT '房间类型 0：群聊 1私聊',
                               `from_user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属用户id',
@@ -465,8 +451,7 @@ CREATE TABLE `b_im_room`  (
 -- ----------------------------
 -- Table structure for b_job
 -- ----------------------------
-DROP TABLE IF EXISTS `b_job`;
-CREATE TABLE `b_job`  (
+CREATE TABLE IF NOT EXISTS `b_job`  (
                           `job_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
                           `job_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '任务名称',
                           `job_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'DEFAULT' COMMENT '任务组名',
@@ -495,8 +480,7 @@ INSERT INTO `b_job` VALUES (9, '定时删除当天校验通过的IP', 'SYSTEM', 
 -- ----------------------------
 -- Table structure for b_job_log
 -- ----------------------------
-DROP TABLE IF EXISTS `b_job_log`;
-CREATE TABLE `b_job_log`  (
+CREATE TABLE IF NOT EXISTS `b_job_log`  (
                               `id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
                               `job_id` bigint NOT NULL COMMENT '任务ID',
                               `job_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '任务名称',
@@ -514,8 +498,7 @@ CREATE TABLE `b_job_log`  (
 -- ----------------------------
 -- Table structure for b_menu
 -- ----------------------------
-DROP TABLE IF EXISTS `b_menu`;
-CREATE TABLE `b_menu`  (
+CREATE TABLE IF NOT EXISTS `b_menu`  (
                            `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                            `parent_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '上级资源ID',
                            `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '路由路径',
@@ -686,8 +669,7 @@ INSERT INTO `b_menu` VALUES (314, '300', '', NULL, '预览', 1, NULL, 'BUTTON', 
 -- ----------------------------
 -- Table structure for b_message
 -- ----------------------------
-DROP TABLE IF EXISTS `b_message`;
-CREATE TABLE `b_message`  (
+CREATE TABLE IF NOT EXISTS `b_message`  (
                               `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
                               `content` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '内容',
                               `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -703,8 +685,7 @@ CREATE TABLE `b_message`  (
 -- ----------------------------
 -- Table structure for b_navigation
 -- ----------------------------
-DROP TABLE IF EXISTS `b_navigation`;
-CREATE TABLE `b_navigation`  (
+CREATE TABLE IF NOT EXISTS `b_navigation`  (
                                  `id` int NOT NULL AUTO_INCREMENT COMMENT 'id',
                                  `site_class_id` int NOT NULL COMMENT '网站分类id',
                                  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '网站标题',
@@ -748,8 +729,7 @@ INSERT INTO `b_navigation` VALUES (28, 9, 'Visual Studio Code', 'https://code.vi
 -- ----------------------------
 -- Table structure for b_role
 -- ----------------------------
-DROP TABLE IF EXISTS `b_role`;
-CREATE TABLE `b_role`  (
+CREATE TABLE IF NOT EXISTS `b_role`  (
                            `id` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                            `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '角色编码',
                            `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '角色名称',
@@ -769,8 +749,7 @@ INSERT INTO `b_role` VALUES (5, 'demonstrate', '演示', '演示账号', '2021-1
 -- ----------------------------
 -- Table structure for b_role_menu
 -- ----------------------------
-DROP TABLE IF EXISTS `b_role_menu`;
-CREATE TABLE `b_role_menu`  (
+CREATE TABLE IF NOT EXISTS `b_role_menu`  (
                                 `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                                 `role_id` int NULL DEFAULT NULL COMMENT '角色ID',
                                 `menu_id` int NULL DEFAULT NULL COMMENT '菜单ID',
@@ -875,8 +854,7 @@ INSERT INTO `b_role_menu` VALUES (15416, 5, 267, '2024-04-02 17:07:54', '2024-04
 -- ----------------------------
 -- Table structure for b_say
 -- ----------------------------
-DROP TABLE IF EXISTS `b_say`;
-CREATE TABLE `b_say`  (
+CREATE TABLE IF NOT EXISTS `b_say`  (
                           `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键id',
                           `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
                           `img_url` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '图片地址 逗号分隔  最多九张',
@@ -891,8 +869,7 @@ CREATE TABLE `b_say`  (
 -- ----------------------------
 -- Table structure for b_say_comment
 -- ----------------------------
-DROP TABLE IF EXISTS `b_say_comment`;
-CREATE TABLE `b_say_comment`  (
+CREATE TABLE IF NOT EXISTS `b_say_comment`  (
                                   `id` int NOT NULL AUTO_INCREMENT COMMENT 'id ',
                                   `say_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '说说id',
                                   `user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
@@ -907,8 +884,7 @@ CREATE TABLE `b_say_comment`  (
 -- ----------------------------
 -- Table structure for b_sign
 -- ----------------------------
-DROP TABLE IF EXISTS `b_sign`;
-CREATE TABLE `b_sign`  (
+CREATE TABLE IF NOT EXISTS `b_sign`  (
                            `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键',
                            `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户id',
                            `create_time` date NOT NULL COMMENT '签到时间',
@@ -918,8 +894,7 @@ CREATE TABLE `b_sign`  (
 -- ----------------------------
 -- Table structure for b_site_class
 -- ----------------------------
-DROP TABLE IF EXISTS `b_site_class`;
-CREATE TABLE `b_site_class`  (
+CREATE TABLE IF NOT EXISTS `b_site_class`  (
                                  `id` int NOT NULL AUTO_INCREMENT COMMENT 'id',
                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '网址分类名',
                                  `sort` int NULL DEFAULT 0 COMMENT '排序',
@@ -941,8 +916,7 @@ INSERT INTO `b_site_class` VALUES (9, '开发工具', 9, '2023-08-15 10:36:56', 
 -- ----------------------------
 -- Table structure for b_software
 -- ----------------------------
-DROP TABLE IF EXISTS `b_software`;
-CREATE TABLE `b_software`  (
+CREATE TABLE IF NOT EXISTS `b_software`  (
                                `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                                `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '软件名称',
                                `info` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '描述',
@@ -963,8 +937,7 @@ INSERT INTO `b_software` VALUES (2, 'ws-chat', '<p style=\"line-height: 2;\">一
 -- ----------------------------
 -- Table structure for b_system_config
 -- ----------------------------
-DROP TABLE IF EXISTS `b_system_config`;
-CREATE TABLE `b_system_config`  (
+CREATE TABLE IF NOT EXISTS `b_system_config`  (
                                     `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `qi_niu_access_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '七牛云公钥',
                                     `qi_niu_secret_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '七牛云私钥',
@@ -1003,8 +976,7 @@ INSERT INTO `b_system_config` VALUES (2, '', '', 'z0', '', 'https://www.hellosca
 -- ----------------------------
 -- Table structure for b_tags
 -- ----------------------------
-DROP TABLE IF EXISTS `b_tags`;
-CREATE TABLE `b_tags`  (
+CREATE TABLE IF NOT EXISTS `b_tags`  (
                            `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
                            `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '标签名称',
                            `click_volume` int NULL DEFAULT 0,
@@ -1048,8 +1020,7 @@ INSERT INTO `b_tags` VALUES (82, 'javascript', 0, 0, '2024-03-29 17:14:48', '202
 -- ----------------------------
 -- Table structure for b_user
 -- ----------------------------
-DROP TABLE IF EXISTS `b_user`;
-CREATE TABLE `b_user`  (
+CREATE TABLE IF NOT EXISTS `b_user`  (
                            `id` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键ID',
                            `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '账号',
                            `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '登录密码',
@@ -1083,8 +1054,7 @@ INSERT INTO `b_user` VALUES ('2', 'test', 'NLJ3Gidivf3vouOjYLIvuA==', '2021-11-1
 -- ----------------------------
 -- Table structure for b_user_log
 -- ----------------------------
-DROP TABLE IF EXISTS `b_user_log`;
-CREATE TABLE `b_user_log`  (
+CREATE TABLE IF NOT EXISTS `b_user_log`  (
                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                `user_id` bigint NULL DEFAULT NULL COMMENT '操作用户ID',
                                `ip` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
@@ -1103,8 +1073,7 @@ CREATE TABLE `b_user_log`  (
 -- ----------------------------
 -- Table structure for b_user_role
 -- ----------------------------
-DROP TABLE IF EXISTS `b_user_role`;
-CREATE TABLE `b_user_role`  (
+CREATE TABLE IF NOT EXISTS `b_user_role`  (
                                 `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
                                 `role_id` int NULL DEFAULT NULL COMMENT '角色ID',
                                 `user_id` int NULL DEFAULT NULL COMMENT '用户ID',
@@ -1122,8 +1091,7 @@ INSERT INTO `b_user_role` VALUES (34, 5, 15, '2021-11-14 12:35:03', '2021-11-14 
 -- ----------------------------
 -- Table structure for b_web_config
 -- ----------------------------
-DROP TABLE IF EXISTS `b_web_config`;
-CREATE TABLE `b_web_config`  (
+CREATE TABLE IF NOT EXISTS `b_web_config`  (
                                  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
                                  `logo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'logo(文件UID)',
                                  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '网站名称',
@@ -1150,7 +1118,7 @@ CREATE TABLE `b_web_config`  (
                                  `bulletin` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '公告',
                                  `author_info` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '作者简介',
                                  `author_avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '作者头像',
-                                 `about_me` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_german2_ci NULL COMMENT '关于我',
+                                 `about_me` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '关于我',
                                  `is_music_player` int NULL DEFAULT 0 COMMENT '是否开启音乐播放器',
                                  `show_bulletin` int NULL DEFAULT NULL COMMENT '是否显示公告 0 否 1 是',
                                  PRIMARY KEY (`id`) USING BTREE

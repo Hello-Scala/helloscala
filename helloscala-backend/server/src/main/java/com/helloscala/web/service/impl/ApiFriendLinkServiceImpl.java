@@ -3,10 +3,10 @@ package com.helloscala.web.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.FriendLink;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.FriendLinkMapper;
 import com.helloscala.common.service.EmailService;
 import com.helloscala.common.vo.friendLink.ApiFriendLinkVO;
+import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.service.ApiFriendLinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class ApiFriendLinkServiceImpl implements ApiFriendLinkService {
         FriendLink entity = friendLinkMapper.selectOne(new LambdaQueryWrapper<FriendLink>()
                 .eq(FriendLink::getUrl,friendLink.getUrl()));
         if (entity != null){
-            throw new BusinessException("Friend link exist, please leave notes for modification!");
+            throw new ConflictException("Friend link exist, please leave notes for modification!");
         }
         friendLink.setStatus(APPLY.getCode());
         friendLinkMapper.insert(friendLink);

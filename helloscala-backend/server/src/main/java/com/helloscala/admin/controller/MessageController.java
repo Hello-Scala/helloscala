@@ -2,9 +2,13 @@ package com.helloscala.admin.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.ResponseResult;
+import com.helloscala.common.entity.Message;
 import com.helloscala.common.service.MessageService;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,8 +28,9 @@ public class MessageController {
     @RequestMapping(value="/list",method = RequestMethod.GET)
     @Operation(summary = "List messages", method = "GET")
     @ApiResponse(responseCode = "200", description = "List messages")
-    public ResponseResult selectMessagePage(@RequestParam(name = "name", required = false) String name){
-        return messageService.selectMessagePage(name);
+    public Response<Page<Message>> selectMessagePage(@RequestParam(name = "name", required = false) String name){
+        Page<Message> messagePage = messageService.selectMessagePage(name);
+        return ResponseHelper.ok(messagePage);
     }
 
     @RequestMapping(value = "/delete",method = RequestMethod.DELETE)
@@ -33,8 +38,9 @@ public class MessageController {
     @OperationLogger(value = "Batch delete messages")
     @Operation(summary = "Batch delete messages", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Batch delete messages")
-    public ResponseResult deleteBatch(@RequestBody List<Integer> ids){
-        return messageService.deleteMessage(ids);
+    public EmptyResponse deleteBatch(@RequestBody List<Integer> ids){
+        messageService.deleteMessage(ids);
+        return ResponseHelper.ok();
     }
 }
 

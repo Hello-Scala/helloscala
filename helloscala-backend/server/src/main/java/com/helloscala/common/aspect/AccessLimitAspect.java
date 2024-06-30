@@ -1,8 +1,8 @@
 package com.helloscala.common.aspect;
 
 import com.helloscala.common.annotation.AccessLimit;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.utils.IpUtil;
+import com.helloscala.common.web.exception.TooManyRequestsException;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class AccessLimitAspect {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Before("@annotation(accessLimit)")
-    public void doBefore(JoinPoint joinPoint, AccessLimit accessLimit) throws Throwable {
+    public void doBefore(JoinPoint joinPoint, AccessLimit accessLimit) throws TooManyRequestsException {
         int time = accessLimit.time();
         HttpServletRequest request = IpUtil.getRequest();
         if (Objects.isNull(request)) {
@@ -46,7 +46,7 @@ public class AccessLimitAspect {
             redisTemplate.opsForValue().set(key, maxTimes + 1, time, TimeUnit.SECONDS);
         } else {
             logger.info("Request too frequently, {}", key);
-            throw new BusinessException("Request too frequently, please try it later!");
+            throw new TooManyRequestsException("请求过于频繁，请求稍后重试！");
         }
     }
 }

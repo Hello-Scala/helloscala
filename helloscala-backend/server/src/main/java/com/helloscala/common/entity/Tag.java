@@ -25,7 +25,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Tags implements Serializable {
+public class Tag implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -49,7 +49,7 @@ public class Tags implements Serializable {
     @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
     private Date updateTime;
 
-    public Tags(Long id, int clickVolume) {
+    public Tag(Long id, int clickVolume) {
         this.id = id;
         this.clickVolume = clickVolume;
     }

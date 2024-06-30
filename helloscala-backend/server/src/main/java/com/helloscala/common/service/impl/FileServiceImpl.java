@@ -4,19 +4,18 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.Constants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Resource;
 import com.helloscala.common.enums.DataEventEnum;
 import com.helloscala.common.enums.FileUploadModelEnum;
 import com.helloscala.common.event.DataEventPublisherService;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.service.FileService;
 import com.helloscala.common.service.SystemConfigService;
 import com.helloscala.common.strategy.context.FileUploadStrategyContext;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.common.web.exception.FailedDependencyException;
 import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,21 +53,20 @@ public class FileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public ResponseResult upload(MultipartFile file) {
+    public String upload(MultipartFile file) {
         if (file.getSize() > getMaxFileSize().toBytes()) {
-            return ResponseResult.error("文件大小不能大于10M");
+            throw new BadRequestException("文件大小不能大于10M");
         }
-        //获取文件后缀
         String suffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".") + 1);
         if (!Constants.FIELD_SUFFIX.toUpperCase().contains(suffix.toUpperCase())) {
-            return ResponseResult.error("请选择jpg,jpeg,gif,png,mp4格式的图片");
+            throw new BadRequestException("请选择jpg,jpeg,gif,png,mp4格式的图片");
         }
         getFileUploadWay();
         String key = fileUploadStrategyContext.executeUpload(strategy.getStrategy(), file, suffix);
 
         Resource resource = Resource.builder().url(key).type(suffix).platform(strategy.getDesc()).userId(StpUtil.getLoginIdAsString()).build();
         dataEventPublisherService.publishData(DataEventEnum.RESOURCE_ADD, resource);
-        return ResponseResult.success(HttpStatus.CREATED.value(), "文件上传成功", key);
+        return key;
     }
 
     @Override
@@ -78,13 +76,12 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseResult delBatchFile(String... key) {
+    public void delBatchFile(String... key) {
         getFileUploadWay();
         Boolean isSuccess = fileUploadStrategyContext.executeDelete(strategy.getStrategy(), key);
         if (!isSuccess) {
-            throw new BusinessException("Delete file failed, keys=[{}]!", StrUtil.join(",", ListUtil.of(key)));
+            throw new FailedDependencyException("Delete file failed, keys=[{}]!", StrUtil.join(",", ListUtil.of(key)));
         }
-        return ResponseResult.success();
     }
 
     private void getFileUploadWay() {

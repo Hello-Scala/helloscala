@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Resource;
 import com.helloscala.common.mapper.ResourceMapper;
 import com.helloscala.common.service.ResourceService;
@@ -22,40 +21,36 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     private final ResourceMapper resourceMapper;
 
     @Override
-    public ResponseResult selectResourceList(String type) {
+    public Page<Resource> selectResourceList(String type) {
         LambdaQueryWrapper<Resource> queryWrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(type)) {
             queryWrapper.eq(Resource::getType,type);
         }
-        Page<Resource> resourcePage = resourceMapper.selectPage(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),queryWrapper);
-        return ResponseResult.success(resourcePage);
+        Page<Resource> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        return resourceMapper.selectPage(page,queryWrapper);
     }
 
 
     @Override
-    public  ResponseResult selectResourceById(Integer id) {
-        Resource Resource = resourceMapper.selectById(id);
-        return ResponseResult.success(Resource);
+    public Resource selectResourceById(Integer id) {
+        return resourceMapper.selectById(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addResource(Resource resource) {
+    public void addResource(Resource resource) {
         resourceMapper.insert(resource);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateResource(Resource resource) {
+    public void updateResource(Resource resource) {
         resourceMapper.updateById(resource);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteResourceByIds(List<Long> ids) {
+    public void deleteResourceByIds(List<Long> ids) {
         resourceMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 }

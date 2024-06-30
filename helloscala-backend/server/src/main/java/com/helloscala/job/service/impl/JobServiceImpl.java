@@ -10,7 +10,7 @@ import com.helloscala.common.entity.User;
 import com.helloscala.common.enums.ScheduleConstants;
 import com.helloscala.common.enums.TaskException;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.exception.BusinessException;
+import com.helloscala.common.web.exception.GenericException;
 import com.helloscala.job.service.JobService;
 import com.helloscala.job.utils.CronUtil;
 import com.helloscala.job.utils.ScheduleUtil;
@@ -123,7 +123,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
             scheduler.triggerJob(ScheduleUtil.getJobKey(jobId, jobGroup), dataMap);
             return ResponseResult.success();
         } catch (Exception e) {
-            throw new BusinessException("Job run failed, msg={}!" + e.getMessage(), e);
+            throw new GenericException("Job run failed, msg={}!" + e.getMessage(), e);
         }
     }
 

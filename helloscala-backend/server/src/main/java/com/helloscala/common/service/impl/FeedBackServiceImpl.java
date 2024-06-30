@@ -3,7 +3,6 @@ package com.helloscala.common.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.FeedBack;
 import com.helloscala.common.mapper.FeedBackMapper;
 import com.helloscala.common.service.FeedBackService;
@@ -18,23 +17,23 @@ import java.util.List;
 public class FeedBackServiceImpl extends ServiceImpl<FeedBackMapper, FeedBack> implements FeedBackService {
 
     @Override
-    public ResponseResult selectFeedBackPage(Integer type) {
-        Page<FeedBack> feedBackPage = baseMapper.selectPage(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), new LambdaQueryWrapper<FeedBack>()
-                .orderByDesc(FeedBack::getCreateTime).eq(type != null,FeedBack::getType,type));
-        return ResponseResult.success(feedBackPage);
+    public Page<FeedBack> selectFeedBackPage(Integer type) {
+        Page<FeedBack> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        LambdaQueryWrapper<FeedBack> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(FeedBack::getCreateTime)
+                .eq(type != null, FeedBack::getType, type);
+        return baseMapper.selectPage(page, queryWrapper);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteFeedBack(List<Integer> ids) {
+    public void deleteFeedBack(List<Integer> ids) {
         baseMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateFeedBack(FeedBack feedBack) {
+    public void updateFeedBack(FeedBack feedBack) {
         baseMapper.updateById(feedBack);
-        return ResponseResult.success();
     }
 }

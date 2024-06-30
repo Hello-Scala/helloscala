@@ -6,10 +6,10 @@ import com.helloscala.common.Constants;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.entity.Say;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.SayMapper;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.say.ApiSayVO;
+import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.service.ApiSayService;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ public class ApiSayServiceImpl implements ApiSayService {
     public ResponseResult insertSay(Say say) {
         String userId = StpUtil.getLoginIdAsString();
         if (!userId.equals("1")) {
-            throw new BusinessException(ResultCode.NO_PERMISSION);
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
         }
         say.setUserId(userId);
         sayMapper.insert(say);

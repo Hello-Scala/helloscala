@@ -1,10 +1,13 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Say;
 import com.helloscala.common.service.SayService;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,15 +28,17 @@ public class SayController {
     @RequestMapping(value = "/list",method = RequestMethod.GET)
     @Operation(summary = "List says", method = "GET")
     @ApiResponse(responseCode = "200", description = "List says")
-    public ResponseResult selectSayPage(@RequestParam(name = "keywords", required = false) String keywords){
-        return sayService.selectSayPage(keywords);
+    public Response<Page<Say>> selectSayPage(@RequestParam(name = "keywords", required = false) String keywords){
+        Page<Say> sayPage = sayService.selectSayPage(keywords);
+        return ResponseHelper.ok(sayPage);
     }
 
     @RequestMapping(value = "/info",method = RequestMethod.GET)
     @Operation(summary = "Get say detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get say detail")
-    public ResponseResult info(@RequestParam(name = "id", required = true) String id){
-        return sayService.selectSayById(id);
+    public Response<Say> info(@RequestParam(name = "id", required = true) String id){
+        Say say = sayService.selectSayById(id);
+        return ResponseHelper.ok(say);
     }
 
     @OperationLogger(value = "Update says")
@@ -41,8 +46,9 @@ public class SayController {
     @RequestMapping(value = "/update",method = RequestMethod.PUT)
     @Operation(summary = "Update says", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update says")
-    public ResponseResult updateSay(@RequestBody Say say){
-        return sayService.updateSay(say);
+    public EmptyResponse updateSay(@RequestBody Say say){
+        sayService.updateSay(say);
+        return ResponseHelper.ok();
     }
 
     @OperationLogger(value = "Publish a say")
@@ -50,8 +56,9 @@ public class SayController {
     @RequestMapping(value = "/add",method = RequestMethod.POST)
     @Operation(summary = "Publish a say", method = "POST")
     @ApiResponse(responseCode = "200", description = "发表说说")
-    public ResponseResult addSay(@RequestBody Say say){
-        return sayService.addSay(say);
+    public EmptyResponse addSay(@RequestBody Say say){
+        sayService.addSay(say);
+        return ResponseHelper.ok();
     }
 
     @OperationLogger(value = "Delete say")
@@ -59,7 +66,8 @@ public class SayController {
     @RequestMapping(value = "/delete",method = RequestMethod.DELETE)
     @Operation(summary = "Delete say", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Delete say")
-    public ResponseResult deleteSay(@RequestBody List<String> ids){
-        return sayService.deleteSay(ids);
+    public EmptyResponse deleteSay(@RequestBody List<String> ids){
+        sayService.deleteSay(ids);
+        return ResponseHelper.ok();
     }
 }

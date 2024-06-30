@@ -1,20 +1,20 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Say;
 
 import java.util.List;
 
 
 public interface SayService extends IService<Say> {
-    ResponseResult selectSayPage(String keywords);
+    Page<Say> selectSayPage(String keywords);
 
-    ResponseResult addSay(Say say);
+    void addSay(Say say);
 
-    ResponseResult deleteSay(List<String> ids);
+    void deleteSay(List<String> ids);
 
-    ResponseResult selectSayById(String id);
+    Say selectSayById(String id);
 
-    ResponseResult updateSay(Say say);
+    void updateSay(Say say);
 }

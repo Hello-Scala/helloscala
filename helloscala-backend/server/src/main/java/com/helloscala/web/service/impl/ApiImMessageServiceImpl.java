@@ -8,7 +8,6 @@ import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.ImMessage;
 import com.helloscala.common.entity.ImRoom;
 import com.helloscala.common.enums.YesOrNoEnum;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ImMessageMapper;
 import com.helloscala.common.mapper.ImRoomMapper;
 import com.helloscala.common.mapper.UserMapper;
@@ -20,6 +19,8 @@ import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.vo.message.ImRoomListVO;
 import com.helloscala.common.vo.user.ImOnlineUserVO;
 import com.helloscala.common.vo.user.UserInfoVO;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.im.MessageConstant;
 import com.helloscala.web.im.WebSocketInfoService;
@@ -92,10 +93,10 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     public ResponseResult addRoom(String toUserId) {
         String fromUserId = StpUtil.getLoginIdAsString();
         if (StringUtils.isBlank(toUserId)) {
-            throw new BusinessException("Please choose an user!");
+            throw new BadRequestException("Please choose an user!");
         }
         if (toUserId.equals(fromUserId)) {
-            throw new BusinessException("Can not chat with your self!");
+            throw new BadRequestException("Can not chat with your self!");
         }
         ImRoom imRoom = imRoomMapper.selectOne(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, fromUserId)
                 .eq(ImRoom::getToUserId, toUserId));
@@ -175,10 +176,10 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     public ResponseResult withdraw(ImMessageVO message) {
         ImMessage entity = imMessageMapper.selectById(message.getId());
         if (DateUtil.getDiffDateToMinutes(entity.getCreateTime(), DateUtil.getNowDate()) >= 2) {
-            throw new BusinessException("recall message failed, message sent over 2 minutes!");
+            throw new BadRequestException("recall message failed, message sent over 2 minutes!");
         }
         if (!entity.getFromUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can only recall your own message!");
+            throw new BadRequestException("Can only recall your own message!");
         }
         ImMessage imMessage = BeanCopyUtil.copyObject(message, ImMessage.class);
         imMessage.setIp(IpUtil.getIp());

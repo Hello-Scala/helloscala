@@ -2,7 +2,7 @@ package com.helloscala.common.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.vo.tag.ApiTagListVO;
 import com.helloscala.common.vo.tag.SystemTagListVo;
 import org.apache.ibatis.annotations.MapKey;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 
 @Repository
-public interface TagsMapper extends BaseMapper<Tags> {
+public interface TagsMapper extends BaseMapper<Tag> {
 
     void saveArticleTags(@Param("articleId") Long articleId, @Param("tags")List<Long> tags);
 
@@ -23,13 +23,13 @@ public interface TagsMapper extends BaseMapper<Tags> {
     List<String> selectByArticleId(Long articleId);
 
 
-    Page<SystemTagListVo> selectPageRecord(@Param("page") Page<Tags> objectPage, @Param("name") String name);
+    Page<SystemTagListVo> selectPageRecord(@Param("page") Page<Tag> objectPage, @Param("name") String name);
 
     @MapKey("id")
     List<Map<String, Object>> countTags();
 
 
-    List<Tags> selectTagByArticleId(Long articleId);
+    List<Tag> selectTagByArticleId(Long articleId);
 
     int validateTagIdIsExistArticle(Long id);
 

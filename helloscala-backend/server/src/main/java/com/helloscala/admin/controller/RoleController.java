@@ -1,11 +1,14 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.role.RoleMenuDTO;
 import com.helloscala.common.entity.Role;
 import com.helloscala.common.service.RoleService;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,32 +30,36 @@ public class RoleController {
     @RequestMapping(value = "list", method = RequestMethod.GET)
     @Operation(summary = "List roles", method = "GET")
     @ApiResponse(responseCode = "200", description = "List roles")
-    public ResponseResult selectRolePage(@RequestParam(name = "name", required = false) String name) {
-        return roleService.selectRolePage(name);
+    public Response<Page<Role>> selectRolePage(@RequestParam(name = "name", required = false) String name) {
+        Page<Role> rolePage = roleService.selectRolePage(name);
+        return ResponseHelper.ok(rolePage);
     }
 
 
     @RequestMapping(value = "queryUserRole", method = RequestMethod.GET)
     @Operation(summary = "Get user role", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get user role")
-    public ResponseResult getCurrentUserRole() {
-        return roleService.getCurrentUserRole();
+    public Response<List<Integer>> getCurrentUserRole() {
+        List<Integer> currentUserRole = roleService.getCurrentUserRole();
+        return ResponseHelper.ok(currentUserRole);
     }
 
 
     @RequestMapping(value = "getRoleMenuIds", method = RequestMethod.GET)
     @Operation(summary = "Get role menu ids", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get role menu ids")
-    public ResponseResult selectRoleMenuById(@RequestParam(name = "roleId", required = true) Integer roleId) {
-        return roleService.selectRoleMenuById(roleId);
+    public Response<List<Integer>> selectRoleMenuById(@RequestParam(name = "roleId", required = true) Integer roleId) {
+        List<Integer> menuIds = roleService.selectRoleMenuById(roleId);
+        return ResponseHelper.ok(menuIds);
     }
 
     @SaCheckPermission("system:role:assign")
     @RequestMapping(value = "updateRoleMenus", method = RequestMethod.PUT)
     @Operation(summary = "Assign role menu", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Assign role menu")
-    public ResponseResult assignRoleMenus(@RequestBody RoleMenuDTO roleMenuDTO) {
-        return roleService.assignRoleMenus(roleMenuDTO);
+    public EmptyResponse assignRoleMenus(@RequestBody RoleMenuDTO roleMenuDTO) {
+        roleService.assignRoleMenus(roleMenuDTO);
+        return ResponseHelper.ok();
     }
 
     @RequestMapping(value = "add", method = RequestMethod.POST)
@@ -60,8 +67,9 @@ public class RoleController {
     @Operation(summary = "Add role", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add role")
     @OperationLogger(value = "Add role")
-    public ResponseResult addRole(@RequestBody Role role) {
-        return roleService.addRole(role);
+    public EmptyResponse addRole(@RequestBody Role role) {
+        roleService.addRole(role);
+        return ResponseHelper.ok();
     }
 
     @RequestMapping(value = "update", method = RequestMethod.PUT)
@@ -69,8 +77,9 @@ public class RoleController {
     @Operation(summary = "Update role", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update role")
     @OperationLogger(value = "Update role")
-    public ResponseResult updateRole(@RequestBody Role role) {
-        return roleService.updateRole(role);
+    public EmptyResponse updateRole(@RequestBody Role role) {
+        roleService.updateRole(role);
+        return ResponseHelper.ok();
     }
 
     @RequestMapping(value = "delete", method = RequestMethod.DELETE)
@@ -78,7 +87,8 @@ public class RoleController {
     @Operation(summary = "Delete role", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Delete role")
     @OperationLogger(value = "Delete role")
-    public ResponseResult deleteRole(@RequestBody List<Integer> ids) {
-        return roleService.deleteRole(ids);
+    public EmptyResponse deleteRole(@RequestBody List<Integer> ids) {
+        roleService.deleteRole(ids);
+        return ResponseHelper.ok();
     }
 }

@@ -1,20 +1,20 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.FriendLink;
 
 import java.util.List;
 
 
 public interface FriendLinkService extends IService<FriendLink> {
-    ResponseResult selectFriendLinkPage(String name, Integer status);
+    Page<FriendLink> selectFriendLinkPage(String name, Integer status);
 
-    ResponseResult addFriendLink(FriendLink friendLink);
+    void addFriendLink(FriendLink friendLink);
 
-    ResponseResult updateFriendLink(FriendLink friendLink);
+    void updateFriendLink(FriendLink friendLink);
 
-    ResponseResult deleteFriendLink(List<Integer> ids);
+    void deleteFriendLink(List<Integer> ids);
 
-    ResponseResult top(Integer id);
+    void top(Integer id);
 }

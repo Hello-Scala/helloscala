@@ -1,20 +1,26 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
+import com.helloscala.common.dto.dict.DictView;
 import com.helloscala.common.entity.DictData;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface DictDataService extends IService<DictData> {
-    ResponseResult selectDictDataPage(Integer dictId, Integer isPublish);
+    Page<DictData> selectDictDataPage(Integer dictId, Integer isPublish);
 
-    ResponseResult addDictData(DictData dictData);
+    void addDictData(DictData dictData);
 
-    ResponseResult updateDictData(DictData dictData);
+    void updateDictData(DictData dictData);
 
-    ResponseResult deleteDictData(List<Long> ids);
+    void deleteDictData(List<Long> ids);
 
-    ResponseResult getDataByDictType(List<String> types);
+    @Deprecated
+    Map<String, Map<String, Object>> getDataByDictType(List<String> types);
+
+    List<DictView> getDataByDictTypeV2(List<String> types);
+
 }

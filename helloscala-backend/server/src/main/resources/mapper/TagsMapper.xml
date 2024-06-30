@@ -35,7 +35,7 @@
         select id,name from b_tags
     </select>
 
-    <select id="selectTagByArticleId" resultType="com.helloscala.common.entity.Tags">
+    <select id="selectTagByArticleId" resultType="com.helloscala.common.entity.Tag">
         select * from b_tags where id in (select tag_id from b_article_tag where article_id=#{articleId})
     </select>
     <select id="validateTagIdIsExistArticle" resultType="java.lang.Integer" parameterType="java.lang.Long">

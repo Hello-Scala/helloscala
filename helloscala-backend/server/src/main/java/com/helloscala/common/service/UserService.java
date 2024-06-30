@@ -1,33 +1,36 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.user.SystemUserDTO;
 import com.helloscala.common.dto.user.UserPasswordDTO;
 import com.helloscala.common.entity.User;
+import com.helloscala.common.vo.menu.RouterVO;
+import com.helloscala.common.vo.user.SystemUserInfoVO;
+import com.helloscala.common.vo.user.SystemUserVO;
 
 import java.util.List;
-
+import java.util.Map;
 
 
 public interface UserService extends IService<User> {
-    ResponseResult selectUserPage(String username, Integer loginType);
+    Page<SystemUserInfoVO> selectUserPage(String username, Integer loginType);
 
-    ResponseResult selectUserById(String id);
+    SystemUserVO get(String id);
 
-    ResponseResult addUser(SystemUserDTO user);
+    User addUser(SystemUserDTO user);
 
-    ResponseResult updateUser(User user);
+    void update(User user);
 
-    ResponseResult deleteUSer(List<String> ids);
+    void deleteByIds(List<String> ids);
 
-    ResponseResult getCurrentUserInfo();
+    SystemUserVO getCurrentUserInfo();
 
-    ResponseResult getCurrentUserMenu();
+    List<RouterVO> getCurrentUserMenu();
 
-    ResponseResult updatePassword(UserPasswordDTO userPasswordDTO);
+    void updatePassword(UserPasswordDTO userPasswordDTO);
 
-    ResponseResult listOnlineUsers(String keywords);
+    Map<String, Object> listOnlineUsers(String keywords);
 
-    ResponseResult kick(String token);
+    void kick(String token);
 }

@@ -10,7 +10,6 @@ import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.ReadTypeEnum;
 import com.helloscala.common.enums.SearchModelEnum;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.*;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.service.SystemConfigService;
@@ -22,6 +21,8 @@ import com.helloscala.common.vo.article.ApiArchiveVO;
 import com.helloscala.common.vo.article.ApiArticleInfoVO;
 import com.helloscala.common.vo.article.ApiArticleListVO;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.service.ApiArticleService;
 import lombok.RequiredArgsConstructor;
@@ -82,11 +83,11 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult selectArticleInfo(Integer id) {
         ApiArticleInfoVO apiArticleInfoVO = articleMapper.selectArticleByIdToVO(id);
         if (apiArticleInfoVO == null) {
-            throw new BusinessException("Article not found, id={}!", id);
+            throw new NotFoundException("Article not found, id={}!", id);
         }
         Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, id));
         apiArticleInfoVO.setCollectCount(collectCount.intValue());
-        List<Tags> list = tagsMapper.selectTagByArticleId(apiArticleInfoVO.getId());
+        List<Tag> list = tagsMapper.selectTagByArticleId(apiArticleInfoVO.getId());
         apiArticleInfoVO.setTagList(list);
         List<Comment> comments = commentMapper.selectList(
                 new LambdaQueryWrapper<Comment>().eq(Comment::getArticleId, id));
@@ -134,7 +135,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     @Override
     public ResponseResult searchArticle(String keywords) {
         if (StringUtils.isBlank(keywords)) {
-            throw new BusinessException(PARAMS_ILLEGAL.getDesc());
+            throw new BadRequestException(PARAMS_ILLEGAL.getDesc());
         }
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
         String strategy = SearchModelEnum.getStrategy(systemConfig.getSearchModel());
@@ -193,7 +194,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult updateMyArticle(ArticlePostDTO dto) {
         Article article = BeanCopyUtil.copyObject(dto, Article.class);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can only modify your own article!");
+            throw new BadRequestException("Can only modify your own article!");
         }
         articleMapper.updateById(article);
         tagsMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
@@ -218,7 +219,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
         } catch (IOException e) {
             log.error("Failed to read markdown file!", e);
-            throw new BusinessException("Markdown file read failed!");
+            throw new BadRequestException("Markdown file read failed!");
         }
         Map<String, Object> map = new HashMap<>();
         map.put("content", sb.toString());
@@ -231,7 +232,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
         Page<ApiArticleListVO> list = articleMapper.selectMyArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), userId, type);
         list.getRecords().forEach(item -> {
-            List<Tags> tags = tagsMapper.selectTagByArticleId(item.getId());
+            List<Tag> tags = tagsMapper.selectTagByArticleId(item.getId());
             item.setTagList(tags);
 
             item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
@@ -245,7 +246,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult deleteMyArticle(Long id) {
         Article article = articleMapper.selectById(id);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can only delete your own article!");
+            throw new BadRequestException("Can only delete your own article!");
         }
         articleMapper.deleteById(id);
         tagsMapper.deleteByArticleIds(Collections.singletonList(id));
@@ -256,10 +257,10 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public ResponseResult selectMyArticleInfo(Long id) {
         ArticlePostDTO articlePostDTO = articleMapper.selectMyArticleInfo(id);
         if (!articlePostDTO.getUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can only read your own article detail!");
+            throw new BadRequestException("Can only read your own article detail!");
         }
-        List<Tags> tags = tagsMapper.selectTagByArticleId(id);
-        List<Long> tagList = tags.stream().map(Tags::getId).collect(Collectors.toList());
+        List<Tag> tags = tagsMapper.selectTagByArticleId(id);
+        List<Long> tagList = tags.stream().map(Tag::getId).collect(Collectors.toList());
         articlePostDTO.setTagList(tagList);
         return ResponseResult.success(articlePostDTO);
     }
@@ -269,7 +270,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         String key = RedisConstants.WECHAT_CODE + code;
         Object redisCode = redisService.getCacheObject(key);
         if (ObjectUtil.isNull(redisCode)) {
-            throw new BusinessException(ERROR_EXCEPTION_MOBILE_CODE.getDesc());
+            throw new BadRequestException(ERROR_EXCEPTION_MOBILE_CODE.getDesc());
         }
 
         List<Object> cacheList = redisService.getCacheList(CHECK_CODE_IP);
@@ -284,7 +285,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
 
     private void setCommentAndLike(ApiArticleListVO item) {
-        List<Tags> list = tagsMapper.selectTagByArticleId(item.getId());
+        List<Tag> list = tagsMapper.selectTagByArticleId(item.getId());
         Long commentCount = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getArticleId, item.getId()));
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);

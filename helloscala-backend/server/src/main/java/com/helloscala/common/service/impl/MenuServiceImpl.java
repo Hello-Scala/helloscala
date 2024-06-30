@@ -4,65 +4,53 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.Constants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Menu;
 import com.helloscala.common.mapper.MenuMapper;
 import com.helloscala.common.service.MenuService;
-import com.helloscala.common.vo.menu.MenuOptionsVO;
+import com.helloscala.common.vo.menu.MenuOptionVO;
 import com.helloscala.common.vo.menu.RouterVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
-    public ResponseResult selectMenuTreeList(List<Menu> list) {
-        List<Menu> resultList = new ArrayList<>();
-        for (Menu menu : list) {
-            Integer parentId = menu.getParentId();
-            if ( parentId == null || parentId == 0)
-                resultList.add(menu);
-        }
-        for (Menu menu : resultList) {
-            menu.setChildren(getMenTreeChild(menu.getId(),list));
-        }
-        resultList.sort(Comparator.comparingInt(Menu::getSort));
-        return ResponseResult.success(resultList);
+    public List<Menu> selectMenuTreeList() {
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByAsc(Menu::getSort);
+        List<Menu> menus = list(queryWrapper);
+
+        Map<Integer, List<Menu>> childMenuMap = menus.stream().filter(m -> Objects.nonNull(m.getParentId())).collect(Collectors.groupingBy(Menu::getParentId));
+        menus.forEach(m -> m.setChildren(childMenuMap.get(m.getId())));
+        return menus;
     }
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addMenu(Menu menu) {
+    public void addMenu(Menu menu) {
         if (menu.getType().equals("CATALOG")) {
             menu.setComponent("Layout");
         }
         baseMapper.insert(menu);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateMenu(Menu menu) {
+    public void updateMenu(Menu menu) {
         baseMapper.updateById(menu);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteMenu(Integer id) {
+    public void deleteMenu(Integer id) {
         baseMapper.deleteById(id);
         baseMapper.delete(new LambdaQueryWrapper<Menu>().eq(Menu::getParentId,id));
-        return ResponseResult.success();
     }
 
     @Override
@@ -86,21 +74,18 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public ResponseResult getMenuOptions() {
+    public List<MenuOptionVO> getMenuOptions() {
+        List<Menu> menus = baseMapper.selectList(null);
 
-        List<Menu> list = baseMapper.selectList(null);
-        List<MenuOptionsVO> resultList = new ArrayList<>();
-        for (Menu menu : list) {
-            Integer parentId = menu.getParentId();
-            if ( parentId == null || parentId == 0) {
-                MenuOptionsVO menuOptionsVO = new MenuOptionsVO(menu.getId(), menu.getTitle());
-                resultList.add(menuOptionsVO);
-            }
-        }
-        for (MenuOptionsVO menu : resultList) {
-            menu.setChildren(getOptionsChild(menu.getValue(),list));
-        }
-        return ResponseResult.success(resultList);
+        List<MenuOptionVO> options = menus.stream().filter(m -> Objects.isNull(m.getParentId()) || 0 == m.getParentId())
+                .map(m -> new MenuOptionVO(m.getId(), m.getTitle())).toList();
+
+        Map<Integer, List<Menu>> childMenuMap = menus.stream().filter(m -> Objects.nonNull(m.getParentId())).collect(Collectors.groupingBy(Menu::getParentId));
+        options.forEach(m -> {
+            List<MenuOptionVO> menuOptions = Optional.ofNullable(childMenuMap.get(m.getValue())).map(ls -> ls.stream().map(menu -> new MenuOptionVO(menu.getId(), menu.getTitle())).toList()).orElse(new ArrayList<>());
+            m.setChildren(menuOptions);
+        });
+        return options;
     }
 
     @Override
@@ -134,23 +119,23 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return childrens.isEmpty() ? Collections.emptyList() : childrens;
     }
 
-    private List<MenuOptionsVO> getOptionsChild(Integer pid , List<Menu> menus){
+    private List<MenuOptionVO> getOptionsChild(Integer pid , List<Menu> menus){
         if (menus == null) {
             return Collections.emptyList();
         }
 
-        Map<Integer, MenuOptionsVO> optionsMap = new HashMap<>();
+        Map<Integer, MenuOptionVO> optionsMap = new HashMap<>();
         for (Menu menu : menus) {
             Integer parentId = menu.getParentId();
             if (parentId != null && parentId.equals(pid)) {
-                MenuOptionsVO menuOptionsVO = new MenuOptionsVO(menu.getId(), menu.getTitle());
+                MenuOptionVO menuOptionsVO = new MenuOptionVO(menu.getId(), menu.getTitle());
                 optionsMap.put(menu.getId(), menuOptionsVO);
             }
         }
 
-        List<MenuOptionsVO> childrens = new ArrayList<>(optionsMap.values());
+        List<MenuOptionVO> childrens = new ArrayList<>(optionsMap.values());
 
-        for (MenuOptionsVO e : childrens) {
+        for (MenuOptionVO e : childrens) {
             e.setChildren(getOptionsChild(e.getValue(), menus));
         }
         return childrens.isEmpty() ? Collections.emptyList() : childrens;

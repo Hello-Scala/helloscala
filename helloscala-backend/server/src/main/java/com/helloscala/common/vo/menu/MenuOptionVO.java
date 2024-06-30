@@ -5,14 +5,14 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class MenuOptionsVO {
+public class MenuOptionVO {
     private Integer value;
 
     private String label;
 
-    private List<MenuOptionsVO> children;
+    private List<MenuOptionVO> children;
 
-    public MenuOptionsVO(Integer value, String label) {
+    public MenuOptionVO(Integer value, String label) {
         this.value = value;
         this.label = label;
     }

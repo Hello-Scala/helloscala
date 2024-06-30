@@ -39,5 +39,9 @@ public class GenericException extends AbstractException {
     public GenericException(String msgFmt, Object... params) {
         super(STATUS, CODE, StrUtil.format(msgFmt, params));
     }
+
+    public GenericException(String msgFmt, Throwable throwable, Object... params) {
+        super(STATUS, CODE, StrUtil.format(msgFmt, params), throwable);
+    }
 }
 

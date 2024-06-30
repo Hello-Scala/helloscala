@@ -2,9 +2,9 @@ package com.helloscala.web.im;
 
 
 import cn.hutool.json.JSONUtil;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.utils.SpringUtil;
 import com.helloscala.common.vo.message.ImMessageVO;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.service.ApiImMessageService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -47,7 +47,7 @@ public class WebSocketSimpleChannelInboundHandler extends SimpleChannelInboundHa
         if (!(frame instanceof TextWebSocketFrame)) {
             logger.error("binary msg unsupported!");
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-            throw new BusinessException("Message unsupported, " + this.getClass().getName());
+            throw new BadRequestException("Message unsupported, " + this.getClass().getName());
         }
         String message = ((TextWebSocketFrame) frame).text();
         logger.info("Received client msg:{}", message);
