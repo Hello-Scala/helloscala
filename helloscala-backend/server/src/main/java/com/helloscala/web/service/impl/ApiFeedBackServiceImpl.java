@@ -1,9 +1,9 @@
 package com.helloscala.web.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.FeedBack;
 import com.helloscala.common.mapper.FeedBackMapper;
+import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.service.ApiFeedBackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,11 @@ public class ApiFeedBackServiceImpl implements ApiFeedBackService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addFeedback(FeedBack feedBack) {
+    public void addFeedback(FeedBack feedBack) {
         feedBack.setUserId(StpUtil.getLoginIdAsString());
         int rows = feedBackMapper.insert(feedBack);
-        return rows > 0 ? ResponseResult.success() : ResponseResult.error("Failed to add feedback!");
+        if (rows <= 0) {
+            throw new ConflictException("Failed to add feedback!");
+        }
     }
 }

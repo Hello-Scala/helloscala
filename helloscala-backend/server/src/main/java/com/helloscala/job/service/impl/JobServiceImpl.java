@@ -49,39 +49,38 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
     }
 
     @Override
-    public ResponseResult selectJobPage(String jobName, String jobGroup, String status) {
+    public Page<Job> selectJobPage(String jobName, String jobGroup, String status) {
         LambdaQueryWrapper<Job> queryWrapper = new LambdaQueryWrapper<Job>()
                 .like(StringUtils.isNotBlank(jobName), Job::getJobName,jobName)
                 .eq(StringUtils.isNotBlank(jobGroup), Job::getJobGroup,jobGroup)
                 .eq(StringUtils.isNotBlank(status), Job::getStatus,status);
 
-        Page<Job> sysJobPage = baseMapper.selectPage(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), queryWrapper);
-        return ResponseResult.success(sysJobPage);
+        Page<Job> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        return baseMapper.selectPage(page, queryWrapper);
     }
 
     @Override
-    public ResponseResult selectJobById(Long jobId) {
+    public Job selectJobById(Long jobId) {
         Job job = baseMapper.selectById(jobId);
         Date nextExecution = CronUtil.getNextExecution(job.getCronExpression());
         job.setNextValidTime(nextExecution);
-        return ResponseResult.success(job);
+        return job;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addJob(Job job) throws SchedulerException, TaskException {
+    public void addJob(Job job) throws SchedulerException, TaskException {
         checkCronIsValid(job);
 
         User user = userMapper.selectById(StpUtil.getLoginIdAsString());
         job.setCreateBy(user.getUsername());
         int row = baseMapper.insert(job);
         if (row > 0) ScheduleUtil.createScheduleJob(scheduler, job);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateJob(Job job) throws SchedulerException, TaskException {
+    public void updateJob(Job job) throws SchedulerException, TaskException {
         checkCronIsValid(job);
 
         User user = userMapper.selectById(StpUtil.getLoginIdAsString());
@@ -89,19 +88,17 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         Job properties = baseMapper.selectById(job.getJobId());
         int row = baseMapper.updateById(job);
         if (row > 0) updateSchedulerJob(job, properties.getJobGroup());
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteJob(List<Long> ids) {
+    public void deleteJob(List<Long> ids) {
         baseMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult pauseJob(Job job) throws SchedulerException {
+    public void pauseJob(Job job) throws SchedulerException {
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
         job.setStatus(ScheduleConstants.Status.PAUSE.getValue());
@@ -109,19 +106,17 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         if (rows > 0) {
             scheduler.pauseJob(ScheduleUtil.getJobKey(jobId, jobGroup));
         }
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult runJob(Job job) {
+    public void runJob(Job job) {
         try {
             Long jobId = job.getJobId();
             String jobGroup = job.getJobGroup();
             JobDataMap dataMap = new JobDataMap();
             dataMap.put(ScheduleConstants.TASK_PROPERTIES, job);
             scheduler.triggerJob(ScheduleUtil.getJobKey(jobId, jobGroup), dataMap);
-            return ResponseResult.success();
         } catch (Exception e) {
             throw new GenericException("Job run failed, msg={}!" + e.getMessage(), e);
         }
@@ -129,7 +124,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult changeStatus(Job job) throws SchedulerException {
+    public void changeStatus(Job job) throws SchedulerException {
         String status = job.getStatus();
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
@@ -141,7 +136,6 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
                 scheduler.pauseJob(ScheduleUtil.getJobKey(jobId, jobGroup));
             }
         }
-        return ResponseResult.success();
     }
 
 

@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class ApiArticleInfoVO {
+public class ArticleInfoVO {
 
     @Schema(name = "主键id")
     private Long id;

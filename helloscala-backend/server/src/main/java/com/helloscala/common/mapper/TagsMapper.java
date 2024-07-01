@@ -28,9 +28,6 @@ public interface TagsMapper extends BaseMapper<Tag> {
     @MapKey("id")
     List<Map<String, Object>> countTags();
 
-
-    List<Tag> selectTagByArticleId(Long articleId);
-
     int validateTagIdIsExistArticle(Long id);
 
     List<ApiTagListVO> selectTagListApi();

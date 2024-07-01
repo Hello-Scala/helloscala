@@ -1,6 +1,5 @@
 package com.helloscala.web.service.impl;
 
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.mapper.CategoryMapper;
 import com.helloscala.common.vo.category.ApiCategoryListVO;
 import com.helloscala.web.service.ApiCategoryService;
@@ -16,8 +15,7 @@ public class ApiCategoryServiceImpl implements ApiCategoryService {
     private final CategoryMapper categoryMapper;
 
     @Override
-    public ResponseResult selectCategoryList() {
-        List<ApiCategoryListVO> list = categoryMapper.selectCategoryListApi();
-        return ResponseResult.success(list);
+    public List<ApiCategoryListVO> selectCategoryList() {
+        return categoryMapper.selectCategoryListApi();
     }
 }

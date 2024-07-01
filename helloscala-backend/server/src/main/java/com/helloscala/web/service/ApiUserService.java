@@ -5,6 +5,7 @@ import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
 import com.helloscala.common.dto.user.EmailLoginDTO;
 import com.helloscala.common.dto.user.EmailRegisterDTO;
 import com.helloscala.common.dto.user.UserInfoDTO;
+import com.helloscala.common.vo.user.UserInfoVO;
 import com.helloscala.web.dto.WechatAppletDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
@@ -13,30 +14,30 @@ import me.zhyd.oauth.model.AuthResponse;
 import java.io.IOException;
 
 public interface ApiUserService {
-    public ResponseResult emailLogin(EmailLoginDTO emailLoginDTO);
+    public UserInfoVO emailLogin(EmailLoginDTO emailLoginDTO);
 
-    public ResponseResult getWechatLoginCode();
+    public String getWechatLoginCode();
 
     public String wechatLogin(WxMpXmlMessage message);
 
-    public ResponseResult wxIsLogin(String loginCode);
+    public UserInfoVO wxIsLogin(String loginCode);
 
-    public ResponseResult selectUserInfo(String userId);
+    public UserInfoVO selectUserInfo(String userId);
 
-    public ResponseResult updateUser(UserInfoDTO vo);
+    public void updateUser(UserInfoDTO vo);
 
-    public ResponseResult selectUserInfoByToken(String token);
+    public UserInfoVO selectUserInfoByToken(String token);
 
     public void authLogin(AuthResponse response, String source, HttpServletResponse httpServletResponse) throws IOException;
 
-    public ResponseResult sendEmailCode(String email);
+    public void sendEmailCode(String email);
 
-    public ResponseResult emailRegister(EmailRegisterDTO emailRegisterDTO);
+    public void emailRegister(EmailRegisterDTO emailRegisterDTO);
 
-    public ResponseResult forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO);
+    public void forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO);
 
     public ResponseResult getUserCount(String id);
 
-    ResponseResult appletLogin(WechatAppletDTO wechatAppletDTO);
+    UserInfoVO appletLogin(WechatAppletDTO wechatAppletDTO);
 
 }

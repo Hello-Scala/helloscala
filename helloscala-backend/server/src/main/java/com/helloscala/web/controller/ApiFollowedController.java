@@ -2,8 +2,9 @@ package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.helloscala.common.annotation.AccessLimit;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.annotation.BusinessLogger;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.web.service.ApiFollowedService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,8 +27,9 @@ public class ApiFollowedController {
     @BusinessLogger(value = "Followed",type = "add",desc = "add followed user")
     @Operation(summary = "Add Follower", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add Follower")
-    public ResponseResult addFollowedUser(@RequestParam(name = "userId", required = true) String userId) {
-        return followedService.addFollowedUser(userId);
+    public EmptyResponse addFollowedUser(@RequestParam(name = "userId", required = true) String userId) {
+        followedService.addFollowedUser(userId);
+        return ResponseHelper.ok();
     }
 
     @AccessLimit
@@ -36,7 +38,8 @@ public class ApiFollowedController {
     @Operation(summary = "Unfollow", method = "DELETE")
     @BusinessLogger(value = "Followed",type = "delete",desc = "Unfollow")
     @ApiResponse(responseCode = "200", description = "Unfollow user")
-    public ResponseResult deleteFollowed(@RequestParam(name = "userId", required = true) String userId) {
-        return followedService.deleteFollowed(userId);
+    public EmptyResponse deleteFollowed(@RequestParam(name = "userId", required = true) String userId) {
+        followedService.deleteFollowed(userId);
+        return ResponseHelper.ok();
     }
 }

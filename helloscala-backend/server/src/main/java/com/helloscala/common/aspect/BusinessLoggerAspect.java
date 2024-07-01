@@ -39,12 +39,12 @@ public class BusinessLoggerAspect {
     @Around(value = "pointcut(businessLogger)")
     public Object doAround(ProceedingJoinPoint joinPoint, BusinessLogger businessLogger) throws Throwable {
         Object result = joinPoint.proceed();
-        handle(joinPoint,(ResponseResult) result);
+        handle(joinPoint, (ResponseResult) result);
         return result;
     }
 
     @Async
-    public void handle(ProceedingJoinPoint  joinPoint, ResponseResult result) throws Throwable {
+    public void handle(ProceedingJoinPoint joinPoint, ResponseResult result) throws Throwable {
         HttpServletRequest request = IpUtil.getRequest();
         if (Objects.isNull(request)) {
             logger.error("Failed to get request, on {}", joinPoint.getKind());

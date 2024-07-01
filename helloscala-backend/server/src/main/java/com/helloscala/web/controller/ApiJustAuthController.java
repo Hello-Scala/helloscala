@@ -1,7 +1,6 @@
 package com.helloscala.web.controller;
 
 import com.helloscala.common.annotation.AccessLimit;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.config.properties.GiteeConfigProperties;
 import com.helloscala.common.config.properties.GithubConfigProperties;
 import com.helloscala.common.config.properties.QqConfigProperties;
@@ -9,6 +8,10 @@ import com.helloscala.common.config.properties.WeiboConfigProperties;
 import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
 import com.helloscala.common.dto.user.EmailLoginDTO;
 import com.helloscala.common.dto.user.EmailRegisterDTO;
+import com.helloscala.common.vo.user.UserInfoVO;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,83 +33,85 @@ import java.io.IOException;
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class ApiJustAuthController {
-
-
     private final GiteeConfigProperties giteeConfigProperties;
-
     private final QqConfigProperties qqConfigProperties;
-
     private final WeiboConfigProperties weiboConfigProperties;
-
     private final GithubConfigProperties githubConfigProperties;
-
-    private  final ApiUserService userService;
+    private final ApiUserService userService;
 
 
     @RequestMapping("/render/{source}")
-    public ResponseResult renderAuth(HttpServletResponse response, @PathVariable(value = "source") String source) throws IOException {
+    public Response<String> renderAuth(@PathVariable(value = "source") String source) {
         AuthRequest authRequest = getAuthRequest(source);
         String authorizeUrl = authRequest.authorize(AuthStateUtils.createState());
-        return ResponseResult.success(authorizeUrl);
+        return ResponseHelper.ok(authorizeUrl);
     }
 
+    // todo refactor
     @RequestMapping("/callback/{source}")
-    public void login(AuthCallback callback, @PathVariable(value = "source") String source,  HttpServletResponse httpServletResponse) throws IOException {
+    public void login(AuthCallback callback, @PathVariable(value = "source") String source, HttpServletResponse httpServletResponse) throws IOException {
         AuthRequest authRequest = getAuthRequest(source);
         AuthResponse response = authRequest.login(callback);
-        userService.authLogin(response,source,httpServletResponse);
+        userService.authLogin(response, source, httpServletResponse);
     }
 
     @AccessLimit
-    @RequestMapping(value = "/emailLogin",method = RequestMethod.POST)
+    @RequestMapping(value = "/emailLogin", method = RequestMethod.POST)
     @Operation(summary = "Login by email", method = "POST")
     @ApiResponse(responseCode = "200", description = "Login by email")
-    public ResponseResult emailLogin(@Valid @RequestBody EmailLoginDTO emailLoginDTO){
-        return userService.emailLogin(emailLoginDTO);
+    public Response<UserInfoVO> emailLogin(@Valid @RequestBody EmailLoginDTO emailLoginDTO) {
+        UserInfoVO userInfoVO = userService.emailLogin(emailLoginDTO);
+        return ResponseHelper.ok(userInfoVO);
     }
 
     @Operation(summary = "Is wechat login success", method = "GET")
     @ApiResponse(responseCode = "200", description = "Is wechat login success")
     @RequestMapping("/wechat/is_login")
-    public ResponseResult wxIsLogin(@RequestParam(name = "loginCode", required = true) String loginCode) {
-        return userService.wxIsLogin(loginCode);
+    public Response<UserInfoVO> wxIsLogin(@RequestParam(name = "loginCode", required = true) String loginCode) {
+        UserInfoVO userInfoVO = userService.wxIsLogin(loginCode);
+        return ResponseHelper.ok(userInfoVO);
     }
 
     @Operation(summary = "Get verify code for wechat login", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get verify code for wechat login")
     @RequestMapping("/wechatLoginCode")
-    public ResponseResult getWechatLoginCode() {
-        return userService.getWechatLoginCode();
+    public Response<String> getWechatLoginCode() {
+        String wechatLoginCode = userService.getWechatLoginCode();
+        return ResponseHelper.ok(wechatLoginCode);
     }
 
     @Operation(summary = "Send verify code to email", method = "GET")
     @ApiResponse(responseCode = "200", description = "Send verify code to email")
     @RequestMapping("/sendEmailCode")
-    public ResponseResult sendEmailCode(@RequestParam(name = "email", required = true) String email) {
-        return userService.sendEmailCode(email);
+    public EmptyResponse sendEmailCode(@RequestParam(name = "email", required = true) String email) {
+        userService.sendEmailCode(email);
+        return ResponseHelper.ok();
     }
 
     @AccessLimit
-    @RequestMapping(value = "/emailRegister",method = RequestMethod.POST)
+    @RequestMapping(value = "/emailRegister", method = RequestMethod.POST)
     @Operation(summary = "Register by email", method = "POST")
     @ApiResponse(responseCode = "200", description = "Register by email")
-    public ResponseResult emailRegister(@Valid @RequestBody EmailRegisterDTO emailRegisterDTO){
-        return userService.emailRegister(emailRegisterDTO);
+    public EmptyResponse emailRegister(@Valid @RequestBody EmailRegisterDTO emailRegisterDTO) {
+        userService.emailRegister(emailRegisterDTO);
+        return ResponseHelper.ok();
     }
 
     @AccessLimit
-    @RequestMapping(value = "/forgetPassword",method = RequestMethod.PUT)
+    @RequestMapping(value = "/forgetPassword", method = RequestMethod.PUT)
     @Operation(summary = "Forget password", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Forget password")
-    public ResponseResult forgetPassword(@Valid @RequestBody EmailForgetPasswordDTO emailForgetPasswordDTO){
-        return userService.forgetPassword(emailForgetPasswordDTO);
+    public EmptyResponse forgetPassword(@Valid @RequestBody EmailForgetPasswordDTO emailForgetPasswordDTO) {
+        userService.forgetPassword(emailForgetPasswordDTO);
+        return ResponseHelper.ok();
     }
 
-    @RequestMapping(value = "/applet",method = RequestMethod.POST)
+    @RequestMapping(value = "/applet", method = RequestMethod.POST)
     @Operation(summary = "Login by applet", method = "GET")
     @ApiResponse(responseCode = "200", description = "Login by applet")
-    public ResponseResult appletLogin(@RequestBody WechatAppletDTO wechatAppletDTO){
-        return userService.appletLogin(wechatAppletDTO);
+    public Response<UserInfoVO> appletLogin(@RequestBody WechatAppletDTO wechatAppletDTO) {
+        UserInfoVO userInfoVO = userService.appletLogin(wechatAppletDTO);
+        return ResponseHelper.ok(userInfoVO);
     }
 
     /**

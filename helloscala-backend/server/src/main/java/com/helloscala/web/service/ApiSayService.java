@@ -1,11 +1,12 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.Say;
+import com.helloscala.common.vo.say.ApiSayVO;
 
 public interface ApiSayService {
-    ResponseResult selectSayList();
+    Page<ApiSayVO> selectSayList();
 
-    ResponseResult insertSay(Say say);
+    void insertSay(Say say);
 
 }

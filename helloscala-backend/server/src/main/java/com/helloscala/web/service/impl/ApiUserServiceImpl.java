@@ -34,10 +34,7 @@ import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.vo.user.UserInfoVO;
-import com.helloscala.common.web.exception.BadRequestException;
-import com.helloscala.common.web.exception.ConflictException;
-import com.helloscala.common.web.exception.FailedDependencyException;
-import com.helloscala.common.web.exception.NotFoundException;
+import com.helloscala.common.web.exception.*;
 import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
@@ -51,7 +48,6 @@ import me.zhyd.oauth.model.AuthResponse;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,7 +88,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     }
 
     @Override
-    public ResponseResult emailLogin(EmailLoginDTO vo) {
+    public UserInfoVO emailLogin(EmailLoginDTO vo) {
         User user = userMapper.selectNameAndPassword(vo.getEmail(), aesEncryptUtil.aesEncrypt(vo.getPassword()));
         if (user == null) {
             throw new BadRequestException(ERROR_PASSWORD.desc);
@@ -108,19 +104,19 @@ public class ApiUserServiceImpl implements ApiUserService {
 
         UserInfoVO userInfoVO = BeanCopyUtil.copyObject(user, UserInfoVO.class);
         userInfoVO.setToken(token);
-        return ResponseResult.success(userInfoVO);
+        return userInfoVO;
     }
 
     @Override
-    public ResponseResult wxIsLogin(String loginCode) {
+    public UserInfoVO wxIsLogin(String loginCode) {
         Object value =redisService.getCacheObject(RedisConstants.WX_LOGIN_USER + loginCode);
         if (value == null) {
-            return ResponseResult.error("user unauthorized");
+            throw new ForbiddenException("user unauthorized!");
         }
         UserInfoVO user = objectMapper.convertValue(value, UserInfoVO.class);
         StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
         user.setToken(StpUtil.getTokenValueByLoginId(user.getId()));
-        return ResponseResult.success(user);
+        return user;
     }
 
     @Override
@@ -137,22 +133,21 @@ public class ApiUserServiceImpl implements ApiUserService {
     }
 
     @Override
-    public ResponseResult getWechatLoginCode() {
+    public String getWechatLoginCode() {
         String code = "DL" + RandomUtil.generationNumberChar(4);
         redisService.setCacheObject(RedisConstants.WX_LOGIN_USER_STATUE + code, false, 60, TimeUnit.SECONDS);
-        return ResponseResult.success(code);
+        return code;
     }
 
     @Override
-    public ResponseResult selectUserInfo(String userId) {
+    public UserInfoVO selectUserInfo(String userId) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
-        UserInfoVO userInfo = userMapper.selectInfoByUserId(userId);
-        return ResponseResult.success(userInfo);
+        return userMapper.selectInfoByUserId(userId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateUser(UserInfoDTO vo) {
+    public void updateUser(UserInfoDTO vo) {
         User user = userMapper.selectById(StpUtil.getLoginIdAsString());
         if (ObjectUtils.isEmpty(user)) {
             throw  new NotFoundException("User not found!");
@@ -160,15 +155,12 @@ public class ApiUserServiceImpl implements ApiUserService {
         user = BeanCopyUtil.copyObject(vo, User.class);
         user.setId(StpUtil.getLoginIdAsString());
         userMapper.updateById(user);
-
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult selectUserInfoByToken(String token) {
+    public UserInfoVO selectUserInfoByToken(String token) {
         Object userId = StpUtil.getLoginIdByToken(token);
-        UserInfoVO userInfoVO = userMapper.selectInfoByUserId(userId);
-        return ResponseResult.success(userInfoVO);
+        return userMapper.selectInfoByUserId(userId);
     }
 
     @Override
@@ -214,10 +206,9 @@ public class ApiUserServiceImpl implements ApiUserService {
     }
 
     @Override
-    public ResponseResult sendEmailCode(String email) {
+    public void sendEmailCode(String email) {
         try {
             emailService.sendCode(email);
-            return ResponseResult.success();
         } catch (MessagingException e) {
             throw new FailedDependencyException("Email send failed!");
         }
@@ -225,7 +216,7 @@ public class ApiUserServiceImpl implements ApiUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult emailRegister(EmailRegisterDTO emailRegisterDTO) {
+    public void emailRegister(EmailRegisterDTO emailRegisterDTO) {
         boolean b = redisService.hasKey(RedisConstants.EMAIL_CODE + emailRegisterDTO.getEmail());
         if (!b) {
             throw new BadRequestException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE.desc);
@@ -243,19 +234,17 @@ public class ApiUserServiceImpl implements ApiUserService {
                 .nickname(emailRegisterDTO.getNickname())
                 .build();
         userMapper.insert(user);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO) {
+    public void forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO) {
         boolean b = redisService.hasKey(RedisConstants.EMAIL_CODE + emailForgetPasswordDTO.getEmail());
         if (!b) {
             throw new BadRequestException(ResultCode.ERROR_EXCEPTION_MOBILE_CODE.desc);
         }
         User user = User.builder().password(aesEncryptUtil.aesEncrypt(emailForgetPasswordDTO.getPassword())).build();
         userMapper.update(user,new LambdaQueryWrapper<User>().eq(User::getUsername,emailForgetPasswordDTO.getEmail()));
-        return ResponseResult.success();
     }
 
     @Override
@@ -269,7 +258,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     }
 
     @Override
-    public ResponseResult appletLogin(WechatAppletDTO wechatAppletDTO) {
+    public UserInfoVO appletLogin(WechatAppletDTO wechatAppletDTO) {
 
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid=wx3e9678e6cdabd38f&secret=f8f33e962ab232ab70fd6545b86ac731&js_code="+wechatAppletDTO.getCode()+"&grant_type=authorization_code";
         String result = HttpUtil.get(url);
@@ -281,7 +270,7 @@ public class ApiUserServiceImpl implements ApiUserService {
 
         StpUtil.login(userInfoVO.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
         userInfoVO.setToken(StpUtil.getTokenValueByLoginId(userInfoVO.getId()));
-        return ResponseResult.success(userInfoVO);
+        return userInfoVO;
     }
 
 

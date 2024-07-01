@@ -3,7 +3,7 @@ package com.helloscala.common.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.Comment;
-import com.helloscala.common.vo.article.ApiArticleListVO;
+import com.helloscala.common.vo.article.ListArticleVO;
 import com.helloscala.common.vo.message.ApiCommentListVO;
 import com.helloscala.common.vo.message.SystemCommentVO;
 import org.apache.ibatis.annotations.Param;
@@ -19,5 +19,5 @@ public interface CommentMapper extends BaseMapper<Comment> {
     Page<ApiCommentListVO> selectCommentPage(@Param("page") Page<ApiCommentListVO> commentListVOPage,
                                              @Param("articleId") Long articleId);
 
-    Page<ApiArticleListVO> selectMyComment(Page<ApiArticleListVO> apiArticleListVOPage, @Param("userId") String loginIdAsString);
+    Page<ListArticleVO> selectMyComment(Page<ListArticleVO> apiArticleListVOPage, @Param("userId") String loginIdAsString);
 }

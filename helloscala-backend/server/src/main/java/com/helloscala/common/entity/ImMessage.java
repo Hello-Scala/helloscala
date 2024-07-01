@@ -67,7 +67,7 @@ public class ImMessage implements Serializable {
     private Integer noticeType;
 
     @Schema(name = "文章id")
-    private Integer articleId;
+    private Long articleId;
 
     @Schema(name = "@用户id 多个逗号分隔")
     private String atUserId;

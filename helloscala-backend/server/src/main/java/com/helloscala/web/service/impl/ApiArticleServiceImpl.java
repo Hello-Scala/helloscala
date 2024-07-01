@@ -18,8 +18,8 @@ import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.ApiArchiveVO;
-import com.helloscala.common.vo.article.ApiArticleInfoVO;
-import com.helloscala.common.vo.article.ApiArticleListVO;
+import com.helloscala.common.vo.article.ArticleInfoVO;
+import com.helloscala.common.vo.article.ListArticleVO;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
@@ -28,6 +28,7 @@ import com.helloscala.web.service.ApiArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,13 +65,39 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final SearchStrategyContext searchStrategyContext;
 
     @Override
-    public Page<ApiArticleListVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
-        Page<ApiArticleListVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
+    public Page<ListArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
+        Page<ListArticleVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
                 categoryId, tagId, orderByDescColumn);
-        List<ApiArticleListVO> records = articlePage.getRecords();
+        List<ListArticleVO> records = articlePage.getRecords();
 
-        Set<Long> articleIdSet = records.stream().map(ApiArticleListVO::getId).collect(Collectors.toSet());
+        Set<Long> articleIdSet = records.stream().map(ListArticleVO::getId).collect(Collectors.toSet());
 
+        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
+
+        LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<Comment>().select(Comment::getId, Comment::getArticleId)
+                .in(Comment::getArticleId, articleIdSet);
+        List<Comment> comments = commentMapper.selectList(commentQuery);
+        Map<Long, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
+
+        Map<String, Object> articleLikeCountMap = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
+
+        records.forEach(item -> {
+            List<Comment> articleComments = commentMap.getOrDefault(item.getId(), new ArrayList<>());
+            List<Tag> tagList = articleTagListMap.getOrDefault(item.getId(), new ArrayList<>());
+            if (articleLikeCountMap != null && !articleLikeCountMap.isEmpty()) {
+                Object obj = articleLikeCountMap.get(item.getId().toString());
+                item.setLikeCount(obj == null ? 0 : obj);
+            }
+            item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
+            item.setCommentCount(articleComments.size());
+            item.setTagList(tagList);
+        });
+        return articlePage;
+    }
+
+    @NotNull
+    @Override
+    public Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet) {
         LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
         articleTagQuery.in(ArticleTag::getArticleId, articleIdSet);
         List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagQuery);
@@ -82,93 +109,78 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         tagQuery.in(Tag::getId, tagIds);
         List<Tag> tags = tagMapper.selectList(tagQuery);
         Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
-
-        records.forEach(r -> {
-            List<ArticleTag> tagList = articleTagMap.getOrDefault(r.getId(), new ArrayList<>());
-            List<Tag> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
-            r.setTagList(articleTagList);
-        });
-
-        LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<Comment>().select(Comment::getId, Comment::getArticleId)
-                .in(Comment::getArticleId, articleIdSet);
-        List<Comment> comments = commentMapper.selectList(commentQuery);
-
-        Map<Long, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
-        records.forEach(item -> {
-            setCommentAndLike(item);
-            item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
-            List<Comment> articleComments = commentMap.getOrDefault(item.getId(), new ArrayList<>());
-            item.setCommentCount(articleComments.size());
-        });
-        return articlePage;
+        return articleTagMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList()));
     }
 
     @Override
-    public ResponseResult selectArticleInfo(Integer id) {
-        ApiArticleInfoVO apiArticleInfoVO = articleMapper.selectArticleByIdToVO(id);
-        if (apiArticleInfoVO == null) {
+    public ArticleInfoVO selectArticleInfo(Integer id) {
+        ArticleInfoVO articleInfoVO = articleMapper.selectArticleByIdToVO(id);
+        if (articleInfoVO == null) {
             throw new NotFoundException("Article not found, id={}!", id);
         }
         Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, id));
-        apiArticleInfoVO.setCollectCount(collectCount.intValue());
-        List<Tag> list = tagMapper.selectTagByArticleId(apiArticleInfoVO.getId());
-        apiArticleInfoVO.setTagList(list);
+        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(articleInfoVO.getId()));
+        List<Tag> tags = articleTagListMap.get(articleInfoVO.getId());
+
         List<Comment> comments = commentMapper.selectList(
                 new LambdaQueryWrapper<Comment>().eq(Comment::getArticleId, id));
-        apiArticleInfoVO.setCommentCount(comments.size());
+
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
+
+        articleInfoVO.setTagList(tags);
+        articleInfoVO.setCollectCount(collectCount.intValue());
+        articleInfoVO.setCommentCount(comments.size());
         if (map != null && !map.isEmpty()) {
-            apiArticleInfoVO.setLikeCount(map.get(id.toString()));
+            articleInfoVO.setLikeCount(map.get(id.toString()));
         }
         Object userId = StpUtil.getLoginIdDefaultNull();
         if (userId != null) {
             String articleLikeKey = ARTICLE_USER_LIKE + userId;
             if (redisService.sIsMember(articleLikeKey, id)) {
-                apiArticleInfoVO.setIsLike(true);
-                if (apiArticleInfoVO.getReadType() == ReadTypeEnum.LIKE.index) {
-                    apiArticleInfoVO.setActiveReadType(true);
+                articleInfoVO.setIsLike(true);
+                if (articleInfoVO.getReadType() == ReadTypeEnum.LIKE.index) {
+                    articleInfoVO.setActiveReadType(true);
                 }
             }
-            if (apiArticleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index) {
+            if (articleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index) {
                 Long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>().eq(Comment::getUserId, userId));
                 if (count != null && count > 0) {
-                    apiArticleInfoVO.setActiveReadType(true);
+                    articleInfoVO.setActiveReadType(true);
                 }
             }
 
             Long collect = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getUserId, userId).eq(Collect::getArticleId, id));
-            apiArticleInfoVO.setIsCollect(collect.intValue());
+            articleInfoVO.setIsCollect(collect.intValue());
 
             Long followed = followedMapper.selectCount(new LambdaQueryWrapper<Followed>().eq(Followed::getUserId, userId)
-                    .eq(Followed::getFollowedUserId, apiArticleInfoVO.getUserId()));
-            apiArticleInfoVO.setIsFollowed(followed.intValue());
+                    .eq(Followed::getFollowedUserId, articleInfoVO.getUserId()));
+            articleInfoVO.setIsFollowed(followed.intValue());
         }
 
-        if (apiArticleInfoVO.getReadType() == ReadTypeEnum.CODE.index) {
+        if (articleInfoVO.getReadType() == ReadTypeEnum.CODE.index) {
             List<Object> cacheList = redisService.getCacheList(RedisConstants.CHECK_CODE_IP);
             String ip = IpUtil.getIp();
             if (cacheList.contains(ip)) {
-                apiArticleInfoVO.setActiveReadType(true);
+                articleInfoVO.setActiveReadType(true);
             }
         }
 
         redisService.incrArticle(id.longValue(), ARTICLE_READING, IpUtil.getIp());
-        return ResponseResult.success(apiArticleInfoVO);
+        return articleInfoVO;
     }
 
     @Override
-    public ResponseResult searchArticle(String keywords) {
+    public Page<ApiArticleSearchVO> searchArticle(String keywords) {
         if (StringUtils.isBlank(keywords)) {
             throw new BadRequestException(PARAMS_ILLEGAL.getDesc());
         }
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
         String strategy = SearchModelEnum.getStrategy(systemConfig.getSearchModel());
-        Page<ApiArticleSearchVO> page = searchStrategyContext.executeSearchStrategy(strategy, keywords);
-
-        return ResponseResult.success(page);
+        return searchStrategyContext.executeSearchStrategy(strategy, keywords);
     }
 
     @Override
+    // todo refactor
     public ResponseResult archive() {
         List<ApiArchiveVO> articleList = articleMapper.selectListArchive();
         Map<String, List<ApiArchiveVO>> resultList = articleList.stream().collect(Collectors.groupingBy(ApiArchiveVO::getTime));
@@ -187,7 +199,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public ResponseResult articleLike(Integer articleId) {
+    public void articleLike(Integer articleId) {
         String userId = StpUtil.getLoginIdAsString();
         String articleLikeKey = ARTICLE_USER_LIKE + userId;
         if (redisService.sIsMember(articleLikeKey, articleId)) {
@@ -197,25 +209,22 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             redisService.sAdd(articleLikeKey, articleId);
             redisService.hIncr(ARTICLE_LIKE_COUNT, articleId.toString(), 1L);
         }
-
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult insertArticle(ArticlePostDTO dto) {
+    public void insertArticle(ArticlePostDTO dto) {
         Article article = BeanCopyUtil.copyObject(dto, Article.class);
         article.setUserId(StpUtil.getLoginIdAsString());
         int insert = articleMapper.insert(article);
         if (insert > 0) {
             tagMapper.saveArticleTags(article.getId(), dto.getTagList());
         }
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateMyArticle(ArticlePostDTO dto) {
+    public void updateMyArticle(ArticlePostDTO dto) {
         Article article = BeanCopyUtil.copyObject(dto, Article.class);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only modify your own article!");
@@ -223,12 +232,15 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         articleMapper.updateById(article);
         tagMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
         tagMapper.saveArticleTags(article.getId(), dto.getTagList());
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult readMarkdownFile(MultipartFile file) {
-        String fileName = file.getOriginalFilename().split(".md")[0];
+    public Map<String, Object> readMarkdownFile(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (Objects.isNull(originalFilename)) {
+            throw new BadRequestException("file originalFilename is null!");
+        }
+        String fileName = originalFilename.split(".md")[0];
         StringBuilder sb = new StringBuilder();
         try {
             InputStream inputStream = file.getInputStream();
@@ -248,49 +260,54 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         Map<String, Object> map = new HashMap<>();
         map.put("content", sb.toString());
         map.put("fileName", fileName);
-        return ResponseResult.success(map);
+        return map;
     }
 
     @Override
-    public ResponseResult selectArticleByUserId(String userId, Integer type) {
+    public Page<ListArticleVO> selectArticleByUserId(String userId, Integer type) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
-        Page<ApiArticleListVO> list = articleMapper.selectMyArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), userId, type);
-        list.getRecords().forEach(item -> {
-            List<Tag> tags = tagMapper.selectTagByArticleId(item.getId());
-            item.setTagList(tags);
+        Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ListArticleVO> list = articleMapper.selectMyArticle(page, userId, type);
 
+        List<ListArticleVO> records = list.getRecords();
+        Set<Long> articleIdSet = records.stream().map(ListArticleVO::getId).collect(Collectors.toSet());
+        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
+        records.forEach(item -> {
+            item.setTagList(articleTagListMap.get(item.getId()));
             item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
         });
-        return ResponseResult.success(list);
+        return list;
 
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteMyArticle(Long id) {
+    public void deleteMyArticle(Long id) {
         Article article = articleMapper.selectById(id);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only delete your own article!");
         }
         articleMapper.deleteById(id);
         tagMapper.deleteByArticleIds(Collections.singletonList(id));
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult selectMyArticleInfo(Long id) {
+    public ArticlePostDTO selectMyArticleInfo(Long id) {
         ArticlePostDTO articlePostDTO = articleMapper.selectMyArticleInfo(id);
+        if (Objects.isNull(articlePostDTO)) {
+            throw new NotFoundException("Article not found, id={}!", id);
+        }
         if (!articlePostDTO.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
-        List<Tag> tags = tagMapper.selectTagByArticleId(id);
-        List<Long> tagList = tags.stream().map(Tag::getId).collect(Collectors.toList());
-        articlePostDTO.setTagList(tagList);
-        return ResponseResult.success(articlePostDTO);
+        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(id));
+        List<Long> tagIds = articleTagListMap.get(articlePostDTO.getId()).stream().map(Tag::getId).toList();
+        articlePostDTO.setTagList(tagIds);
+        return articlePostDTO;
     }
 
     @Override
-    public ResponseResult checkCode(String code) {
+    public void checkCode(String code) {
         String key = RedisConstants.WECHAT_CODE + code;
         Object redisCode = redisService.getCacheObject(key);
         if (ObjectUtil.isNull(redisCode)) {
@@ -304,20 +321,5 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         cacheList.add(IpUtil.getIp());
         redisService.setCacheList(CHECK_CODE_IP, cacheList);
         redisService.deleteObject(key);
-        return ResponseResult.success("Verified!");
-    }
-
-
-    private void setCommentAndLike(ApiArticleListVO item) {
-        List<Tag> list = tagMapper.selectTagByArticleId(item.getId());
-        Long commentCount = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
-                .eq(Comment::getArticleId, item.getId()));
-        Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
-        if (map != null && !map.isEmpty()) {
-            Object obj = map.get(item.getId().toString());
-            item.setLikeCount(obj == null ? 0 : obj);
-        }
-        item.setTagList(list);
-        item.setCommentCount(commentCount.intValue());
     }
 }

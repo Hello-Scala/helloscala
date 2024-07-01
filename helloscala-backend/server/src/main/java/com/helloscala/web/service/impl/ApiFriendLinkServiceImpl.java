@@ -1,7 +1,6 @@
 package com.helloscala.web.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.FriendLink;
 import com.helloscala.common.mapper.FriendLinkMapper;
 import com.helloscala.common.service.EmailService;
@@ -26,14 +25,13 @@ public class ApiFriendLinkServiceImpl implements ApiFriendLinkService {
     private final EmailService emailService;
 
     @Override
-    public ResponseResult selectFriendLinkList() {
-        List<ApiFriendLinkVO> list = friendLinkMapper.selectLinkList(UP.code);
-        return ResponseResult.success(list);
+    public List<ApiFriendLinkVO> selectFriendLinkList() {
+        return friendLinkMapper.selectLinkList(UP.code);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addFriendLink(FriendLink friendLink) {
+    public void addFriendLink(FriendLink friendLink) {
         FriendLink entity = friendLinkMapper.selectOne(new LambdaQueryWrapper<FriendLink>()
                 .eq(FriendLink::getUrl,friendLink.getUrl()));
         if (entity != null){
@@ -42,6 +40,5 @@ public class ApiFriendLinkServiceImpl implements ApiFriendLinkService {
         friendLink.setStatus(APPLY.getCode());
         friendLinkMapper.insert(friendLink);
         emailService.emailNoticeMe("New friend link apply!","New friend link apply ("+friendLink.getUrl()+"), please got to verify!!!");
-        return ResponseResult.success();
     }
 }

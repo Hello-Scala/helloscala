@@ -3,31 +3,40 @@ package com.helloscala.web.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticlePostDTO;
-import com.helloscala.common.vo.article.ApiArticleListVO;
+import com.helloscala.common.entity.Tag;
+import com.helloscala.common.vo.article.ApiArticleSearchVO;
+import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.ArticleInfoVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 public interface ApiArticleService {
-    Page<ApiArticleListVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
+    Page<ListArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
 
-    ResponseResult selectArticleInfo(Integer id);
+    ArticleInfoVO selectArticleInfo(Integer id);
 
-    ResponseResult searchArticle(String keywords);
+    Page<ApiArticleSearchVO> searchArticle(String keywords);
+
+    Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet);
 
     ResponseResult archive();
 
-    ResponseResult articleLike(Integer articleId);
+    void articleLike(Integer articleId);
 
-    ResponseResult checkCode(String code);
+    void checkCode(String code);
 
-    ResponseResult insertArticle(ArticlePostDTO dto);
+    void insertArticle(ArticlePostDTO dto);
 
-    ResponseResult selectArticleByUserId(String userId, Integer type);
+    Page<ListArticleVO> selectArticleByUserId(String userId, Integer type);
 
-    ResponseResult deleteMyArticle(Long id);
+    void deleteMyArticle(Long id);
 
-    ResponseResult selectMyArticleInfo(Long id);
+    ArticlePostDTO selectMyArticleInfo(Long id);
 
-    ResponseResult updateMyArticle(ArticlePostDTO dto);
+    void updateMyArticle(ArticlePostDTO dto);
 
-    ResponseResult readMarkdownFile(MultipartFile file);
+    Map<String, Object> readMarkdownFile(MultipartFile file);
 }
