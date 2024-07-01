@@ -1,11 +1,13 @@
 package com.helloscala.web.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticlePostDTO;
+import com.helloscala.common.vo.article.ApiArticleListVO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ApiArticleService {
-    ResponseResult selectArticleList(Integer categoryId, Integer tagId,String orderByDescColumn);
+    Page<ApiArticleListVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
 
     ResponseResult selectArticleInfo(Integer id);
 

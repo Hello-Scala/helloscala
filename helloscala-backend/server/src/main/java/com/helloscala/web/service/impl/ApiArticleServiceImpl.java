@@ -35,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.helloscala.common.RedisConstants.*;
@@ -47,10 +48,11 @@ import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
 public class ApiArticleServiceImpl implements ApiArticleService {
 
     private final ArticleMapper articleMapper;
+    private final ArticleTagMapper articleTagMapper;
 
     private final RedisService redisService;
 
-    private final TagsMapper tagsMapper;
+    private final TagsMapper tagMapper;
 
     private final CommentMapper commentMapper;
 
@@ -62,21 +64,43 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final SearchStrategyContext searchStrategyContext;
 
     @Override
-    public ResponseResult selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
+    public Page<ApiArticleListVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
         Page<ApiArticleListVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
                 categoryId, tagId, orderByDescColumn);
-        articlePage.getRecords().forEach(item -> {
-            setCommentAndLike(item);
-//            int collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, item.getId()));
-//            item.setCollectCount(collectCount);
-//            if (StpUtil.getLoginIdDefaultNull() != null) {
-//                collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, item.getId())
-//                        .eq(Collect::getUserId,StpUtil.getLoginIdAsString()));
-//                item.setIsCollect(collectCount > 0);
-//            }
-            item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
+        List<ApiArticleListVO> records = articlePage.getRecords();
+
+        Set<Long> articleIdSet = records.stream().map(ApiArticleListVO::getId).collect(Collectors.toSet());
+
+        LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
+        articleTagQuery.in(ArticleTag::getArticleId, articleIdSet);
+        List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagQuery);
+
+        Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+
+        Set<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        LambdaQueryWrapper<Tag> tagQuery = new LambdaQueryWrapper<>();
+        tagQuery.in(Tag::getId, tagIds);
+        List<Tag> tags = tagMapper.selectList(tagQuery);
+        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
+
+        records.forEach(r -> {
+            List<ArticleTag> tagList = articleTagMap.getOrDefault(r.getId(), new ArrayList<>());
+            List<Tag> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
+            r.setTagList(articleTagList);
         });
-        return ResponseResult.success(articlePage);
+
+        LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<Comment>().select(Comment::getId, Comment::getArticleId)
+                .in(Comment::getArticleId, articleIdSet);
+        List<Comment> comments = commentMapper.selectList(commentQuery);
+
+        Map<Long, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
+        records.forEach(item -> {
+            setCommentAndLike(item);
+            item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
+            List<Comment> articleComments = commentMap.getOrDefault(item.getId(), new ArrayList<>());
+            item.setCommentCount(articleComments.size());
+        });
+        return articlePage;
     }
 
     @Override
@@ -87,7 +111,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         }
         Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, id));
         apiArticleInfoVO.setCollectCount(collectCount.intValue());
-        List<Tag> list = tagsMapper.selectTagByArticleId(apiArticleInfoVO.getId());
+        List<Tag> list = tagMapper.selectTagByArticleId(apiArticleInfoVO.getId());
         apiArticleInfoVO.setTagList(list);
         List<Comment> comments = commentMapper.selectList(
                 new LambdaQueryWrapper<Comment>().eq(Comment::getArticleId, id));
@@ -184,7 +208,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         article.setUserId(StpUtil.getLoginIdAsString());
         int insert = articleMapper.insert(article);
         if (insert > 0) {
-            tagsMapper.saveArticleTags(article.getId(), dto.getTagList());
+            tagMapper.saveArticleTags(article.getId(), dto.getTagList());
         }
         return ResponseResult.success();
     }
@@ -197,8 +221,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             throw new BadRequestException("Can only modify your own article!");
         }
         articleMapper.updateById(article);
-        tagsMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
-        tagsMapper.saveArticleTags(article.getId(), dto.getTagList());
+        tagMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
+        tagMapper.saveArticleTags(article.getId(), dto.getTagList());
         return ResponseResult.success();
     }
 
@@ -232,7 +256,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
         Page<ApiArticleListVO> list = articleMapper.selectMyArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), userId, type);
         list.getRecords().forEach(item -> {
-            List<Tag> tags = tagsMapper.selectTagByArticleId(item.getId());
+            List<Tag> tags = tagMapper.selectTagByArticleId(item.getId());
             item.setTagList(tags);
 
             item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
@@ -249,7 +273,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             throw new BadRequestException("Can only delete your own article!");
         }
         articleMapper.deleteById(id);
-        tagsMapper.deleteByArticleIds(Collections.singletonList(id));
+        tagMapper.deleteByArticleIds(Collections.singletonList(id));
         return ResponseResult.success();
     }
 
@@ -259,7 +283,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         if (!articlePostDTO.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
-        List<Tag> tags = tagsMapper.selectTagByArticleId(id);
+        List<Tag> tags = tagMapper.selectTagByArticleId(id);
         List<Long> tagList = tags.stream().map(Tag::getId).collect(Collectors.toList());
         articlePostDTO.setTagList(tagList);
         return ResponseResult.success(articlePostDTO);
@@ -285,7 +309,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
 
     private void setCommentAndLike(ApiArticleListVO item) {
-        List<Tag> list = tagsMapper.selectTagByArticleId(item.getId());
+        List<Tag> list = tagMapper.selectTagByArticleId(item.getId());
         Long commentCount = commentMapper.selectCount(new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getArticleId, item.getId()));
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
