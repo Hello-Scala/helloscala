@@ -6,6 +6,7 @@ import com.helloscala.common.entity.UserLog;
 import com.helloscala.common.mapper.UserLogMapper;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
+import com.helloscala.common.web.response.Response;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +39,13 @@ public class BusinessLoggerAspect {
 
     @Around(value = "pointcut(businessLogger)")
     public Object doAround(ProceedingJoinPoint joinPoint, BusinessLogger businessLogger) throws Throwable {
-        Object result = joinPoint.proceed();
-        handle(joinPoint, (ResponseResult) result);
-        return result;
+        Object response = joinPoint.proceed();
+        handle(joinPoint, (Response<?>) response);
+        return response;
     }
 
     @Async
-    public void handle(ProceedingJoinPoint joinPoint, ResponseResult result) throws Throwable {
+    public void handle(ProceedingJoinPoint joinPoint, Response<?> response) throws Throwable {
         HttpServletRequest request = IpUtil.getRequest();
         if (Objects.isNull(request)) {
             logger.error("Failed to get request, on {}", joinPoint.getKind());
@@ -70,7 +71,7 @@ public class BusinessLoggerAspect {
             UserLog userLog = UserLog.builder().model(annotation.value()).type(annotation.type())
                     .description(annotation.desc()).createTime(DateUtil.getNowDate())
                     .ip(ip).address(IpUtil.getIp2region(ip)).clientType(clientType).accessOs(os)
-                    .browser(browser).result(result.getMessage()).build();
+                    .browser(browser).result(response.getStatus().toString()).build();
             sysLogMapper.insert(userLog);
         } catch (Exception e) {
             logger.error("Failed to add user log on {}", joinPoint.getKind(), e);
