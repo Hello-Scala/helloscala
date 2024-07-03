@@ -5,12 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.entity.Article;
-import com.helloscala.common.vo.article.ApiArchiveVO;
-import com.helloscala.common.vo.article.ArticleInfoVO;
-import com.helloscala.common.vo.article.ListArticleVO;
-import com.helloscala.common.vo.article.ApiArticleSearchVO;
-import com.helloscala.common.vo.article.SystemArticleContributeVO;
-import com.helloscala.common.vo.article.SystemArticleListVO;
+import com.helloscala.common.vo.article.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -29,10 +24,6 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
 
     List<SystemArticleContributeVO> contribute(@Param("lastTime") String lastTime, @Param("nowTime")String nowTime);
-
-
-
-    List<ApiArchiveVO> selectListArchive();
 
     Page<ListArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") Integer categoryId, @Param("tagId")Integer tagId,
                                                 @Param("orderByDescColumn")String orderByDescColumn);

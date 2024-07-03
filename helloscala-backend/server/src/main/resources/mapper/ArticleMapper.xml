@@ -129,13 +129,6 @@
         </choose>
     </select>
 
-    <select id="selectListArchive" resultType="com.helloscala.common.vo.article.ApiArchiveVO">
-        select id,
-               title,
-               DATE_FORMAT(create_time, '%Y-%m') as 'time', create_time as formatTime
-        from b_article where is_publish = 1
-        order by create_time desc
-    </select>
     <select id="selectArticleByIdToVO" resultMap="selectArticleByIdToVOMap">
         select a.id,
                a.user_id,

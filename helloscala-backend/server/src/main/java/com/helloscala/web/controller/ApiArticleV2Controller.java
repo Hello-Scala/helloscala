@@ -1,37 +1,51 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.helloscala.common.ResponseResult;
 import com.helloscala.common.annotation.AccessLimit;
 import com.helloscala.common.annotation.BusinessLogger;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticlePostDTO;
+import com.helloscala.common.entity.Article;
+import com.helloscala.common.utils.DateHelper;
+import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
 import com.helloscala.common.vo.article.ListArticleVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
+import com.helloscala.web.dto.ListPublishedArticleResponse;
+import com.helloscala.web.dto.PublishedArticleView;
 import com.helloscala.web.service.ApiArticleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestController
-@RequestMapping("/v1/article")
-@Tag(name = "Article management-V1")
+@RequestMapping("/article")
+@Tag(name = "Article management-V2")
 @RequiredArgsConstructor
-public class ApiArticleController {
-
+public class ApiArticleV2Controller {
     private final ApiArticleService articleService;
 
-    @BusinessLogger(value = "Home page list articles",type = "search",desc = "list articles")
+    @BusinessLogger(value = "Home page list articles", type = "search", desc = "list articles")
     @GetMapping(value = "/")
     @Operation(summary = "list articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "article list")
@@ -42,7 +56,7 @@ public class ApiArticleController {
         return ResponseHelper.ok(listArticleVOPage);
     }
 
-    @BusinessLogger(value = "Get article detail",type = "search",desc = "get article detail")
+    @BusinessLogger(value = "Get article detail", type = "search", desc = "get article detail")
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
@@ -59,18 +73,53 @@ public class ApiArticleController {
         return ResponseHelper.ok(apiArticleSearchVOPage);
     }
 
-    @Deprecated
-    @BusinessLogger(value = "Archive article",type = "search",desc = "Archive article")
+    @BusinessLogger(value = "Archive article", type = "search", desc = "Archive article")
     @GetMapping(value = "/archive")
     @Operation(summary = "Archive article", method = "GET")
     @ApiResponse(responseCode = "200", description = "Archive article")
-    public ResponseResult archive() {
-        return  articleService.archive();
+    public Response<ListPublishedArticleResponse> archiveV2() {
+        List<Article> articles = articleService.listPublished();
+
+        Map<String, List<Article>> monthlyArticleMap = articles.stream().collect(Collectors.groupingBy(a -> DateHelper.toYearAndMonth(a.getCreateTime())));
+        long total = monthlyArticleMap.values().stream().mapToLong(Collection::size).sum();
+        List<ListPublishedArticleResponse.MonthlyArticleView> monthlyArticleViews = monthlyArticleMap.entrySet().stream().map(entry -> {
+            List<PublishedArticleView> publishedArticleViews = entry.getValue().stream().map(article -> {
+                PublishedArticleView publishedArticleView = new PublishedArticleView();
+                publishedArticleView.setId(article.getId());
+                publishedArticleView.setUserId(article.getUserId());
+                publishedArticleView.setCategoryId(article.getCategoryId());
+                publishedArticleView.setTitle(article.getTitle());
+                publishedArticleView.setAvatar(article.getAvatar());
+                publishedArticleView.setSummary(article.getSummary());
+                publishedArticleView.setReadType(article.getReadType());
+                publishedArticleView.setIsStick(article.getIsStick());
+                publishedArticleView.setIsOriginal(article.getIsOriginal());
+                publishedArticleView.setOriginalUrl(article.getOriginalUrl());
+                publishedArticleView.setKeywords(article.getKeywords());
+                publishedArticleView.setAddress(article.getAddress());
+                publishedArticleView.setQuantity(article.getQuantity());
+                publishedArticleView.setIsCarousel(article.getIsCarousel());
+                publishedArticleView.setIsRecommend(article.getIsRecommend());
+                publishedArticleView.setCreateTime(article.getCreateTime());
+                publishedArticleView.setCreateMonthlyDate(article.getCreateTime());
+                publishedArticleView.setUpdateTime(article.getUpdateTime());
+                return publishedArticleView;
+            }).toList();
+            ListPublishedArticleResponse.MonthlyArticleView monthlyArticleView = new ListPublishedArticleResponse.MonthlyArticleView();
+            monthlyArticleView.setMonth(entry.getKey());
+            monthlyArticleView.setArticles(publishedArticleViews);
+            return monthlyArticleView;
+        }).toList();
+
+        ListPublishedArticleResponse response = new ListPublishedArticleResponse();
+        response.setTotal(total);
+        response.setMonthlyArticles(monthlyArticleViews);
+        return ResponseHelper.ok(response);
     }
 
 
     @AccessLimit
-    @BusinessLogger(value = "Like article",type = "serach",desc = "Like article")
+    @BusinessLogger(value = "Like article", type = "serach", desc = "Like article")
     @GetMapping(value = "/like")
     @Operation(summary = "Like article", method = "GET")
     @ApiResponse(responseCode = "200", description = "Like article")
@@ -79,7 +128,7 @@ public class ApiArticleController {
         return ResponseHelper.ok();
     }
 
-    @BusinessLogger(value = "Wechat official account check code",type = "search",desc = "Wechat official account check code")
+    @BusinessLogger(value = "Wechat official account check code", type = "search", desc = "Wechat official account check code")
     @GetMapping(value = "/checkCode")
     @Operation(summary = "Wechat official account check code", method = "GET")
     @ApiResponse(responseCode = "200", description = "Wechat official account check code")
@@ -90,7 +139,7 @@ public class ApiArticleController {
 
     @SaCheckLogin
     @PostMapping(value = "/")
-    @BusinessLogger(value = "Create article",type = "add",desc = "Create article")
+    @BusinessLogger(value = "Create article", type = "add", desc = "Create article")
     @Operation(summary = "Create article", method = "POST")
     @ApiResponse(responseCode = "200", description = "Create article")
     public EmptyResponse insertArticle(@RequestBody ArticlePostDTO dto) {
@@ -100,7 +149,7 @@ public class ApiArticleController {
 
     @SaCheckLogin
     @PutMapping(value = "/")
-    @BusinessLogger(value = "Update article",type = "update",desc = "Update article")
+    @BusinessLogger(value = "Update article", type = "update", desc = "Update article")
     @Operation(summary = "Update article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update article")
     public EmptyResponse updateMyArticle(@RequestBody ArticlePostDTO dto) {
@@ -109,19 +158,19 @@ public class ApiArticleController {
     }
 
     @SaCheckLogin
-    @GetMapping(value = "/selectArticleByUserId")
-    @BusinessLogger(value = "List article by user id",type = "search",desc = "List article by user id")
+    @GetMapping(value = "/listByUserId")
+    @BusinessLogger(value = "List article by user id", type = "search", desc = "List article by user id")
     @Operation(summary = "List article by user id", method = "GET")
     @ApiResponse(responseCode = "200", description = "List article by user id")
-    public Response<Page<ListArticleVO>> selectArticleByUserId(@RequestParam(name = "categoryId", required = true) String userId,
-                                                               @RequestParam(name = "type", required = false) Integer type) {
-        Page<ListArticleVO> listArticleVOPage = articleService.selectArticleByUserId(userId, type);
+    public Response<Page<ListArticleVO>> listByUserId(@RequestParam(name = "userId", required = true) String userId,
+                                                      @RequestParam(name = "type", required = false) Integer type) {
+        Page<ListArticleVO> listArticleVOPage = articleService.listByUserId(userId, type);
         return ResponseHelper.ok(listArticleVOPage);
     }
 
     @SaCheckLogin
     @DeleteMapping(value = "/")
-    @BusinessLogger(value = "Delete article",type = "delete",desc = "Delete article")
+    @BusinessLogger(value = "Delete article", type = "delete", desc = "Delete article")
     @Operation(summary = "Delete article", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Delete article")
     public EmptyResponse deleteMyArticle(@RequestParam(name = "id", required = true) Long id) {
@@ -131,21 +180,11 @@ public class ApiArticleController {
 
     @SaCheckLogin
     @GetMapping(value = "/selectMyArticleInfo")
-    @BusinessLogger(value = "Get article detail",type = "search",desc = "Get article detail")
+    @BusinessLogger(value = "Get article detail", type = "search", desc = "Get article detail")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get article detail")
     public Response<ArticlePostDTO> selectMyArticleInfo(@RequestParam(name = "id", required = true) Long id) {
         ArticlePostDTO articlePostDTO = articleService.selectMyArticleInfo(id);
         return ResponseHelper.ok(articlePostDTO);
-    }
-
-    // todo refactor
-    @PostMapping(value = "/readMarkdownFile")
-    @Operation(summary = "add md file", method = "POST")
-    @BusinessLogger(value = "add md file",type = "add",desc = "add md file")
-    @ApiResponse(responseCode = "200", description = "add md file")
-    public Response<Map<String, Object>> readMdFile(@RequestPart(name = "file", required = true) MultipartFile file) {
-        Map<String, Object> map = articleService.readMarkdownFile(file);
-        return ResponseHelper.ok(map);
     }
 }

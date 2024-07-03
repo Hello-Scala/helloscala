@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.RedisConstants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.ReadTypeEnum;
@@ -17,10 +16,9 @@ import com.helloscala.common.strategy.context.SearchStrategyContext;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.article.ApiArchiveVO;
+import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
 import com.helloscala.common.vo.article.ListArticleVO;
-import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.handle.RelativeDateFormat;
@@ -31,10 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -180,22 +175,11 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    // todo refactor
-    public ResponseResult archive() {
-        List<ApiArchiveVO> articleList = articleMapper.selectListArchive();
-        Map<String, List<ApiArchiveVO>> resultList = articleList.stream().collect(Collectors.groupingBy(ApiArchiveVO::getTime));
-        Object[] keyArr = resultList.keySet().toArray();
-        Arrays.sort(keyArr);
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (int i = keyArr.length - 1; i >= 0; i--) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("time", keyArr[i]);
-            List<ApiArchiveVO> list = resultList.get(keyArr[i]);
-            Collections.sort(list, (o1, o2) -> o2.getFormatTime().compareTo(o1.getFormatTime()));
-            map.put("list", list);
-            result.add(map);
-        }
-        return ResponseResult.success(result).putExtra("total", articleList.size());
+    public List<Article> listPublished() {
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
+        articleQuery.eq(Article::getIsPublish, 1);
+        articleQuery.orderByDesc(Article::getCreateTime);
+        return articleMapper.selectList(articleQuery);
     }
 
     @Override
@@ -235,36 +219,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public Map<String, Object> readMarkdownFile(MultipartFile file) {
-        String originalFilename = file.getOriginalFilename();
-        if (Objects.isNull(originalFilename)) {
-            throw new BadRequestException("file originalFilename is null!");
-        }
-        String fileName = originalFilename.split(".md")[0];
-        StringBuilder sb = new StringBuilder();
-        try {
-            InputStream inputStream = file.getInputStream();
-            byte[] buffer = new byte[1024];
-
-            int length;
-            while ((length = inputStream.read(buffer)) != -1) {
-                sb.append(new String(buffer, 0, length));
-            }
-
-            inputStream.close();
-
-        } catch (IOException e) {
-            log.error("Failed to read markdown file!", e);
-            throw new BadRequestException("Markdown file read failed!");
-        }
-        Map<String, Object> map = new HashMap<>();
-        map.put("content", sb.toString());
-        map.put("fileName", fileName);
-        return map;
-    }
-
-    @Override
-    public Page<ListArticleVO> selectArticleByUserId(String userId, Integer type) {
+    public Page<ListArticleVO> listByUserId(String userId, Integer type) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
         Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
         Page<ListArticleVO> list = articleMapper.selectMyArticle(page, userId, type);

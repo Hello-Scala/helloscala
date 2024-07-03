@@ -6,6 +6,7 @@ import com.helloscala.common.entity.UserLog;
 import com.helloscala.common.mapper.UserLogMapper;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
+import com.helloscala.common.web.response.AbstractResponse;
 import com.helloscala.common.web.response.Response;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,12 +41,16 @@ public class BusinessLoggerAspect {
     @Around(value = "pointcut(businessLogger)")
     public Object doAround(ProceedingJoinPoint joinPoint, BusinessLogger businessLogger) throws Throwable {
         Object response = joinPoint.proceed();
-        handle(joinPoint, (Response<?>) response);
+        if (response instanceof AbstractResponse) {
+            handle(joinPoint, (AbstractResponse) response);
+        } else {
+            handle(joinPoint, (ResponseResult) response);
+        }
         return response;
     }
 
     @Async
-    public void handle(ProceedingJoinPoint joinPoint, Response<?> response) throws Throwable {
+    public void handle(ProceedingJoinPoint joinPoint, AbstractResponse response) throws Throwable {
         HttpServletRequest request = IpUtil.getRequest();
         if (Objects.isNull(request)) {
             logger.error("Failed to get request, on {}", joinPoint.getKind());
@@ -72,6 +77,41 @@ public class BusinessLoggerAspect {
                     .description(annotation.desc()).createTime(DateUtil.getNowDate())
                     .ip(ip).address(IpUtil.getIp2region(ip)).clientType(clientType).accessOs(os)
                     .browser(browser).result(response.getStatus().toString()).build();
+            sysLogMapper.insert(userLog);
+        } catch (Exception e) {
+            logger.error("Failed to add user log on {}", joinPoint.getKind(), e);
+        }
+    }
+
+    @Deprecated
+    @Async
+    public void handle(ProceedingJoinPoint joinPoint, ResponseResult response) throws Throwable {
+        HttpServletRequest request = IpUtil.getRequest();
+        if (Objects.isNull(request)) {
+            logger.error("Failed to get request, on {}", joinPoint.getKind());
+            return;
+        }
+        try {
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            Method method = signature.getMethod();
+            BusinessLogger annotation = method.getAnnotation(BusinessLogger.class);
+            if (Objects.isNull(annotation)) {
+                return;
+            }
+            if (!annotation.save()) {
+                logger.info("Ignore save log, on {}", joinPoint.getKind());
+                return;
+            }
+            String ip = IpUtil.getIp();
+            UserAgent userAgent = UserAgent.parseUserAgentString(request.getHeader(USER_AGENT));
+            String clientType = userAgent.getOperatingSystem().getDeviceType().toString();
+            String os = userAgent.getOperatingSystem().getName();
+            String browser = userAgent.getBrowser().toString();
+
+            UserLog userLog = UserLog.builder().model(annotation.value()).type(annotation.type())
+                    .description(annotation.desc()).createTime(DateUtil.getNowDate())
+                    .ip(ip).address(IpUtil.getIp2region(ip)).clientType(clientType).accessOs(os)
+                    .browser(browser).result(response.getCode().toString()).build();
             sysLogMapper.insert(userLog);
         } catch (Exception e) {
             logger.error("Failed to add user log on {}", joinPoint.getKind(), e);
