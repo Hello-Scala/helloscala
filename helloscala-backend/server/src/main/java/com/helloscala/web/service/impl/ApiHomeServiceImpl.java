@@ -3,7 +3,6 @@ package com.helloscala.web.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.RedisConstants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.entity.WebConfig;
 import com.helloscala.common.mapper.ArticleMapper;
@@ -11,8 +10,8 @@ import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.mapper.WebConfigMapper;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.utils.IpUtil;
-import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.vo.article.ArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.response.GetHomeInfoResponse;
 import com.helloscala.web.response.GetWebSiteInfoResponse;
@@ -28,7 +27,6 @@ import org.springframework.util.DigestUtils;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 @Service
@@ -59,14 +57,6 @@ public class ApiHomeServiceImpl implements ApiHomeService {
         return IpUtil.getIp2region(ipAddress);
     }
 
-    @Deprecated
-    public ResponseResult getHomeData() {
-        List<ArticleVO> articles = articleMapper.selectListByBanner();
-        List<Tag> tags = tagMapper.selectList(null);
-        List<RecommendedArticleVO> recommendedArticles = articleMapper.selectRecommendArticle();
-        return ResponseResult.success().putExtra("articles",articles).putExtra("newArticleList",recommendedArticles).putExtra("tagCloud",tags);
-    }
-
     @Override
     public GetHomeInfoResponse getHomeDataV2() {
         List<ArticleVO> articles = articleMapper.selectListByBanner();
@@ -77,15 +67,6 @@ public class ApiHomeServiceImpl implements ApiHomeService {
         response.setRecommendedArticles(recommendedArticles);
         response.setTags(tags);
         return response;
-    }
-
-    @Deprecated
-    public ResponseResult getWebSiteInfo() {
-        WebConfig webConfig = webConfigMapper.selectOne(null);
-        Object count = redisService.getCacheObject(RedisConstants.BLOG_VIEWS_COUNT);
-        Long visitorAccess = redisService.getCacheSetKeyNumber(RedisConstants.UNIQUE_VISITOR);
-        return ResponseResult.success(webConfig).putExtra("siteAccess", Optional.ofNullable(count).orElse(0))
-                .putExtra("visitorAccess",visitorAccess);
     }
 
     @Override

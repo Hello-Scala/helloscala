@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import com.helloscala.common.ResponseResult;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.annotation.OperationLogger;
 import ${impPo};
 import ${impVo};
@@ -26,16 +27,18 @@ public class ${entityName}Controller {
      *${tableComment}列表
      **/
     @RequestMapping(value="/list", method = RequestMethod.GET)
-    public ResponseResult select${entityName}List() {
-        return ${varName}Service.select${entityName}List();
+    public Response<?> select${entityName}List() {
+        // todo impl
+        return ResponseHelper.ok();
     }
 
     /**
      *${tableComment}详情
      **/
     @RequestMapping(value="/info/{id}", method = RequestMethod.GET)
-    public ResponseResult select${entityName}ById(@PathVariable(value = "id") Integer id) {
-        return ${varName}Service.select${entityName}ById(id);
+    public Response<?> select${entityName}ById(@PathVariable(value = "id") Integer id) {
+        // todo impl
+        return ResponseHelper.ok();
     }
 
 	/**
@@ -43,8 +46,9 @@ public class ${entityName}Controller {
      **/
     @OperationLogger(value = "添加${tableComment}")
     @RequestMapping(value="/add", method=RequestMethod.POST)
-    public ResponseResult add${entityName}(@RequestBody ${entityName} ${varName}) {
-        return ${varName}Service.add${varName}(${varName});
+    public Response<?> add${entityName}(@RequestBody ${entityName} ${varName}) {
+        // todo impl
+        return ResponseHelper.ok();
     }
 
     /**
@@ -52,8 +56,9 @@ public class ${entityName}Controller {
      **/
     @OperationLogger(value = "修改${tableComment}")
     @RequestMapping(value="/update", method=RequestMethod.PUT)
-    public ResponseResult update${entityName}(@RequestBody ${entityName} ${varName}) {
-        return ${varName}Service.update${entityName}(${varName});
+    public Response<?> update${entityName}(@RequestBody ${entityName} ${varName}) {
+        // todo impl
+        return ResponseHelper.ok();
     }
 
     /**
@@ -61,7 +66,8 @@ public class ${entityName}Controller {
      **/
     @OperationLogger(value = "删除${tableComment}")
     @RequestMapping(value="/delete", method=RequestMethod.DELETE)
-    public ResponseResult delete${entityName}ByIds(@RequestBody List<${idType}> ids) {
-        return ${varName}Service.delete${entityName}ByIds(ids);
+    public Response<?> delete${entityName}ByIds(@RequestBody List<${idType}> ids) {
+        // todo impl
+        return ResponseHelper.ok();
     }
 }

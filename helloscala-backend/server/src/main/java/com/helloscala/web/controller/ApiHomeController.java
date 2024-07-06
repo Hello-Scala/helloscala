@@ -1,9 +1,10 @@
 package com.helloscala.web.controller;
 
 
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
+import com.helloscala.web.response.GetHomeInfoResponse;
+import com.helloscala.web.response.GetWebSiteInfoResponse;
 import com.helloscala.web.service.ApiHomeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,10 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 
-// todo remove
-@Deprecated
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/home")
 @RequiredArgsConstructor
 @Tag(name = "Home page management")
 public class ApiHomeController {
@@ -34,17 +33,17 @@ public class ApiHomeController {
     @GetMapping("/webSiteInfo")
     @Operation(summary = "get website info", method = "GET")
     @ApiResponse(responseCode = "200", description = "get website info")
-    public ResponseResult getWebSiteInfo() {
-        return homeService.getWebSiteInfo();
+    public Response<GetWebSiteInfoResponse> getWebSiteInfo() {
+        GetWebSiteInfoResponse response = homeService.getWebSiteInfoV2();
+        return ResponseHelper.ok(response);
     }
 
-    // todo refactor
-    @Deprecated
-    @GetMapping("/")
+    @GetMapping
     @Operation(summary = "Get home data", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get home data")
-    public ResponseResult getHomeData() {
-        return homeService.getHomeData();
+    public Response<GetHomeInfoResponse> getHomeData() {
+        GetHomeInfoResponse response = homeService.getHomeDataV2();
+        return ResponseHelper.ok(response);
     }
 
     @GetMapping("/hot")
