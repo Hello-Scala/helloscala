@@ -72,140 +72,10 @@ CREATE TABLE IF NOT EXISTS `b_article_tag`  (
                                   `id` int NOT NULL AUTO_INCREMENT,
                                   `article_id` int NOT NULL COMMENT '文章id',
                                   `tag_id` int NOT NULL COMMENT '标签id',
+                                  `create_time` datetime NOT NULL default now() COMMENT '创建时间',
                                   PRIMARY KEY (`id`) USING BTREE,
                                   UNIQUE INDEX `fk_article_tag_1`(`article_id`, `tag_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1276 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of b_article_tag
--- ----------------------------
-INSERT IGNORE INTO `b_article_tag` VALUES (892, 5, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (893, 5, 13);
-INSERT IGNORE INTO `b_article_tag` VALUES (768, 9, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (769, 9, 2);
-INSERT IGNORE INTO `b_article_tag` VALUES (778, 87, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1049, 89, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1075, 100, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1076, 100, 70);
-INSERT IGNORE INTO `b_article_tag` VALUES (824, 101, 2);
-INSERT IGNORE INTO `b_article_tag` VALUES (825, 101, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (826, 101, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (821, 102, 17);
-INSERT IGNORE INTO `b_article_tag` VALUES (822, 102, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (823, 102, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (960, 110, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (646, 111, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (959, 112, 32);
-INSERT IGNORE INTO `b_article_tag` VALUES (771, 114, 2);
-INSERT IGNORE INTO `b_article_tag` VALUES (772, 114, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (697, 119, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (698, 119, 51);
-INSERT IGNORE INTO `b_article_tag` VALUES (938, 125, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (845, 130, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (846, 130, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (763, 145, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1022, 146, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1023, 146, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1024, 146, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (957, 147, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (958, 147, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (815, 148, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (816, 148, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (817, 148, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (1201, 149, 10);
-INSERT IGNORE INTO `b_article_tag` VALUES (919, 150, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (917, 152, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (918, 152, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (956, 158, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1036, 162, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1063, 165, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1064, 165, 60);
-INSERT IGNORE INTO `b_article_tag` VALUES (899, 166, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (898, 166, 62);
-INSERT IGNORE INTO `b_article_tag` VALUES (1250, 167, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (954, 168, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (867, 169, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (868, 169, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1058, 172, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (950, 173, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (951, 173, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (949, 174, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (948, 175, 10);
-INSERT IGNORE INTO `b_article_tag` VALUES (903, 176, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (904, 176, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1054, 177, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1055, 177, 32);
-INSERT IGNORE INTO `b_article_tag` VALUES (962, 179, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (968, 180, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (966, 181, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (967, 181, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (981, 182, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (982, 182, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (984, 183, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (991, 184, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (992, 184, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (989, 185, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (990, 185, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (1091, 186, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1092, 186, 32);
-INSERT IGNORE INTO `b_article_tag` VALUES (997, 187, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (998, 187, 59);
-INSERT IGNORE INTO `b_article_tag` VALUES (1001, 188, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1002, 188, 10);
-INSERT IGNORE INTO `b_article_tag` VALUES (1016, 192, 10);
-INSERT IGNORE INTO `b_article_tag` VALUES (1017, 192, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1018, 192, 32);
-INSERT IGNORE INTO `b_article_tag` VALUES (1019, 193, 17);
-INSERT IGNORE INTO `b_article_tag` VALUES (1020, 193, 67);
-INSERT IGNORE INTO `b_article_tag` VALUES (1021, 193, 69);
-INSERT IGNORE INTO `b_article_tag` VALUES (1112, 194, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1113, 194, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1114, 194, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (1065, 198, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1066, 198, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (1050, 199, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1051, 199, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1253, 200, 63);
-INSERT IGNORE INTO `b_article_tag` VALUES (1061, 201, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1062, 201, 32);
-INSERT IGNORE INTO `b_article_tag` VALUES (1071, 202, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1074, 203, 70);
-INSERT IGNORE INTO `b_article_tag` VALUES (1078, 204, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1077, 204, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1081, 205, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1082, 205, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1084, 206, 18);
-INSERT IGNORE INTO `b_article_tag` VALUES (1089, 207, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1090, 207, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1107, 213, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (1108, 213, 69);
-INSERT IGNORE INTO `b_article_tag` VALUES (1151, 214, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1125, 216, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1126, 216, 70);
-INSERT IGNORE INTO `b_article_tag` VALUES (1130, 217, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1135, 220, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (1180, 248, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (1254, 251, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1255, 251, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1256, 251, 71);
-INSERT IGNORE INTO `b_article_tag` VALUES (1212, 253, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1213, 253, 66);
-INSERT IGNORE INTO `b_article_tag` VALUES (1224, 255, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1225, 255, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (1251, 256, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1252, 256, 66);
-INSERT IGNORE INTO `b_article_tag` VALUES (1234, 257, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1235, 257, 72);
-INSERT IGNORE INTO `b_article_tag` VALUES (1237, 258, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1238, 258, 57);
-INSERT IGNORE INTO `b_article_tag` VALUES (1236, 258, 65);
-INSERT IGNORE INTO `b_article_tag` VALUES (1239, 259, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1240, 259, 72);
-INSERT IGNORE INTO `b_article_tag` VALUES (1244, 260, 1);
-INSERT IGNORE INTO `b_article_tag` VALUES (1245, 260, 66);
-INSERT IGNORE INTO `b_article_tag` VALUES (1249, 261, 31);
-INSERT IGNORE INTO `b_article_tag` VALUES (1269, 264, 12);
-INSERT IGNORE INTO `b_article_tag` VALUES (1268, 264, 73);
 
 -- ----------------------------
 -- Table structure for b_category
@@ -233,7 +103,6 @@ INSERT IGNORE INTO `b_category` VALUES (20, '资源软件', 0, 0, '2022-01-14 15
 INSERT IGNORE INTO `b_category` VALUES (28, '数据库', 0, 8, '2022-02-18 16:01:07', '2024-03-27 14:47:32', 'el-icon-coin');
 INSERT IGNORE INTO `b_category` VALUES (31, '前端开发', 0, 9, '2023-06-21 15:04:31', '2023-06-21 07:04:30', 'el-icon-mouse');
 INSERT IGNORE INTO `b_category` VALUES (32, '博客文档', 0, 2, '2023-09-07 10:03:31', '2024-03-27 14:47:37', 'el-icon-document');
-INSERT IGNORE INTO `b_category` VALUES (35, '发撒发撒', 0, 1, '2024-03-27 15:10:24', '2024-03-27 15:10:23', 'ArrowDownBold');
 
 -- ----------------------------
 -- Table structure for b_collect
@@ -294,8 +163,6 @@ INSERT IGNORE INTO `b_dict` VALUES (6, '博客登录方式', 'sys_login_method',
 INSERT IGNORE INTO `b_dict` VALUES (7, '定时任务分组', 'sys_job_group', 1, '定时任务分组列表', '2021-12-10 08:53:30', '2021-12-10 08:53:30', 2);
 INSERT IGNORE INTO `b_dict` VALUES (8, '任务状态', 'sys_job_status', 1, '任务状态列表', '2021-12-10 09:01:10', '2021-12-10 09:01:10', 2);
 INSERT IGNORE INTO `b_dict` VALUES (9, '任务执行策略', 'sys_job_misfire', 1, '任务执行策略列表', '2021-12-10 11:11:48', '2021-12-10 11:12:04', 2);
-INSERT IGNORE INTO `b_dict` VALUES (12, '测试', '是', 1, '是', '2024-03-29 11:50:13', '2024-03-29 11:50:13', 0);
-INSERT IGNORE INTO `b_dict` VALUES (13, '发撒发发', '发', 0, NULL, '2024-03-29 13:40:41', '2024-03-29 13:40:41', 0);
 
 -- ----------------------------
 -- Table structure for b_dict_data
@@ -342,7 +209,6 @@ INSERT IGNORE INTO `b_dict_data` VALUES (23, 6, '微信', '5', 'success', '1', 5
 INSERT IGNORE INTO `b_dict_data` VALUES (24, 2, '待审批', '2', 'info', '1', 0, 1, NULL);
 INSERT IGNORE INTO `b_dict_data` VALUES (25, 6, 'github', '6', 'info', '1', 0, 1, 'github登录');
 INSERT IGNORE INTO `b_dict_data` VALUES (26, 2, '草稿', '3', 'warning', '1', 3, 1, NULL);
-INSERT IGNORE INTO `b_dict_data` VALUES (28, 12, 'FASFF1', 'ASFF1', 'success', '1', 2, 1, 'FWQF');
 
 -- ----------------------------
 -- Table structure for b_exception_log
@@ -990,25 +856,25 @@ CREATE TABLE IF NOT EXISTS `b_tags`  (
 -- ----------------------------
 -- Records of b_tags
 -- ----------------------------
-INSERT IGNORE INTO `b_tags` VALUES (1, 'Spring Boot', 842, 20, '2021-11-12 14:43:27', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (2, 'Elasticsearch', 0, 21, '2021-11-12 14:43:27', '2024-03-27 14:36:52');
-INSERT IGNORE INTO `b_tags` VALUES (10, '博客', 679, 9, '2021-11-12 14:43:27', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (12, 'Vue', 300, 18, '2021-12-29 14:01:50', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (13, 'Spring Cloud', 759, 19, '2021-12-29 14:02:32', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (17, 'Redis', 395, 7, '2022-01-25 14:09:03', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (18, 'Linux', 491, 10, '2022-01-25 14:09:17', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (31, 'Mysql', 516, 10, '2022-02-18 16:01:07', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (32, 'Nginx', 442, 5, '2022-04-13 17:48:08', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (51, '异步', 92, 5, '2023-04-03 11:30:54', '2023-06-05 03:00:00');
-INSERT IGNORE INTO `b_tags` VALUES (57, 'Java Script', 0, 1, '2023-06-27 16:02:33', '2023-06-27 08:02:32');
-INSERT IGNORE INTO `b_tags` VALUES (59, 'Dcoker', 0, 12, '2023-07-13 15:51:12', '2023-07-13 07:51:12');
+INSERT IGNORE INTO `b_tags` VALUES (1, 'Spring Boot', 842, 0, '2021-11-12 14:43:27', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (2, 'Elasticsearch', 0, 0, '2021-11-12 14:43:27', '2024-03-27 14:36:52');
+INSERT IGNORE INTO `b_tags` VALUES (10, '博客', 679, 0, '2021-11-12 14:43:27', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (12, 'Vue', 300, 0, '2021-12-29 14:01:50', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (13, 'Spring Cloud', 759, 0, '2021-12-29 14:02:32', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (17, 'Redis', 395, 0, '2022-01-25 14:09:03', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (18, 'Linux', 491, 0, '2022-01-25 14:09:17', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (31, 'Mysql', 516, 0, '2022-02-18 16:01:07', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (32, 'Nginx', 442, 0, '2022-04-13 17:48:08', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (51, '异步', 92, 0, '2023-04-03 11:30:54', '2023-06-05 03:00:00');
+INSERT IGNORE INTO `b_tags` VALUES (57, 'Java Script', 0, 0, '2023-06-27 16:02:33', '2023-06-27 08:02:32');
+INSERT IGNORE INTO `b_tags` VALUES (59, 'Dcoker', 0, 0, '2023-07-13 15:51:12', '2023-07-13 07:51:12');
 INSERT IGNORE INTO `b_tags` VALUES (60, 'Aspect', 0, 0, '2023-07-25 17:07:19', '2023-07-25 09:07:18');
 INSERT IGNORE INTO `b_tags` VALUES (62, 'oauth2', 0, 0, '2023-08-15 09:30:12', '2023-08-15 01:30:11');
 INSERT IGNORE INTO `b_tags` VALUES (63, '服务器', 0, 0, '2023-09-05 17:28:08', '2023-09-05 09:28:07');
 INSERT IGNORE INTO `b_tags` VALUES (65, 'Css', 0, 0, '2023-09-25 11:19:00', '2023-09-25 03:18:59');
-INSERT IGNORE INTO `b_tags` VALUES (66, 'Java', 0, 11, '2023-10-07 09:28:50', '2023-10-07 01:28:50');
-INSERT IGNORE INTO `b_tags` VALUES (67, 'Juc', 0, 12, '2023-10-07 09:28:55', '2023-10-07 01:28:54');
-INSERT IGNORE INTO `b_tags` VALUES (69, '高并发', 0, 14, '2023-10-07 09:29:11', '2023-10-07 01:29:11');
+INSERT IGNORE INTO `b_tags` VALUES (66, 'Java', 0, 0, '2023-10-07 09:28:50', '2023-10-07 01:28:50');
+INSERT IGNORE INTO `b_tags` VALUES (67, 'Juc', 0, 0, '2023-10-07 09:28:55', '2023-10-07 01:28:54');
+INSERT IGNORE INTO `b_tags` VALUES (69, '高并发', 0, 0, '2023-10-07 09:29:11', '2023-10-07 01:29:11');
 INSERT IGNORE INTO `b_tags` VALUES (70, '资源', 0, 0, '2023-10-12 10:46:35', '2023-10-12 02:46:34');
 INSERT IGNORE INTO `b_tags` VALUES (71, 'websoket', 0, 0, '2023-12-14 17:17:58', '2023-12-14 09:17:58');
 INSERT IGNORE INTO `b_tags` VALUES (72, 'uniapp', 0, 0, '2023-12-26 11:28:20', '2023-12-26 03:28:20');

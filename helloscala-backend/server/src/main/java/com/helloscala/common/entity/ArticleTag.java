@@ -26,4 +26,7 @@ public class ArticleTag implements Serializable {
 
     @Schema(name = "标签id")
     private Long tagId;
+
+    @Schema(name = "创建时间")
+    private Long createTime;
 }
