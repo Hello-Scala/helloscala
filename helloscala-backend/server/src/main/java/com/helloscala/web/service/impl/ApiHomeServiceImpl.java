@@ -52,10 +52,10 @@ public class ApiHomeServiceImpl implements ApiHomeService {
         String uuid = ipAddress + browser.getName() + operatingSystem.getName();
         String md5 = DigestUtils.md5DigestAsHex(uuid.getBytes());
         if (!redisService.sIsMember(RedisConstants.UNIQUE_VISITOR, md5)) {
-            redisService.incr(RedisConstants.UNIQUE_VISITOR_COUNT, 1);
+            redisService.incr(RedisConstants.UNIQUE_VISITOR_COUNT, 1L);
             redisService.sAdd(RedisConstants.UNIQUE_VISITOR, md5);
         }
-        redisService.incr(RedisConstants.BLOG_VIEWS_COUNT, 1);
+        redisService.incr(RedisConstants.BLOG_VIEWS_COUNT, 1L);
         return IpUtil.getIp2region(ipAddress);
     }
 
@@ -91,12 +91,12 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     @Override
     public GetWebSiteInfoResponse getWebSiteInfoV2() {
         WebConfig webConfig = webConfigMapper.selectOne(null);
-        Long blogViewCount = (Long) redisService.getCacheObject(RedisConstants.BLOG_VIEWS_COUNT);
+        Integer blogViewCount = (Integer) redisService.getCacheObject(RedisConstants.BLOG_VIEWS_COUNT);
         Long visitorCount = redisService.getCacheSetKeyNumber(RedisConstants.UNIQUE_VISITOR);
 
         GetWebSiteInfoResponse response = new GetWebSiteInfoResponse();
         response.setConfig(webConfig);
-        response.setBlogViewCount(blogViewCount);
+        response.setBlogViewCount(Long.valueOf(blogViewCount));
         response.setVisitorCount(visitorCount);
         return response;
     }
