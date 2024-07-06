@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.Constants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Say;
 import com.helloscala.common.enums.PublishEnum;
 import com.helloscala.common.mapper.SayMapper;
@@ -25,41 +24,37 @@ public class SayServiceImpl extends ServiceImpl<SayMapper, Say> implements SaySe
 
 
     @Override
-    public ResponseResult selectSayPage(String keywords) {
+    public Page<Say> selectSayPage(String keywords) {
         LambdaQueryWrapper<Say> sayLambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (!StpUtil.hasRole(Constants.ADMIN_CODE)) {
             sayLambdaQueryWrapper.eq(Say::getIsPublic, PublishEnum.PUBLISH);
         }
         sayLambdaQueryWrapper.orderByDesc(Say::getCreateTime);
-        Page<Say> sayPage = baseMapper.selectPage(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),sayLambdaQueryWrapper);
-        return ResponseResult.success(sayPage);
+        Page<Say> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        return baseMapper.selectPage(page,sayLambdaQueryWrapper);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addSay(Say say) {
+    public void addSay(Say say) {
         say.setUserId(StpUtil.getLoginIdAsString());
         baseMapper.insert(say);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteSay(List<String> ids) {
+    public void deleteSay(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult selectSayById(String id) {
-        Say say = baseMapper.selectById(id);
-        return ResponseResult.success(say);
+    public Say selectSayById(String id) {
+        return baseMapper.selectById(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateSay(Say say) {
+    public void updateSay(Say say) {
         baseMapper.updateById(say);
-        return ResponseResult.success();
     }
 }

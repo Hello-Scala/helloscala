@@ -1,7 +1,7 @@
 package com.helloscala.job.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Job;
 import com.helloscala.common.enums.TaskException;
 import org.quartz.SchedulerException;
@@ -10,20 +10,20 @@ import java.util.List;
 
 
 public interface JobService extends IService<Job> {
-    ResponseResult selectJobPage(String jobName, String jobGroup, String status);
+    Page<Job> selectJobPage(String jobName, String jobGroup, String status);
 
-    ResponseResult selectJobById(Long jobId);
+    Job selectJobById(Long jobId);
 
-    ResponseResult addJob(Job job) throws SchedulerException, TaskException;
+    void addJob(Job job) throws SchedulerException, TaskException;
 
-    ResponseResult updateJob(Job job) throws SchedulerException, TaskException;
+    void updateJob(Job job) throws SchedulerException, TaskException;
 
-    ResponseResult deleteJob(List<Long> ids);
+    void deleteJob(List<Long> ids);
 
-    ResponseResult runJob(Job job);
+    void runJob(Job job);
 
-    ResponseResult changeStatus(Job job) throws SchedulerException;
+    void changeStatus(Job job) throws SchedulerException;
 
-    ResponseResult pauseJob(Job job) throws SchedulerException;
+    void pauseJob(Job job) throws SchedulerException;
 
 }

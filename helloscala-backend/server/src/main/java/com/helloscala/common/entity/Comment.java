@@ -35,7 +35,7 @@ public class Comment implements Serializable {
     private String replyUserId;
 
     @Schema(name = "文章id")
-    private Integer articleId;
+    private Long articleId;
 
     @Schema(name = "评论内容")
     private String content;

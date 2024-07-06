@@ -1,12 +1,14 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.Comment;
+import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.message.ApiCommentListVO;
 
 public interface ApiCommentService {
-    ResponseResult addComment(Comment comment);
+    Comment addComment(Comment comment);
 
-    ResponseResult selectCommentByArticleId(Long articleId);
+    Page<ApiCommentListVO> selectCommentByArticleId(Long articleId);
 
-    ResponseResult selectMyComment();
+    Page<ListArticleVO> selectMyComment();
 }

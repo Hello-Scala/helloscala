@@ -1,11 +1,13 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.helloscala.common.entity.Sign;
+
+import java.util.List;
 
 public interface ApiSignService {
-    ResponseResult getSignRecords(String startTime, String endTime);
+    List<String> getSignRecords(String startTime, String endTime);
 
-    ResponseResult sign(String time);
+    void sign(String time);
 
-    ResponseResult validateTodayIsSign();
+    Sign validateTodayIsSign();
 }

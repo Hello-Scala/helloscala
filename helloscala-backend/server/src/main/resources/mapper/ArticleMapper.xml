@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.helloscala.common.mapper.ArticleMapper">
 
-    <resultMap id="selectArticleByIdToVOMap" type="com.helloscala.common.vo.article.ApiArticleInfoVO">
+    <resultMap id="selectArticleByIdToVOMap" type="com.helloscala.common.vo.article.ArticleInfoVO">
         <result column="id" jdbcType="BIGINT" property="id"/>
         <result column="user_Id" jdbcType="VARCHAR" property="userId"/>
         <result column="nickname" jdbcType="VARCHAR" property="nickname"/>
@@ -105,7 +105,7 @@
         where LOWER(a.title) like concat('%', #{keywords}, '%') and a.is_publish = 1 order by a.create_time desc
     </select>
 
-    <select id="selectPublicArticleList" resultType="com.helloscala.common.vo.article.ApiArticleListVO">
+    <select id="selectPublicArticleList" resultType="com.helloscala.common.vo.article.ListArticleVO">
         select a.id, a.title, a.avatar,a.summary,a.quantity,a.is_stick,a.is_original,a.user_id,c.id as categoryId,c.name as categoryName,
                a.create_time, u.nickname,u.avatar as userAvatar,a.user_id
         from b_article a
@@ -129,13 +129,6 @@
         </choose>
     </select>
 
-    <select id="selectListArchive" resultType="com.helloscala.common.vo.article.ApiArchiveVO">
-        select id,
-               title,
-               DATE_FORMAT(create_time, '%Y-%m') as 'time', create_time as formatTime
-        from b_article where is_publish = 1
-        order by create_time desc
-    </select>
     <select id="selectArticleByIdToVO" resultMap="selectArticleByIdToVOMap">
         select a.id,
                a.user_id,
@@ -168,18 +161,18 @@
         order by is_stick desc ,create_time desc
     </select>
 
-    <select id="selectRecommendArticle" resultType="com.helloscala.common.vo.article.ApiArticleListVO">
+    <select id="selectRecommendArticle" resultType="com.helloscala.common.vo.article.ListArticleVO">
         select id, title, avatar,create_time
          from b_article where is_recommend = 1
         order by create_time desc limit 5
     </select>
 
-    <select id="selectHotArticleList" resultType="com.helloscala.common.vo.article.ApiArticleListVO">
+    <select id="selectHotArticleList" resultType="com.helloscala.common.vo.article.ListArticleVO">
         select id, title
         from b_article where is_publish = 1
         order by quantity desc limit 5
     </select>
-    <select id="selectMyArticle" resultType="com.helloscala.common.vo.article.ApiArticleListVO">
+    <select id="selectMyArticle" resultType="com.helloscala.common.vo.article.ListArticleVO">
         SELECT
         a.*,
         u.nickname AS username,

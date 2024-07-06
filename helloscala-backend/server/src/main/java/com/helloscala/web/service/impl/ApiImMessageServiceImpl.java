@@ -4,11 +4,10 @@ package com.helloscala.web.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.ImMessage;
 import com.helloscala.common.entity.ImRoom;
+import com.helloscala.common.entity.User;
 import com.helloscala.common.enums.YesOrNoEnum;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ImMessageMapper;
 import com.helloscala.common.mapper.ImRoomMapper;
 import com.helloscala.common.mapper.UserMapper;
@@ -20,6 +19,8 @@ import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.vo.message.ImRoomListVO;
 import com.helloscala.common.vo.user.ImOnlineUserVO;
 import com.helloscala.common.vo.user.UserInfoVO;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.im.MessageConstant;
 import com.helloscala.web.im.WebSocketInfoService;
@@ -34,9 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -50,11 +52,11 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     private final WebSocketInfoService webSocketInfoService;
 
     @Override
-    public ResponseResult selectHistoryList() {
-        Page<ImMessageVO> page = imMessageMapper.selectPublicHistoryList(new Page<>(PageUtil.getPageNo(),
-                PageUtil.getPageSize()));
-        formatCreateTime(page);
-        return ResponseResult.success(page);
+    public Page<ImMessageVO> selectHistoryList() {
+        Page<ImMessageVO> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ImMessageVO> pageResult = imMessageMapper.selectPublicHistoryList(page);
+        formatCreateTime(pageResult);
+        return pageResult;
     }
 
     @Override
@@ -63,70 +65,74 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     }
 
     @Override
-    public ResponseResult selectUserImHistoryList(String fromUserId, String toUserId) {
-        Page<ImMessageVO> page = imMessageMapper.selectPublicUserImHistoryList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
+    public Page<ImMessageVO> selectUserImHistoryList(String fromUserId, String toUserId) {
+        Page<ImMessageVO> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ImMessageVO> pageResult = imMessageMapper.selectPublicUserImHistoryList(page,
                 fromUserId, toUserId);
-        formatCreateTime(page);
-        return ResponseResult.success(page);
+        formatCreateTime(pageResult);
+        return pageResult;
     }
 
     @Override
-    public ResponseResult selectRoomList() {
+    public List<ImRoomListVO> selectRoomList() {
         List<ImRoomListVO> list = new ArrayList<>();
         List<ImRoom> imRooms = imRoomMapper.selectList(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, StpUtil.getLoginIdAsString())
                 .orderByDesc(ImRoom::getCreateTime));
+
+        Set<String> userIdSet = imRooms.stream().map(ImRoom::getToUserId).collect(Collectors.toSet());
+        List<User> users = userMapper.selectBatchIds(userIdSet);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
         for (ImRoom imRoom : imRooms) {
-            String toUserId = imRoom.getToUserId();
-            UserInfoVO userInfoVO = userMapper.selectInfoByUserId(toUserId);
-            ImRoomListVO vo = ImRoomListVO.builder().id(imRoom.getId()).receiveId(toUserId).nickname(userInfoVO.getNickname())
-                    .avatar(userInfoVO.getAvatar()).createTimeStr(RelativeDateFormat.format(imRoom.getCreateTime())).build();
-            int readNum = imMessageMapper.selectListReadByUserId(toUserId, StpUtil.getLoginIdAsString());
+            User user = userMap.get(imRoom.getToUserId());
+            int readNum = imMessageMapper.selectListReadByUserId(user.getId(), StpUtil.getLoginIdAsString());
+
+            ImRoomListVO vo = ImRoomListVO.builder().id(imRoom.getId()).receiveId(user.getId()).nickname(user.getNickname())
+                    .avatar(user.getAvatar()).createTimeStr(RelativeDateFormat.format(imRoom.getCreateTime())).build();
             vo.setReadNum(readNum);
             list.add(vo);
         }
-        return ResponseResult.success(list);
+        return list;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addRoom(String toUserId) {
+    public ImRoomListVO addRoom(String toUserId) {
         String fromUserId = StpUtil.getLoginIdAsString();
         if (StringUtils.isBlank(toUserId)) {
-            throw new BusinessException("Please choose an user!");
+            throw new BadRequestException("Please choose an user!");
         }
         if (toUserId.equals(fromUserId)) {
-            throw new BusinessException("Can not chat with your self!");
+            throw new BadRequestException("Can not chat with your self!");
         }
         ImRoom imRoom = imRoomMapper.selectOne(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, fromUserId)
                 .eq(ImRoom::getToUserId, toUserId));
         if (imRoom != null) {
-            return ResponseResult.success();
+            throw new ConflictException("Room exist!");
         }
         imRoom = ImRoom.builder().type(1).fromUserId(fromUserId).toUserId(toUserId).build();
         imRoomMapper.insert(imRoom);
         UserInfoVO userInfoVO = userMapper.selectInfoByUserId(toUserId);
         ImRoomListVO vo = ImRoomListVO.builder().id(imRoom.getId()).receiveId(toUserId).nickname(userInfoVO.getNickname())
                 .avatar(userInfoVO.getAvatar()).createTimeStr(RelativeDateFormat.format(imRoom.getCreateTime())).build();
-        return ResponseResult.success(vo);
+        return vo;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult read(String userId) {
+    public void read(String userId) {
         imMessageMapper.updateRead(userId, StpUtil.getLoginIdAsString());
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteRoom(String roomId) {
+    public void deleteRoom(String roomId) {
         imRoomMapper.deleteById(roomId);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult chat(ImMessageVO obj) {
+    public void chat(ImMessageVO obj) {
         Matcher matcher = pattern.matcher(obj.getContent());
         String content = obj.getContent();
         String url = null;
@@ -167,43 +173,42 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
         obj.setId(imMessage.getId());
         obj.setCreateTimeStr(RelativeDateFormat.format(imMessage.getCreateTime()));
         webSocketInfoService.chat(obj);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult withdraw(ImMessageVO message) {
+    public void withdraw(ImMessageVO message) {
         ImMessage entity = imMessageMapper.selectById(message.getId());
         if (DateUtil.getDiffDateToMinutes(entity.getCreateTime(), DateUtil.getNowDate()) >= 2) {
-            throw new BusinessException("recall message failed, message sent over 2 minutes!");
+            throw new BadRequestException("recall message failed, message sent over 2 minutes!");
         }
         if (!entity.getFromUserId().equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can only recall your own message!");
+            throw new BadRequestException("Can only recall your own message!");
         }
         ImMessage imMessage = BeanCopyUtil.copyObject(message, ImMessage.class);
         imMessage.setIp(IpUtil.getIp());
         imMessage.setIpSource(IpUtil.getIp2region(imMessage.getIp()));
         imMessageMapper.updateById(imMessage);
         webSocketInfoService.chat(message);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult getMessageNotice(Integer type) {
-        Page<ImMessageVO> page = imMessageMapper.getMessageNotice(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
-                StpUtil.getLoginIdAsString(), type);
-        page.getRecords().forEach(item -> {
-            item.setCreateTimeStr(RelativeDateFormat.format(item.getCreateTime()));
-        });
+    public Page<ImMessageVO> getMessageNotice(Integer type) {
+        Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ImMessageVO> pageResult = imMessageMapper.getMessageNotice(page, StpUtil.getLoginIdAsString(), type);
+
+        pageResult.getRecords().forEach(item -> item.setCreateTimeStr(RelativeDateFormat.format(item.getCreateTime())));
         ImMessage message = ImMessage.builder().isRead(1).build();
-        imMessageMapper.update(message, new LambdaQueryWrapper<ImMessage>().eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString())
-                .eq(ImMessage::getNoticeType, type));
-        return ResponseResult.success(page);
+        LambdaQueryWrapper<ImMessage> updateWrapper = new LambdaQueryWrapper<>();
+        updateWrapper.eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString())
+                .eq(ImMessage::getNoticeType, type);
+        imMessageMapper.update(message, updateWrapper);
+        return pageResult;
     }
 
     @Override
-    public ResponseResult getNewSystemNotice() {
+    public Map<String, Long> getNewSystemNotice() {
         Long systemCount = imMessageMapper.selectCount(new LambdaQueryWrapper<ImMessage>()
                 .eq(ImMessage::getCode, MessageConstant.SYSTEM_MESSAGE_CODE).eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString())
                 .eq(ImMessage::getIsRead, 0).eq(ImMessage::getNoticeType, MessageConstant.MESSAGE_SYSTEM_NOTICE));
@@ -220,39 +225,38 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
         map.put("system", systemCount);
         map.put("comment", commentCount);
         map.put("private", privateCount);
-        return ResponseResult.success(map);
+        return map;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteByNoticeType(String id, Integer type) {
+    public void deleteByNoticeType(String id, Integer type) {
         if (StringUtils.isNotBlank(id)) {
             imMessageMapper.deleteById(id);
-            return ResponseResult.success();
+            return;
         }
         imMessageMapper.delete(new LambdaQueryWrapper<ImMessage>().eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString())
                 .eq(ImMessage::getNoticeType, type));
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult getMessageNoticeApplet(Integer type) {
-        Page<ImMessageVO> page = imMessageMapper.getMessageNotice(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
-                StpUtil.getLoginIdAsString(), type);
-        page.getRecords().forEach(item -> item.setCreateTimeStr(RelativeDateFormat.format(item.getCreateTime())));
-        return ResponseResult.success(page);
+    public Page<ImMessageVO> getMessageNoticeApplet(Integer type) {
+        Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ImMessageVO> pageResult = imMessageMapper.getMessageNotice(page, StpUtil.getLoginIdAsString(), type);
+        pageResult.getRecords().forEach(item -> item.setCreateTimeStr(RelativeDateFormat.format(item.getCreateTime())));
+        return pageResult;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult markReadMessageNoticeApplet(String id) {
+    public void markReadMessageNoticeApplet(String id) {
         if (StringUtils.isNotBlank(id)) {
             imMessageMapper.updateById(ImMessage.builder().id(id).isRead(YesOrNoEnum.YES.getCode()).build());
-            return ResponseResult.success();
+            return;
         }
-        imMessageMapper.update(ImMessage.builder().isRead(YesOrNoEnum.YES.getCode()).build(),new LambdaQueryWrapper<ImMessage>()
-                .eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString()));
-        return ResponseResult.success();
+        LambdaQueryWrapper<ImMessage> updateWrapper = new LambdaQueryWrapper<>();
+        updateWrapper.eq(ImMessage::getToUserId, StpUtil.getLoginIdAsString());
+        imMessageMapper.update(ImMessage.builder().isRead(YesOrNoEnum.YES.getCode()).build(), updateWrapper);
     }
 
     private void formatCreateTime(Page<ImMessageVO> page) {

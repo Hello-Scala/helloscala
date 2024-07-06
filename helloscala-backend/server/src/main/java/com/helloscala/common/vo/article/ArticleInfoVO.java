@@ -1,7 +1,7 @@
 package com.helloscala.common.vo.article;
 
 import com.helloscala.common.entity.Category;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.vo.message.ApiCommentListVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class ApiArticleInfoVO {
+public class ArticleInfoVO {
 
     @Schema(name = "主键id")
     private Long id;
@@ -73,7 +73,7 @@ public class ApiArticleInfoVO {
     private Date updateTime;
 
     @Schema(name = "标签集合")
-    private List<Tags> tagList;
+    private List<Tag> tagList;
 
     @Schema(name = "分类")
     private Category category;

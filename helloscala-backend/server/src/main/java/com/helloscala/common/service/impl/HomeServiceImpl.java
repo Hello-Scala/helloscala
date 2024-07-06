@@ -30,25 +30,28 @@ public class HomeServiceImpl {
     private final RedisService redisService;
     private final UserMapper userMapper;
 
-    public Map<String,Integer> lineCount(){
-        Map<String,Integer> map = new HashMap<>();
-        map.put("article", articleMapper.selectList(null).size());
-        map.put("message",messageMapper.selectList(null).size());
-        map.put("user",userMapper.selectCount(null).intValue());
-        map.put("viewsCount",(Integer) getViewsCount());
+    // todo SiteSummaryView
+    public Map<String, Integer> lineCount() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("article", articleMapper.selectCount(null).intValue());
+        map.put("message", messageMapper.selectCount(null).intValue());
+        map.put("user", userMapper.selectCount(null).intValue());
+        map.put("viewsCount", (Integer) getViewsCount());
         return map;
     }
 
     public SystemHomeDataVO init() {
-        List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
-                .select(Article::getQuantity, Article::getTitle, Article::getId)
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Article::getQuantity, Article::getTitle, Article::getId)
                 .eq(Article::getIsPublish, PUBLISH.getCode())
-                .orderByDesc(Article::getQuantity).last("limit 6"));
+                .orderByDesc(Article::getQuantity).last("limit 6");
+
+        List<Article> articles = articleMapper.selectList(queryWrapper);
         Map<String, Object> contribute = this.contribute();
         Map<String, Object> categoryCount = this.categoryCount();
         List<Map<String, Object>> userAccess = this.userAccess();
 
-        List<Map<String,Object>> tagsList = tagsMapper.countTags();
+        List<Map<String, Object>> tagsList = tagsMapper.countTags();
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
 
         return SystemHomeDataVO.builder().dashboard(systemConfig.getDashboardNotification())
@@ -79,9 +82,9 @@ public class HomeServiceImpl {
             List<Object> list = new ArrayList<>();
             list.add(item);
             List<SystemArticleContributeVO> collect = articles.stream().filter(article -> article.getDate().equals(item)).toList();
-            if (!collect.isEmpty()){
+            if (!collect.isEmpty()) {
                 list.add(collect.get(0).getCount());
-            } else{
+            } else {
                 list.add(0);
             }
             result.add(list);
@@ -93,17 +96,17 @@ public class HomeServiceImpl {
         return map;
     }
 
-    public Map<String, Object> categoryCount(){
+    public Map<String, Object> categoryCount() {
         Map<String, Object> map = new HashMap<>();
         List<SystemCategoryCountVO> result = categoryMapper.countArticle();
         List<String> list = new ArrayList<>();
         result.forEach(item -> list.add(item.getName()));
-        map.put("result",result);
-        map.put("categoryList",list);
+        map.put("result", result);
+        map.put("categoryList", list);
         return map;
     }
 
-    public List<Map<String,Object>> userAccess() {
+    public List<Map<String, Object>> userAccess() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 7);
         return userLogMapper.getUserAccess(DateUtil.formateDate(calendar.getTime(), DateUtil.YYYY_MM_DD));

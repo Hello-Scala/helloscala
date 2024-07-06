@@ -2,10 +2,9 @@ package com.helloscala.web.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Followed;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.FollowedMapper;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.handle.SystemNoticeHandle;
 import com.helloscala.web.im.MessageConstant;
 import com.helloscala.web.service.ApiFollowedService;
@@ -26,26 +25,27 @@ public class ApiFollowedServiceImpl implements ApiFollowedService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addFollowedUser(String userId) {
+    public void addFollowedUser(String userId) {
         if (StringUtils.isBlank(userId)) {
-            throw new BusinessException("Followed user id is empty!");
+            throw new BadRequestException("Followed user id is empty!");
         }
         if (userId.equals(StpUtil.getLoginIdAsString())) {
-            throw new BusinessException("Can not follow yourself!");
+            throw new BadRequestException("Can not follow yourself!");
         }
         Followed followed = Followed.builder().userId(StpUtil.getLoginIdAsString()).followedUserId(userId).build();
         followedMapper.insert(followed);
-        SystemNoticeHandle.sendNotice(userId, MessageConstant.MESSAGE_WATCH_NOTICE, MessageConstant.SYSTEM_MESSAGE_CODE,null,null,null);
-        return ResponseResult.success();
+        SystemNoticeHandle.sendNotice(userId, MessageConstant.MESSAGE_WATCH_NOTICE, MessageConstant.SYSTEM_MESSAGE_CODE, null, null, null);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteFollowed(String userId) {
+    public void deleteFollowed(String userId) {
         if (StringUtils.isBlank(userId)) {
-            throw new BusinessException("Followed user id is empty!");
+            throw new BadRequestException("Followed user id is empty!");
         }
-        followedMapper.delete(new LambdaQueryWrapper<Followed>().eq(Followed::getUserId,StpUtil.getLoginIdAsString()).eq(Followed::getFollowedUserId,userId));
-        return ResponseResult.success();
+        LambdaQueryWrapper<Followed> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Followed::getUserId, StpUtil.getLoginIdAsString())
+                .eq(Followed::getFollowedUserId, userId);
+        followedMapper.delete(queryWrapper);
     }
 }

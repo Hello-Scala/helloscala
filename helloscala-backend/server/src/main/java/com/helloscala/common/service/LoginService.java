@@ -1,11 +1,11 @@
 package com.helloscala.common.service;
 
 
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.user.LoginDTO;
+import com.helloscala.common.vo.user.VerifyCodeVO;
 
 public interface LoginService {
-    ResponseResult login(LoginDTO vo);
+    String login(LoginDTO vo);
 
-    ResponseResult getCaptcha();
+    VerifyCodeVO getCaptcha();
 }

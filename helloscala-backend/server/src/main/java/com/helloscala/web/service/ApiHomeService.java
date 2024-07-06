@@ -4,11 +4,11 @@ import com.helloscala.common.ResponseResult;
 
 
 public interface ApiHomeService {
-    ResponseResult report();
+    String report();
 
     ResponseResult getHomeData();
 
     ResponseResult getWebSiteInfo();
 
-    ResponseResult hot(String type);
+    String hot(String type);
 }

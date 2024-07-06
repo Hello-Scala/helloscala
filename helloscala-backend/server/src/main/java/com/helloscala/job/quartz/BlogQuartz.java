@@ -3,7 +3,7 @@ package com.helloscala.job.quartz;
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.RedisConstants;
 import com.helloscala.common.entity.Article;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.service.ArticleService;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.service.TagsService;
@@ -64,11 +64,11 @@ public class BlogQuartz {
 
     public void updateTagsClickVolume(){
         Map<String, Object> map = redisService.getCacheMap(TAG_CLICK_VOLUME);
-        List<Tags> tagsList = new ArrayList<>();
+        List<Tag> tagsList = new ArrayList<>();
         for (Map.Entry<String, Object> stringEntry : map.entrySet()) {
             String id = stringEntry.getKey();
             Integer value = (Integer) stringEntry.getValue();
-            Tags tags = new Tags(Long.parseLong(id),value);
+            Tag tags = new Tag(Long.parseLong(id),value);
             tagsList.add(tags);
         }
         tagsService.updateBatchById(tagsList);

@@ -6,13 +6,13 @@ import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.Constants;
 import com.helloscala.common.entity.AdminLog;
 import com.helloscala.common.entity.ExceptionLog;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.AdminLogMapper;
 import com.helloscala.common.mapper.ExceptionLogMapper;
 import com.helloscala.common.utils.AspectUtil;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.web.exception.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
@@ -56,7 +56,7 @@ public class OperationLoggerAspect {
         HttpServletRequest request = IpUtil.getRequest();
         StpUtil.checkLogin();
         if (!StpUtil.hasRole(Constants.ADMIN_CODE)) {
-            throw new BusinessException(NO_PERMISSION);
+            throw new ForbiddenException(NO_PERMISSION.desc);
         }
         Date startTime = DateUtil.getNowDate();
         Object result = joinPoint.proceed();

@@ -1,9 +1,13 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.service.CommentService;
+import com.helloscala.common.vo.message.SystemCommentVO;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,8 +27,9 @@ public class CommentController {
     @RequestMapping(value = "/list",method = RequestMethod.GET)
     @Operation(summary = "List comment", method = "GET")
     @ApiResponse(responseCode = "200", description = "评论列表")
-    public ResponseResult selectCommentPage(@RequestParam(name = "keywords", required = false) String keywords){
-        return commentService.selectCommentPage(keywords);
+    public Response<Page<SystemCommentVO>> selectCommentPage(@RequestParam(name = "keywords", required = false) String keywords){
+        Page<SystemCommentVO> commentPage = commentService.selectCommentPage(keywords);
+        return ResponseHelper.ok(commentPage);
     }
 
     @RequestMapping(value = "/delete",method = RequestMethod.DELETE)
@@ -32,7 +37,8 @@ public class CommentController {
     @Operation(summary = "Batch delete", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Batch delete")
     @OperationLogger(value = "Batch delete")
-    public ResponseResult deleteBatch(@RequestBody List<Integer> ids){
-        return commentService.deleteComment(ids);
+    public EmptyResponse deleteBatch(@RequestBody List<Integer> ids){
+        commentService.deleteComment(ids);
+        return ResponseHelper.ok();
     }
 }

@@ -1,39 +1,41 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.vo.message.ImMessageVO;
+import com.helloscala.common.vo.message.ImRoomListVO;
 import com.helloscala.common.vo.user.ImOnlineUserVO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
 public interface ApiImMessageService {
-    ResponseResult selectHistoryList();
+    Page<ImMessageVO> selectHistoryList();
 
     List<ImOnlineUserVO> selectOnlineUserList(Set<String> strings);
 
-    ResponseResult selectUserImHistoryList(String fromUserId, String toUserId);
+    Page<ImMessageVO> selectUserImHistoryList(String fromUserId, String toUserId);
 
-    ResponseResult selectRoomList();
+    List<ImRoomListVO> selectRoomList();
 
-    ResponseResult addRoom(String userId);
+    ImRoomListVO addRoom(String userId);
 
-    ResponseResult read(String userId);
+    void read(String userId);
 
-    ResponseResult deleteRoom(String roomId);
+    void deleteRoom(String roomId);
 
-    ResponseResult chat(ImMessageVO message);
+    void chat(ImMessageVO message);
 
-    ResponseResult withdraw(ImMessageVO message);
+    void withdraw(ImMessageVO message);
 
-    ResponseResult getMessageNotice(Integer type);
+    Page<ImMessageVO> getMessageNotice(Integer type);
 
-    ResponseResult getNewSystemNotice();
+    Map<String, Long> getNewSystemNotice();
 
-    ResponseResult deleteByNoticeType(String id,Integer type);
+    void deleteByNoticeType(String id, Integer type);
 
-    ResponseResult getMessageNoticeApplet(Integer type);
+    Page<ImMessageVO> getMessageNoticeApplet(Integer type);
 
-    ResponseResult markReadMessageNoticeApplet(String id);
+    void markReadMessageNoticeApplet(String id);
 }

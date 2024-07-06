@@ -15,8 +15,6 @@ public interface RoleMapper extends BaseMapper<Role> {
 
     List<Integer> getRoleMenuIdList(Integer roleId);
 
-    void delByRoleId(@Param("roleId") Integer roleId,@Param("menus") List<Integer> menus);
-
     void insertBatchByRole(@Param("menus") List<Integer> menus, @Param("roleId") Integer roleId);
 
     List<String> selectByUserId(Object loginId);

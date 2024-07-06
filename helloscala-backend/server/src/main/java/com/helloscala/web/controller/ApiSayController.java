@@ -1,8 +1,12 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.helloscala.common.ResponseResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.Say;
+import com.helloscala.common.vo.say.ApiSayVO;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.Response;
+import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.web.service.ApiSayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,8 +28,9 @@ public class ApiSayController {
     @RequestMapping(value = "getSayList",method = RequestMethod.GET)
     @Operation(summary = "List says", method = "GET")
     @ApiResponse(responseCode = "200", description = "List says")
-    public ResponseResult selectSayList(){
-        return apiSayService.selectSayList();
+    public Response<Page<ApiSayVO>> selectSayList(){
+        Page<ApiSayVO> apiSayVOPage = apiSayService.selectSayList();
+        return ResponseHelper.ok(apiSayVOPage);
     }
 
 
@@ -33,8 +38,9 @@ public class ApiSayController {
     @RequestMapping(value = "insertSay",method = RequestMethod.POST)
     @Operation(summary = "Add says", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add says")
-    public ResponseResult insertSay(@RequestBody Say say){
-        return apiSayService.insertSay(say);
+    public EmptyResponse insertSay(@RequestBody Say say){
+        apiSayService.insertSay(say);
+        return ResponseHelper.ok();
     }
 
 }

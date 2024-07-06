@@ -3,15 +3,16 @@ package com.helloscala.web.service.impl;
 
 import com.helloscala.common.RedisConstants;
 import com.helloscala.common.ResponseResult;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.entity.WebConfig;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.TagsMapper;
 import com.helloscala.common.mapper.WebConfigMapper;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.utils.IpUtil;
-import com.helloscala.common.vo.article.ApiArticleListVO;
+import com.helloscala.common.vo.article.ListArticleVO;
 import com.helloscala.common.vo.article.SystemArticleListVO;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.service.ApiHomeService;
 import com.helloscala.web.utils.CustomHttpUtil;
 import eu.bitwalker.useragentutils.Browser;
@@ -35,11 +36,11 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     private final ArticleMapper articleMapper;
     private final TagsMapper tagsMapper;
 
-    public ResponseResult report() {
+    public String report() {
         String ipAddress = IpUtil.getIp();
         HttpServletRequest request = IpUtil.getRequest();
         if (Objects.isNull(request)) {
-            return ResponseResult.error("Failed to get request info!");
+            throw new BadRequestException("Failed to get request info!");
         }
         UserAgent userAgent = IpUtil.getUserAgent(request);
         Browser browser = userAgent.getBrowser();
@@ -51,16 +52,18 @@ public class ApiHomeServiceImpl implements ApiHomeService {
             redisService.sAdd(RedisConstants.UNIQUE_VISITOR, md5);
         }
         redisService.incr(RedisConstants.BLOG_VIEWS_COUNT, 1);
-        return ResponseResult.success(IpUtil.getIp2region(ipAddress));
+        return IpUtil.getIp2region(ipAddress);
     }
 
+    @Deprecated
     public ResponseResult getHomeData() {
         List<SystemArticleListVO> articles = articleMapper.selectListByBanner();
-        List<Tags> tags = tagsMapper.selectList(null);
-        List<ApiArticleListVO> apiArticleListVOS = articleMapper.selectRecommendArticle();
+        List<Tag> tags = tagsMapper.selectList(null);
+        List<ListArticleVO> apiArticleListVOS = articleMapper.selectRecommendArticle();
         return ResponseResult.success().putExtra("articles",articles).putExtra("newArticleList",apiArticleListVOS).putExtra("tagCloud",tags);
     }
 
+    @Deprecated
     public ResponseResult getWebSiteInfo() {
         WebConfig webConfig = webConfigMapper.selectOne(null);
         Object count = redisService.getCacheObject(RedisConstants.BLOG_VIEWS_COUNT);
@@ -70,9 +73,8 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     }
 
     @Override
-    public ResponseResult hot(String type) {
+    public String hot(String type) {
         String url = "https://www.coderutil.com/api/resou/v1/" + type;
-        String result = CustomHttpUtil.sendCuApiHttpUrl(url);
-        return ResponseResult.success(result);
+        return CustomHttpUtil.sendCuApiHttpUrl(url);
     }
 }

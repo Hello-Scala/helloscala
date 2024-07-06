@@ -14,6 +14,7 @@ import static com.helloscala.common.ResultCode.SUCCESS;
 
 @Schema(name = "统一返回结果类")
 @Data
+@Deprecated
 public class ResponseResult {
     @Schema(name = "响应消息", required = false)
     private String message;

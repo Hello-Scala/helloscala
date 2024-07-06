@@ -1,9 +1,10 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.annotation.BusinessLogger;
 import com.helloscala.common.entity.FeedBack;
+import com.helloscala.common.web.response.EmptyResponse;
+import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.web.service.ApiFeedBackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,11 +25,12 @@ public class ApiFeedBackController {
 
     @SaCheckLogin
     @PostMapping(value = "/")
-    @BusinessLogger(value = "Feedback",type = "add",desc = "add feedback")
+    @BusinessLogger(value = "Feedback", type = "add", desc = "add feedback")
     @Operation(summary = "Add feedback", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add feedback")
-    public ResponseResult addFeedback(@RequestBody FeedBack feedBack) {
-        return  feedBackService.addFeedback(feedBack);
+    public EmptyResponse addFeedback(@RequestBody FeedBack feedBack) {
+        feedBackService.addFeedback(feedBack);
+        return ResponseHelper.ok();
     }
 
 }

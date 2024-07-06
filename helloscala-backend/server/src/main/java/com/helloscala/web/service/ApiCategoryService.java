@@ -1,7 +1,9 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.helloscala.common.vo.category.ApiCategoryListVO;
+
+import java.util.List;
 
 public interface ApiCategoryService {
-    ResponseResult selectCategoryList();
+    List<ApiCategoryListVO> selectCategoryList();
 }

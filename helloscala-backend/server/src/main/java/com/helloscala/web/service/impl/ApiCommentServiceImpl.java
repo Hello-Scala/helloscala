@@ -3,18 +3,17 @@ package com.helloscala.web.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.entity.Comment;
 import com.helloscala.common.entity.User;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CommentMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.article.ApiArticleListVO;
+import com.helloscala.common.vo.article.ListArticleVO;
 import com.helloscala.common.vo.message.ApiCommentListVO;
+import com.helloscala.common.web.exception.GenericException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.handle.SystemNoticeHandle;
 import com.helloscala.web.im.MessageConstant;
@@ -26,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -39,7 +40,7 @@ public class ApiCommentServiceImpl implements ApiCommentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addComment(Comment comment) {
+    public Comment addComment(Comment comment) {
         UserAgent userAgent = UserAgent.parseUserAgentString(IpUtil.getRequest().getHeader("user-agent"));
         String ip = IpUtil.getIp();
         String ipAddress = IpUtil.getIp2region(ip);
@@ -48,7 +49,7 @@ public class ApiCommentServiceImpl implements ApiCommentService {
             comment.setSystem("mac");
         } else if (os.contains("Windows")) {
             comment.setSystem("windowns");
-        }else {
+        } else {
             comment.setSystem("android");
         }
         String content = HTMLUtil.deleteTag(comment.getContent());
@@ -57,55 +58,69 @@ public class ApiCommentServiceImpl implements ApiCommentService {
         comment.setIpAddress(ipAddress);
         comment.setUserId(StpUtil.getLoginIdAsString());
         int insert = commentMapper.insert(comment);
-        if (insert == 0){
-            throw new BusinessException("Comment failed!");
+        if (insert == 0) {
+            throw new GenericException("Comment failed!");
         }
-        String toUserId =  comment.getReplyUserId();
+        String toUserId = comment.getReplyUserId();
         int mark = toUserId == null ? 2 : 1;
         if (toUserId == null) {
             Article article = articleMapper.selectById(comment.getArticleId());
-            toUserId =  article.getUserId();
+            toUserId = article.getUserId();
         }
         SystemNoticeHandle.sendNotice(toUserId, MessageConstant.MESSAGE_COMMENT_NOTICE, MessageConstant.SYSTEM_MESSAGE_CODE, comment.getArticleId(), mark, comment.getContent());
-        return ResponseResult.success(comment);
+        return comment;
     }
 
     @Override
-    public ResponseResult selectCommentByArticleId(Long articleId) {
-        Page<ApiCommentListVO> pageList = commentMapper.selectCommentPage(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),articleId);
-        for (ApiCommentListVO vo : pageList.getRecords()) {
-            List<Comment> commentList = commentMapper.selectList(
-                    new LambdaQueryWrapper<Comment>().eq(Comment::getParentId, vo.getId()).orderByDesc(Comment::getCreateTime));
-            for (Comment e : commentList) {
-                User replyUserInfo = userMapper.selectById(e.getReplyUserId());
-                User userInfo1 = userMapper.selectById(e.getUserId());
-                ApiCommentListVO apiCommentListVO = ApiCommentListVO.builder()
-                        .id(e.getId())
-                        .userId(e.getUserId())
-                        .replyUserId(e.getReplyUserId())
-                        .nickname(userInfo1.getNickname())
-                        .webSite(userInfo1.getWebSite())
-                        .replyNickname(replyUserInfo.getNickname())
-                        .replyWebSite(replyUserInfo.getWebSite())
-                        .content(e.getContent())
-                        .avatar(userInfo1.getAvatar())
-                        .createTimeStr(RelativeDateFormat.format(e.getCreateTime()))
-                        .browser(e.getBrowser())
-                        .browserVersion(e.getBrowserVersion())
-                        .system(e.getSystem())
-                        .systemVersion(e.getSystemVersion())
-                        .ipAddress(e.getIpAddress())
+    public Page<ApiCommentListVO> selectCommentByArticleId(Long articleId) {
+        Page<ApiCommentListVO> commentListVOPage = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<ApiCommentListVO> pageList = commentMapper.selectCommentPage(commentListVOPage, articleId);
+
+        List<ApiCommentListVO> records = pageList.getRecords();
+        Set<Integer> commentIdSet = records.stream().map(ApiCommentListVO::getId).collect(Collectors.toSet());
+        List<Comment> commentList = commentMapper.selectList(
+                new LambdaQueryWrapper<Comment>().in(Comment::getParentId, commentIdSet).orderByDesc(Comment::getCreateTime));
+        Map<Integer, List<Comment>> childCommentMap = commentList.stream().filter(c -> Objects.nonNull(c.getParentId())).collect(Collectors.groupingBy(Comment::getParentId));
+
+        Set<String> replyUserIds = commentList.stream().map(Comment::getReplyUserId).collect(Collectors.toSet());
+        Set<String> allUserIdSet = commentList.stream().map(Comment::getUserId).collect(Collectors.toSet());
+        allUserIdSet.addAll(replyUserIds);
+        List<User> users = userMapper.selectBatchIds(allUserIdSet);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+        for (ApiCommentListVO vo : records) {
+            List<Comment> comments = childCommentMap.getOrDefault(vo.getId(), new ArrayList<>());
+            List<ApiCommentListVO> apiCommentListVOS = comments.stream().map(c -> {
+                User user = userMap.get(c.getUserId());
+                User replyUser = userMap.get(c.getReplyUserId());
+                return ApiCommentListVO.builder()
+                        .id(c.getId())
+                        .userId(c.getUserId())
+                        .replyUserId(c.getReplyUserId())
+                        .nickname(user.getNickname())
+                        .webSite(user.getWebSite())
+                        .replyNickname(replyUser.getNickname())
+                        .replyWebSite(replyUser.getWebSite())
+                        .content(c.getContent())
+                        .avatar(user.getAvatar())
+                        .createTimeStr(RelativeDateFormat.format(c.getCreateTime()))
+                        .browser(c.getBrowser())
+                        .browserVersion(c.getBrowserVersion())
+                        .system(c.getSystem())
+                        .systemVersion(c.getSystemVersion())
+                        .ipAddress(c.getIpAddress())
                         .build();
-                vo.getChildren().add(apiCommentListVO);
-            }
+            }).toList();
+            vo.setChildren(apiCommentListVOS);
             vo.setCreateTimeStr(RelativeDateFormat.format(vo.getCreateTime()));
         }
-        return ResponseResult.success(pageList);
+        return pageList;
     }
 
     @Override
-    public ResponseResult selectMyComment() {
-        Page<ApiArticleListVO> result  = commentMapper.selectMyComment(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),StpUtil.getLoginIdAsString());
-        return ResponseResult.success(result);
+    public Page<ListArticleVO> selectMyComment() {
+        Page<ListArticleVO> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        String loginId = StpUtil.getLoginIdAsString();
+        return commentMapper.selectMyComment(page, loginId);
     }
 }

@@ -2,6 +2,7 @@ package com.helloscala.web.controller;
 
 import com.helloscala.common.RedisConstants;
 import com.helloscala.common.service.RedisService;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,11 +27,8 @@ import java.util.regex.Pattern;
 @RequestMapping("/wechat")
 @RequiredArgsConstructor
 public class ApiWeChatController {
-
     private final RedisService redisService;
-
     private final WxMpService wxMpService;
-
     private final ApiUserService userService;
     private final Pattern pattern = Pattern.compile("(?i)^DL\\d{4}$");
 
@@ -41,9 +39,11 @@ public class ApiWeChatController {
                                  @RequestParam(name = "nonce", required = true) String nonce,
                                  @RequestParam(name = "echostr", required = true) String echostr) {
         if (wxMpService.checkSignature(timestamp, nonce, signature)) {
+            log.info("Wechat check signature success!");
             return echostr;
+        } else {
+            throw new BadRequestException("Invalid signature");
         }
-        return "Invalid signature";
     }
 
     @PostMapping(produces = "application/xml; charset=UTF-8")
@@ -52,22 +52,22 @@ public class ApiWeChatController {
             WxMpXmlMessage message = WxMpXmlMessage.fromXml(request.getInputStream());
             String content = message.getContent();
             log.info("Official account request type:{};content:{}", message.getMsgType(), content);
-            if (WxConsts.XmlMsgType.TEXT.equals(message.getMsgType())){
+            if (WxConsts.XmlMsgType.TEXT.equals(message.getMsgType())) {
                 if ("验证码".equals(content)) {
                     String code = RandomUtil.generationNumberChar(6);
                     String msg = MessageFormat.format("您的本次验证码:{0},该验证码30分钟内有效。", code);
-                    redisService.setCacheObject(RedisConstants.WECHAT_CODE+code,code,30, TimeUnit.MINUTES);
+                    redisService.setCacheObject(RedisConstants.WECHAT_CODE + code, code, 30, TimeUnit.MINUTES);
                     return returnMsg(msg, message);
                 }
                 //登录逻辑
                 Matcher matcher = pattern.matcher(content);
                 if (!matcher.matches()) {
                     return returnMsg("验证不正确或已过期", message);
-                }else {
+                } else {
                     String msg = userService.wechatLogin(message);
                     return returnMsg(msg, message);
                 }
-   
+
             }
 
         } catch (Exception e) {

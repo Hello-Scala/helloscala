@@ -1,20 +1,21 @@
 package com.helloscala.common.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
+import com.helloscala.common.vo.tag.SystemTagListVo;
 
 import java.util.List;
 
 
-public interface TagsService extends IService<Tags> {
-    ResponseResult selectTagsPage(String name);
+public interface TagsService extends IService<Tag> {
+    Page<SystemTagListVo> selectByName(String name);
 
-    ResponseResult addTags(Tags tags);
+    void addTags(Tag tags);
 
-    ResponseResult updateTag(Tags tags);
+    void updateTag(Tag tags);
 
-    ResponseResult deleteTags(List<Long> ids);
+    void deleteTags(List<Long> ids);
 
-    ResponseResult getTagsById(Long id);
+    Tag getTagsById(Long id);
 }

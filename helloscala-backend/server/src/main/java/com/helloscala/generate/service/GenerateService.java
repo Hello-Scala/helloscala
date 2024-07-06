@@ -4,10 +4,10 @@ package com.helloscala.generate.service;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.ResponseResult;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.SystemConfigMapper;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.system.TableListVO;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.generate.dto.ColumnInfo;
 import com.helloscala.generate.dto.Config;
 import com.helloscala.generate.dto.TableInfo;
@@ -179,7 +179,7 @@ public class GenerateService {
 
     public void download(String tableName, String downloadPath) throws IOException {
         if (StrUtil.isBlank(downloadPath)) {
-            throw new BusinessException("Download path is empty!");
+            throw new BadRequestException("Download path is empty!");
         }
         ClasspathResourceLoader resourceLoader = new ClasspathResourceLoader("beetl-back-end");
         Configuration cfg = Configuration.defaultConfiguration();

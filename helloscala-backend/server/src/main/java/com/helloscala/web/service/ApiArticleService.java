@@ -1,31 +1,39 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.dto.article.ArticlePostDTO;
-import org.springframework.web.multipart.MultipartFile;
+import com.helloscala.common.entity.Article;
+import com.helloscala.common.entity.Tag;
+import com.helloscala.common.vo.article.ApiArticleSearchVO;
+import com.helloscala.common.vo.article.ArticleInfoVO;
+import com.helloscala.common.vo.article.ListArticleVO;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface ApiArticleService {
-    ResponseResult selectArticleList(Integer categoryId, Integer tagId,String orderByDescColumn);
+    Page<ListArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
 
-    ResponseResult selectArticleInfo(Integer id);
+    ArticleInfoVO selectArticleInfo(Integer id);
 
-    ResponseResult searchArticle(String keywords);
+    Page<ApiArticleSearchVO> searchArticle(String keywords);
 
-    ResponseResult archive();
+    Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet);
 
-    ResponseResult articleLike(Integer articleId);
+    List<Article> listPublished();
 
-    ResponseResult checkCode(String code);
+    void articleLike(Integer articleId);
 
-    ResponseResult insertArticle(ArticlePostDTO dto);
+    void checkCode(String code);
 
-    ResponseResult selectArticleByUserId(String userId, Integer type);
+    void insertArticle(ArticlePostDTO dto);
 
-    ResponseResult deleteMyArticle(Long id);
+    Page<ListArticleVO> listByUserId(String userId, Integer type);
 
-    ResponseResult selectMyArticleInfo(Long id);
+    void deleteMyArticle(Long id);
 
-    ResponseResult updateMyArticle(ArticlePostDTO dto);
+    ArticlePostDTO selectMyArticleInfo(Long id);
 
-    ResponseResult readMarkdownFile(MultipartFile file);
+    void updateMyArticle(ArticlePostDTO dto);
 }

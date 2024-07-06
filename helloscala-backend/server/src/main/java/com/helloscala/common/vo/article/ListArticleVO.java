@@ -1,7 +1,7 @@
 package com.helloscala.common.vo.article;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiArticleListVO {
+public class ListArticleVO {
 
     @Schema(name = "主键id")
     private Long id;
@@ -83,5 +83,5 @@ public class ApiArticleListVO {
     private String formatCreateTime;
 
     @Schema(name = "标签集合")
-    private List<Tags> tagList;
+    private List<Tag> tagList;
 }

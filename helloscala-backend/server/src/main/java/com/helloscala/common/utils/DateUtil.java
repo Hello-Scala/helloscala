@@ -1,6 +1,6 @@
 package com.helloscala.common.utils;
 
-import com.helloscala.common.exception.BusinessException;
+import com.helloscala.common.web.exception.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +120,7 @@ public class DateUtil {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             date = format.parse(dateTime);
         } catch (ParseException e) {
-            throw new BusinessException("Date time deserialize failed!", e);
+            throw new BadRequestException("Date time deserialize failed!", e);
         }
         return date;
     }
@@ -131,7 +131,7 @@ public class DateUtil {
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
             date = format.parse(dateTime);
         } catch (ParseException e) {
-            throw new BusinessException("Date time deserialize error!", e);
+            throw new BadRequestException("Date time deserialize error!", e);
         }
         return date;
     }

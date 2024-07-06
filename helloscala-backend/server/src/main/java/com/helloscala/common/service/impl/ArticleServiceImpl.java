@@ -7,16 +7,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.Constants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.entity.Category;
-import com.helloscala.common.entity.Tags;
+import com.helloscala.common.entity.Tag;
 import com.helloscala.common.enums.DataEventEnum;
 import com.helloscala.common.enums.YesOrNoEnum;
 import com.helloscala.common.event.DataEventPublisherService;
-import com.helloscala.common.exception.BusinessException;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CategoryMapper;
 import com.helloscala.common.mapper.TagsMapper;
@@ -28,6 +26,9 @@ import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.SystemArticleListVO;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.web.exception.FailedDependencyException;
+import com.helloscala.common.web.exception.ForbiddenException;
+import com.helloscala.common.web.exception.NotFoundException;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import lombok.RequiredArgsConstructor;
@@ -62,25 +63,25 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String baiduUrl;
 
     @Override
-    public ResponseResult selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
+    public Page<SystemArticleListVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
         Page<SystemArticleListVO> data = baseMapper.selectArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), title, tagId, categoryId, isPublish);
         data.getRecords().forEach(item -> {
             SystemUserVO userInfo = userMapper.getById(item.getUserId());
             item.setNickname(userInfo.getNickname());
         });
-        return ResponseResult.success(data);
+        return data;
     }
 
     @Override
-    public ResponseResult selectArticleById(Long id) {
+    public ArticleDTO selectArticleById(Long id) {
         ArticleDTO articleDTO = baseMapper.selectArticlePrimaryKey(id);
         articleDTO.setTags(tagsMapper.selectByArticleId(id));
-        return ResponseResult.success(articleDTO);
+        return articleDTO;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addArticle(ArticleDTO article) {
+    public void addArticle(ArticleDTO article) {
         Article blogArticle = BeanCopyUtil.copyObject(article, Article.class);
         blogArticle.setUserId(StpUtil.getLoginIdAsString());
         Long categoryId = savaCategory(article.getCategoryName());
@@ -107,20 +108,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         //发布消息去同步es 不进行判断是否是发布状态了，因为后面修改成下架的话就还得去删除es里面的数据，多次一举了，在查询时添加条件发布状态为已发布
         dataEventPublisherService.publishData(DataEventEnum.ES_ADD_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult updateArticle(ArticleDTO article) {
+    public void updateArticle(ArticleDTO article) {
         Article blogArticle = baseMapper.selectById(article.getId());
         if (ObjectUtil.isNull(blogArticle)) {
-            throw new BusinessException(ResultCode.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
         }
         //只能修改属于当前登录用户的文章
         String loginId = StpUtil.getLoginIdAsString();
         if (!blogArticle.getUserId().equals(loginId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
-            throw new BusinessException(ResultCode.NO_PERMISSION);
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
         }
 
         Long categoryId = savaCategory(article.getCategoryName());
@@ -134,27 +134,24 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         tagsMapper.saveArticleTags(blogArticle.getId(), tagList);
 
         dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult deleteBatchArticle(List<Long> ids) {
+    public void deleteBatchArticle(List<Long> ids) {
         baseMapper.deleteBatchIds(ids);
         tagsMapper.deleteByArticleIds(ids);
         dataEventPublisherService.publishData(DataEventEnum.ES_DELETE_ARTICLE, ids);
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult topArticle(ArticleDTO article) {
+    public void topArticle(ArticleDTO article) {
         baseMapper.putTopArticle(article);
-        return ResponseResult.success();
     }
 
     @Override
-    public ResponseResult seoArticle(List<Long> ids) {
+    public void seoArticle(List<Long> ids) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Host", "data.zz.baidu.com");
@@ -167,19 +164,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             HttpEntity<String> entity = new HttpEntity<>(url, headers);
             restTemplate.postForObject(baiduUrl, entity, String.class);
         });
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult retch(String url) {
+    public void retch(String url) {
         try {
             Document document = Jsoup.connect(url).get();
             Elements title = document.getElementsByClass("title-article");
             Elements tags = document.getElementsByClass("tag-link");
             Elements content = document.getElementsByClass("article_content");
             if (StringUtils.isBlank(content.toString())) {
-                throw new BusinessException(ResultCode.FETCH_ARTICLE_FAILED.getDesc());
+                throw new FailedDependencyException(ResultCode.FETCH_ARTICLE_FAILED.getDesc());
             }
 
             //爬取的是HTML内容，需要转成MD格式的内容
@@ -196,9 +192,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             List<Long> tagsId = new ArrayList<>();
             tags.forEach(item -> {
                 String tag = item.text();
-                Tags result = tagsMapper.selectOne(new LambdaQueryWrapper<Tags>().eq(Tags::getName, tag));
+                Tag result = tagsMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, tag));
                 if (result == null) {
-                    result = Tags.builder().name(tag).build();
+                    result = Tag.builder().name(tag).build();
                     tagsMapper.insert(result);
                 }
                 tagsId.add(result.getId());
@@ -207,30 +203,28 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
             log.info("Fetch article success, content:{}", JSONUtil.toJsonStr(entity));
         } catch (IOException e) {
-            throw new BusinessException(e);
+            throw new FailedDependencyException(e);
         }
-        return ResponseResult.success();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult psArticle(Article article) {
+    public void psArticle(Article article) {
         baseMapper.updateById(article);
-        return ResponseResult.success();
     }
 
     // todo config
     @Override
-    public ResponseResult randomImg() {
-        return ResponseResult.success("https://picsum.photos/500/300?random=" + System.currentTimeMillis());
+    public String randomImg() {
+        return "https://picsum.photos/500/300?random=" + System.currentTimeMillis();
     }
 
     private List<Long> getTagsList(ArticleDTO article) {
         List<Long> tagList = new ArrayList<>();
         article.getTags().forEach(item -> {
-            Tags tags = tagsMapper.selectOne(new LambdaQueryWrapper<Tags>().eq(Tags::getName, item));
+            Tag tags = tagsMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, item));
             if (tags == null) {
-                tags = Tags.builder().name(item).sort(0).build();
+                tags = Tag.builder().name(item).sort(0).build();
                 tagsMapper.insert(tags);
             }
             tagList.add(tags.getId());
