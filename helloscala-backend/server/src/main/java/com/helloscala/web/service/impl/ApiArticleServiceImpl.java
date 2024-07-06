@@ -10,6 +10,7 @@ import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.ReadTypeEnum;
 import com.helloscala.common.enums.SearchModelEnum;
 import com.helloscala.common.mapper.*;
+import com.helloscala.common.service.ArticleTagService;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.service.SystemConfigService;
 import com.helloscala.common.strategy.context.SearchStrategyContext;
@@ -42,21 +43,14 @@ import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
 @Service
 @RequiredArgsConstructor
 public class ApiArticleServiceImpl implements ApiArticleService {
-
     private final ArticleMapper articleMapper;
-    private final ArticleTagMapper articleTagMapper;
-
     private final RedisService redisService;
-
     private final TagsMapper tagMapper;
-
     private final CommentMapper commentMapper;
-
-    private final SystemConfigService systemConfigService;
-
     private final CollectMapper collectMapper;
     private final FollowedMapper followedMapper;
-
+    private final ArticleTagService articleTagService;
+    private final SystemConfigService systemConfigService;
     private final SearchStrategyContext searchStrategyContext;
 
     @Override
@@ -95,7 +89,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     public Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet) {
         LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
         articleTagQuery.in(ArticleTag::getArticleId, articleIdSet);
-        List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagQuery);
+        List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
 
         Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
@@ -202,7 +196,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         article.setUserId(StpUtil.getLoginIdAsString());
         int insert = articleMapper.insert(article);
         if (insert > 0) {
-            tagMapper.saveArticleTags(article.getId(), dto.getTagList());
+            articleTagService.insertIgnoreArticleTags(article.getId(), new HashSet<>(dto.getTagList()));
         }
     }
 
@@ -214,8 +208,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             throw new BadRequestException("Can only modify your own article!");
         }
         articleMapper.updateById(article);
-        tagMapper.deleteByArticleIds(Collections.singletonList(article.getId()));
-        tagMapper.saveArticleTags(article.getId(), dto.getTagList());
+        articleTagService.resetArticleTags(article.getId(), new HashSet<>(dto.getTagList()));
     }
 
     @Override
@@ -243,7 +236,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             throw new BadRequestException("Can only delete your own article!");
         }
         articleMapper.deleteById(id);
-        tagMapper.deleteByArticleIds(Collections.singletonList(id));
+        articleTagService.deleteByArticleIds(Set.of(id));
     }
 
     @Override

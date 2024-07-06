@@ -20,6 +20,7 @@ import com.helloscala.common.mapper.CategoryMapper;
 import com.helloscala.common.mapper.TagsMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.service.ArticleService;
+import com.helloscala.common.service.ArticleTagService;
 import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
@@ -46,7 +47,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -58,6 +59,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final UserMapper userMapper;
     private final TagsMapper tagsMapper;
     private final RestTemplate restTemplate;
+    private final ArticleTagService articleTagService;
     private final DataEventPublisherService dataEventPublisherService;
     @Value("${baidu.url}")
     private String baiduUrl;
@@ -103,7 +105,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         int insert = baseMapper.insert(blogArticle);
         if (insert > 0) {
-            tagsMapper.saveArticleTags(blogArticle.getId(), tagList);
+            articleTagService.insertIgnoreArticleTags(blogArticle.getId(), new HashSet<>(tagList));
         }
 
         //发布消息去同步es 不进行判断是否是发布状态了，因为后面修改成下架的话就还得去删除es里面的数据，多次一举了，在查询时添加条件发布状态为已发布
@@ -117,7 +119,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isNull(blogArticle)) {
             throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
         }
-        //只能修改属于当前登录用户的文章
         String loginId = StpUtil.getLoginIdAsString();
         if (!blogArticle.getUserId().equals(loginId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
             throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
@@ -130,8 +131,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         blogArticle.setCategoryId(categoryId);
         baseMapper.updateById(blogArticle);
 
-        tagsMapper.deleteByArticleIds(Collections.singletonList(blogArticle.getId()));
-        tagsMapper.saveArticleTags(blogArticle.getId(), tagList);
+        articleTagService.resetArticleTags(blogArticle.getId(), new HashSet<>(tagList));
 
         dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
     }
@@ -140,7 +140,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional(rollbackFor = Exception.class)
     public void deleteBatchArticle(List<Long> ids) {
         baseMapper.deleteBatchIds(ids);
-        tagsMapper.deleteByArticleIds(ids);
+        articleTagService.deleteByArticleIds(new HashSet<>(ids));
         dataEventPublisherService.publishData(DataEventEnum.ES_DELETE_ARTICLE, ids);
     }
 
@@ -191,6 +191,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             baseMapper.insert(entity);
             List<Long> tagsId = new ArrayList<>();
             tags.forEach(item -> {
+                // todo refactor
                 String tag = item.text();
                 Tag result = tagsMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, tag));
                 if (result == null) {
@@ -199,7 +200,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 }
                 tagsId.add(result.getId());
             });
-            tagsMapper.saveArticleTags(entity.getId(), tagsId);
+            articleTagService.insertIgnoreArticleTags(entity.getId(), new HashSet<>(tagsId));
 
             log.info("Fetch article success, content:{}", JSONUtil.toJsonStr(entity));
         } catch (IOException e) {

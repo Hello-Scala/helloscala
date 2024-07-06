@@ -15,13 +15,7 @@ import java.util.Map;
 
 @Repository
 public interface TagsMapper extends BaseMapper<Tag> {
-
-    void saveArticleTags(@Param("articleId") Long articleId, @Param("tags")List<Long> tags);
-
-    void deleteByArticleIds(@Param("ids") List<Long> ids);
-
     List<String> selectByArticleId(Long articleId);
-
 
     Page<SystemTagListVo> selectPageRecord(@Param("page") Page<Tag> objectPage, @Param("name") String name);
 
