@@ -6,6 +6,7 @@ import com.helloscala.common.entity.Comment;
 import com.helloscala.common.vo.message.SystemCommentVO;
 
 import java.util.List;
+import java.util.Set;
 
 
 public interface CommentService extends IService<Comment> {
@@ -13,4 +14,9 @@ public interface CommentService extends IService<Comment> {
 
     void deleteComment(List<Integer> ids);
 
+    List<Comment> listArticleComment(Set<Long> articleIdSet);
+
+    Long countByArticleId(Long articleId);
+
+    Long countByUserId(String userId);
 }

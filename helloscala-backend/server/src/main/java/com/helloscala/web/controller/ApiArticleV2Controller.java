@@ -50,7 +50,7 @@ public class ApiArticleV2Controller {
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
-    public Response<ArticleInfoVO> selectArticleInfo(@PathVariable(value = "id") Integer id) {
+    public Response<ArticleInfoVO> selectArticleInfo(@PathVariable(value = "id") Long id) {
         ArticleInfoVO articleInfoVO = articleService.selectArticleInfo(id);
         return ResponseHelper.ok(articleInfoVO);
     }

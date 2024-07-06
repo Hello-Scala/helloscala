@@ -64,7 +64,7 @@ public class ArticleInfoVO {
     private Object likeCount;
 
     @Schema(name = "评论量")
-    private Integer commentCount;
+    private Long commentCount;
 
     @Schema(name = "发表时间")
     private Date createTime;
