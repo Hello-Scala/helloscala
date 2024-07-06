@@ -1,6 +1,5 @@
 package com.helloscala.web.service;
 
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
 import com.helloscala.common.dto.user.EmailLoginDTO;
 import com.helloscala.common.dto.user.EmailRegisterDTO;
@@ -24,19 +23,18 @@ public interface ApiUserService {
 
     public UserInfoVO selectUserInfo(String userId);
 
-    public void updateUser(UserInfoDTO vo);
+    void updateUser(UserInfoDTO vo);
 
-    public UserInfoVO selectUserInfoByToken(String token);
+    UserInfoVO selectUserInfoByToken(String token);
 
-    public void authLogin(AuthResponse response, String source, HttpServletResponse httpServletResponse) throws IOException;
+    void authLogin(AuthResponse response, String source, HttpServletResponse httpServletResponse) throws IOException;
 
-    public void sendEmailCode(String email);
+    void sendEmailCode(String email);
 
-    public void emailRegister(EmailRegisterDTO emailRegisterDTO);
+    void emailRegister(EmailRegisterDTO emailRegisterDTO);
 
-    public void forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO);
+    void forgetPassword(EmailForgetPasswordDTO emailForgetPasswordDTO);
 
-    public ResponseResult getUserCount(String id);
 
     UserCountView getUserCounts(String userId);
 }

@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helloscala.common.Constants;
 import com.helloscala.common.RedisConstants;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.config.FtpConfig;
 import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
@@ -208,7 +207,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             userMapper.insert(user);
         }
         StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
-        httpServletResponse.sendRedirect("https://blog.helloscala.com/?token=" + StpUtil.getTokenValueByLoginId(user.getId()));
+        httpServletResponse.sendRedirect("https://www.helloscala.com/?token=" + StpUtil.getTokenValueByLoginId(user.getId()));
     }
 
     @Override
@@ -251,16 +250,6 @@ public class ApiUserServiceImpl implements ApiUserService {
         }
         User user = User.builder().password(aesEncryptUtil.aesEncrypt(emailForgetPasswordDTO.getPassword())).build();
         userMapper.update(user,new LambdaQueryWrapper<User>().eq(User::getUsername,emailForgetPasswordDTO.getEmail()));
-    }
-
-    @Override
-    public ResponseResult getUserCount(String id) {
-        id = StringUtils.isBlank(id) ? StpUtil.getLoginIdAsString() : id;
-        Long articleCount = articleMapper.selectCount(new LambdaQueryWrapper<Article>().eq(Article::getUserId, id));
-        Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getUserId, id));
-        Long followedCount = followedMapper.selectCount(new LambdaQueryWrapper<Followed>().eq(Followed::getUserId, id));
-        return ResponseResult.success().putExtra("articleCount", articleCount).putExtra("collectCount", collectCount)
-                .putExtra("followedCount", followedCount);
     }
 
     @Override
