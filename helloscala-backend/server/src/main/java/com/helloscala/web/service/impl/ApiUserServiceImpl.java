@@ -2,7 +2,6 @@ package com.helloscala.web.service.impl;
 
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -33,9 +32,9 @@ import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.vo.user.UserCountView;
 import com.helloscala.common.vo.user.UserInfoVO;
 import com.helloscala.common.web.exception.*;
-import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
 import jakarta.annotation.PostConstruct;
@@ -159,8 +158,15 @@ public class ApiUserServiceImpl implements ApiUserService {
 
     @Override
     public UserInfoVO selectUserInfoByToken(String token) {
-        Object userId = StpUtil.getLoginIdByToken(token);
-        return userMapper.selectInfoByUserId(userId);
+        String userId = (String) StpUtil.getLoginIdByToken(token);
+        if (Objects.isNull(userId)) {
+            throw new ForbiddenException("userId is null, please login!");
+        }
+        UserInfoVO userInfoVO = userMapper.selectInfoByUserId(userId);
+        if (Objects.isNull(userInfoVO)) {
+            throw new NotFoundException("user not found, token={}!", token);
+        }
+        return userInfoVO;
     }
 
     @Override
@@ -258,21 +264,27 @@ public class ApiUserServiceImpl implements ApiUserService {
     }
 
     @Override
-    public UserInfoVO appletLogin(WechatAppletDTO wechatAppletDTO) {
+    public UserCountView getUserCounts(String userId) {
+        userId = StringUtils.isBlank(userId) ? StpUtil.getLoginIdAsString() : userId;
 
-        String url = "https://api.weixin.qq.com/sns/jscode2session?appid=wx3e9678e6cdabd38f&secret=f8f33e962ab232ab70fd6545b86ac731&js_code="+wechatAppletDTO.getCode()+"&grant_type=authorization_code";
-        String result = HttpUtil.get(url);
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
+        articleQuery.eq(Article::getUserId, userId);
+        Long articleCount = articleMapper.selectCount(articleQuery);
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> resultMap = (Map<String, Object>) JSONUtil.toBean(result, Map.class);
-        String openid = resultMap.get("openid").toString();
-        UserInfoVO userInfoVO = this.wechatLogin(openid);
+        LambdaQueryWrapper<Collect> collectQuery = new LambdaQueryWrapper<>();
+        collectQuery.eq(Collect::getUserId, userId);
+        Long collectCount = collectMapper.selectCount(collectQuery);
 
-        StpUtil.login(userInfoVO.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
-        userInfoVO.setToken(StpUtil.getTokenValueByLoginId(userInfoVO.getId()));
-        return userInfoVO;
+        LambdaQueryWrapper<Followed> followedQuery = new LambdaQueryWrapper<>();
+        followedQuery.eq(Followed::getUserId, userId);
+        Long followedCount = followedMapper.selectCount(followedQuery);
+
+        UserCountView userCountView = new UserCountView();
+        userCountView.setArticleCount(articleCount);
+        userCountView.setCollectCount(collectCount);
+        userCountView.setFollowedCount(followedCount);
+        return userCountView;
     }
-
 
     private UserInfoVO wechatLogin(String openId) {
         UserInfoVO userInfo = userMapper.selectByUserName(openId);

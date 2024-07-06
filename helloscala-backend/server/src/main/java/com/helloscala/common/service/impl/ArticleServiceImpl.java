@@ -25,7 +25,7 @@ import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.article.SystemArticleListVO;
+import com.helloscala.common.vo.article.ArticleVO;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.common.web.exception.ForbiddenException;
@@ -65,8 +65,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String baiduUrl;
 
     @Override
-    public Page<SystemArticleListVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
-        Page<SystemArticleListVO> data = baseMapper.selectArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), title, tagId, categoryId, isPublish);
+    public Page<ArticleVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
+        Page<ArticleVO> data = baseMapper.selectArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), title, tagId, categoryId, isPublish);
         data.getRecords().forEach(item -> {
             SystemUserVO userInfo = userMapper.getById(item.getUserId());
             item.setNickname(userInfo.getNickname());

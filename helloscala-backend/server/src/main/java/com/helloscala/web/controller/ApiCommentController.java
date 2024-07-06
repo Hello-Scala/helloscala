@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.AccessLimit;
 import com.helloscala.common.annotation.BusinessLogger;
 import com.helloscala.common.entity.Comment;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.vo.message.ApiCommentListVO;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -46,8 +46,8 @@ public class ApiCommentController {
     @RequestMapping(value = "/getMyComment",method = RequestMethod.GET)
     @Operation(summary = "Get self comment", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get self comment")
-    public Response<Page<ListArticleVO>> selectMyComment(){
-        Page<ListArticleVO> listArticleVOPage = commentService.selectMyComment();
+    public Response<Page<RecommendedArticleVO>> selectMyComment(){
+        Page<RecommendedArticleVO> listArticleVOPage = commentService.selectMyComment();
         return ResponseHelper.ok(listArticleVOPage);
     }
 }

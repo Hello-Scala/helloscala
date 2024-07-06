@@ -6,14 +6,14 @@ import com.helloscala.common.entity.Article;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface ApiArticleService {
-    Page<ListArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
+    Page<RecommendedArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
 
     ArticleInfoVO selectArticleInfo(Integer id);
 
@@ -29,7 +29,7 @@ public interface ApiArticleService {
 
     void insertArticle(ArticlePostDTO dto);
 
-    Page<ListArticleVO> listByUserId(String userId, Integer type);
+    Page<RecommendedArticleVO> listByUserId(String userId, Integer type);
 
     void deleteMyArticle(Long id);
 

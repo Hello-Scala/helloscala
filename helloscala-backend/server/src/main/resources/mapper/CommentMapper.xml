@@ -34,7 +34,7 @@
         order by c.create_time desc
     </select>
 
-    <select id="selectMyComment" resultType="com.helloscala.common.vo.article.ListArticleVO">
+    <select id="selectMyComment" resultType="com.helloscala.common.vo.article.RecommendedArticleVO">
         select c.content as commentContent,c.create_time,a.title,a.id
         from b_comment c left join b_article a on c.article_id = a.id where c.user_id = #{userId} order by c.create_time desc
     </select>

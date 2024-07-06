@@ -1,6 +1,5 @@
-package com.helloscala.web.dto;
+package com.helloscala.web.response;
 
-import com.helloscala.common.entity.Article;
 import lombok.Data;
 
 import java.util.List;

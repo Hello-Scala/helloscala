@@ -129,7 +129,7 @@ ftp:
   port: 21
   username: ftpuser
   password: howard123
-  httpPath: http://localhost:8444
+  httpPath: http://localhost:8400
   domain: https://helloscala.cpolar.top/helloscala/asserts/
 
 sys:

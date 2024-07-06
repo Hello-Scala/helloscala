@@ -3,10 +3,9 @@ package com.helloscala.generate.service;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.mapper.SystemConfigMapper;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.system.TableListVO;
+import com.helloscala.common.vo.system.TableVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.generate.dto.ColumnInfo;
 import com.helloscala.generate.dto.Config;
@@ -145,7 +144,7 @@ public class GenerateService {
         return tableInfo;
     }
 
-    public ResponseResult preview(String tableName) throws IOException {
+    public Map<String, String> preview(String tableName) throws IOException {
         ClasspathResourceLoader resourceLoader = new ClasspathResourceLoader("beetl-back-end");
         Configuration cfg = Configuration.defaultConfiguration();
         GroupTemplate gt = new GroupTemplate(resourceLoader, cfg);
@@ -169,12 +168,12 @@ public class GenerateService {
         map.put("vm/java/service.java.vm", service);
         map.put("vm/java/controller.java.vm", controller);
 
-        return ResponseResult.success(map);
+        return map;
     }
 
-    public ResponseResult selectListTables() {
-        Page<TableListVO> page = systemConfigMapper.selectTables(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()));
-        return ResponseResult.success(page);
+    public Page<TableVO> selectListTables() {
+        Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        return systemConfigMapper.selectTables(page);
     }
 
     public void download(String tableName, String downloadPath) throws IOException {

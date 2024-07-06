@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class SystemArticleListVO {
+public class ArticleVO {
     @Schema(name = "主键id")
     private Long id;
 

@@ -19,7 +19,7 @@ import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.handle.RelativeDateFormat;
@@ -54,12 +54,12 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final SearchStrategyContext searchStrategyContext;
 
     @Override
-    public Page<ListArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
-        Page<ListArticleVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
+    public Page<RecommendedArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
+        Page<RecommendedArticleVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
                 categoryId, tagId, orderByDescColumn);
-        List<ListArticleVO> records = articlePage.getRecords();
+        List<RecommendedArticleVO> records = articlePage.getRecords();
 
-        Set<Long> articleIdSet = records.stream().map(ListArticleVO::getId).collect(Collectors.toSet());
+        Set<Long> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
 
         Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
 
@@ -212,19 +212,19 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public Page<ListArticleVO> listByUserId(String userId, Integer type) {
+    public Page<RecommendedArticleVO> listByUserId(String userId, Integer type) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
         Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
-        Page<ListArticleVO> list = articleMapper.selectMyArticle(page, userId, type);
+        Page<RecommendedArticleVO> articlePage = articleMapper.selectMyArticle(page, userId, type);
 
-        List<ListArticleVO> records = list.getRecords();
-        Set<Long> articleIdSet = records.stream().map(ListArticleVO::getId).collect(Collectors.toSet());
+        List<RecommendedArticleVO> records = articlePage.getRecords();
+        Set<Long> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
         Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
         records.forEach(item -> {
             item.setTagList(articleTagListMap.get(item.getId()));
             item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
         });
-        return list;
+        return articlePage;
 
     }
 

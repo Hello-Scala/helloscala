@@ -1,11 +1,11 @@
 package com.helloscala.web.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 
 
 public interface ApiCollectService {
-    Page<ListArticleVO> selectCollectList();
+    Page<RecommendedArticleVO> selectCollectList();
 
     void collect(Integer articleId);
 

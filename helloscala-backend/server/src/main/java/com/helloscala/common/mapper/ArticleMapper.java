@@ -15,8 +15,8 @@ import java.util.List;
 @Repository
 public interface ArticleMapper extends BaseMapper<Article> {
 
-    Page<SystemArticleListVO> selectArticle(@Param("page") Page<Object> page, @Param("title")String title, @Param("tagId")Integer tagId,
-                                            @Param("categoryId")Integer categoryId, @Param("isPublish")Integer isPublish);
+    Page<ArticleVO> selectArticle(@Param("page") Page<Object> page, @Param("title")String title, @Param("tagId")Integer tagId,
+                                  @Param("categoryId")Integer categoryId, @Param("isPublish")Integer isPublish);
 
     ArticleDTO selectArticlePrimaryKey(Long id);
 
@@ -25,21 +25,21 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     List<SystemArticleContributeVO> contribute(@Param("lastTime") String lastTime, @Param("nowTime")String nowTime);
 
-    Page<ListArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") Integer categoryId, @Param("tagId")Integer tagId,
-                                                @Param("orderByDescColumn")String orderByDescColumn);
+    Page<RecommendedArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") Integer categoryId, @Param("tagId")Integer tagId,
+                                                       @Param("orderByDescColumn")String orderByDescColumn);
 
 
     ArticleInfoVO selectArticleByIdToVO(Integer id);
 
-    List<SystemArticleListVO> selectListByBanner();
+    List<ArticleVO> selectListByBanner();
 
-    List<ListArticleVO> selectRecommendArticle();
+    List<RecommendedArticleVO> selectRecommendArticle();
 
-    List<ListArticleVO> selectHotArticleList();
+    List<RecommendedArticleVO> selectHotArticleList();
 
     Page<ApiArticleSearchVO> selectSearchArticle(@Param("page") Page<Object> objectPage, @Param("keywords") String keywords);
 
-    Page<ListArticleVO> selectMyArticle(@Param("page")Page<Object> objectPage, @Param("userId") String userId, @Param("type") Integer type);
+    Page<RecommendedArticleVO> selectMyArticle(@Param("page")Page<Object> objectPage, @Param("userId") String userId, @Param("type") Integer type);
 
     ArticlePostDTO selectMyArticleInfo(Long id);
 }

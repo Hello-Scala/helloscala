@@ -1,4 +1,4 @@
-package com.helloscala.web.dto;
+package com.helloscala.web.response;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
