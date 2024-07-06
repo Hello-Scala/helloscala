@@ -1,6 +1,6 @@
 package com.helloscala.web.service.impl;
 
-import com.helloscala.common.mapper.TagsMapper;
+import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.vo.tag.ApiTagListVO;
 import com.helloscala.web.service.ApiTagService;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +11,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ApiTagServiceImpl implements ApiTagService {
-    private final TagsMapper tagsMapper;
+    private final TagMapper tagMapper;
 
     @Override
-    public List<ApiTagListVO> selectTagList() {
-        return tagsMapper.selectTagListApi();
+    public List<ApiTagListVO> list() {
+        return tagMapper.selectTagListApi();
     }
 }

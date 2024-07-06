@@ -6,9 +6,10 @@ import com.helloscala.common.entity.Tag;
 import com.helloscala.common.vo.tag.SystemTagListVo;
 
 import java.util.List;
+import java.util.Set;
 
 
-public interface TagsService extends IService<Tag> {
+public interface TagService extends IService<Tag> {
     Page<SystemTagListVo> selectByName(String name);
 
     void addTags(Tag tags);
@@ -18,4 +19,6 @@ public interface TagsService extends IService<Tag> {
     void deleteTags(List<Long> ids);
 
     Tag getTagsById(Long id);
+
+    List<Tag> listByIds(Set<Long> idSet);
 }

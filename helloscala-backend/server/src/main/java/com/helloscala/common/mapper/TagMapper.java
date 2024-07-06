@@ -14,7 +14,7 @@ import java.util.Map;
 
 
 @Repository
-public interface TagsMapper extends BaseMapper<Tag> {
+public interface TagMapper extends BaseMapper<Tag> {
     List<String> selectByArticleId(Long articleId);
 
     Page<SystemTagListVo> selectPageRecord(@Param("page") Page<Tag> objectPage, @Param("name") String name);

@@ -7,7 +7,7 @@ import com.helloscala.common.ResponseResult;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.entity.WebConfig;
 import com.helloscala.common.mapper.ArticleMapper;
-import com.helloscala.common.mapper.TagsMapper;
+import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.mapper.WebConfigMapper;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.utils.IpUtil;
@@ -38,7 +38,7 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     private final RedisService redisService;
     private final WebConfigMapper webConfigMapper;
     private final ArticleMapper articleMapper;
-    private final TagsMapper tagsMapper;
+    private final TagMapper tagMapper;
 
     public String report() {
         String ipAddress = IpUtil.getIp();
@@ -62,7 +62,7 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     @Deprecated
     public ResponseResult getHomeData() {
         List<ArticleVO> articles = articleMapper.selectListByBanner();
-        List<Tag> tags = tagsMapper.selectList(null);
+        List<Tag> tags = tagMapper.selectList(null);
         List<RecommendedArticleVO> recommendedArticles = articleMapper.selectRecommendArticle();
         return ResponseResult.success().putExtra("articles",articles).putExtra("newArticleList",recommendedArticles).putExtra("tagCloud",tags);
     }
@@ -70,7 +70,7 @@ public class ApiHomeServiceImpl implements ApiHomeService {
     @Override
     public GetHomeInfoResponse getHomeDataV2() {
         List<ArticleVO> articles = articleMapper.selectListByBanner();
-        List<Tag> tags = tagsMapper.selectList(null);
+        List<Tag> tags = tagMapper.selectList(null);
         List<RecommendedArticleVO> recommendedArticles = articleMapper.selectRecommendArticle();
         GetHomeInfoResponse response = new GetHomeInfoResponse();
         response.setBannerArticles(articles);

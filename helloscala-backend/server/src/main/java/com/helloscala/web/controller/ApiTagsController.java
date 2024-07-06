@@ -29,7 +29,7 @@ public class ApiTagsController {
     @Operation(summary = "Website list tags", method = "GET")
     @ApiResponse(responseCode = "200", description = "Website list tags")
     public Response<List<ApiTagListVO>> selectTagList(){
-        List<ApiTagListVO> apiTagListVOS = tagsService.selectTagList();
+        List<ApiTagListVO> apiTagListVOS = tagsService.list();
         return ResponseHelper.ok(apiTagListVOS);
     }
 }

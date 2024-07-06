@@ -5,7 +5,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.entity.Tag;
-import com.helloscala.common.service.TagsService;
+import com.helloscala.common.service.TagService;
 import com.helloscala.common.vo.tag.SystemTagListVo;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
@@ -21,9 +21,9 @@ import java.util.List;
 @RequestMapping("/system/tags")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag management")
 @RequiredArgsConstructor
-public class TagsController {
+public class TagController {
 
-    private final TagsService tagsService;
+    private final TagService tagsService;
 
     @RequestMapping(value = "/list",method = RequestMethod.GET)
     @Operation(summary = "List tag", method = "GET")
