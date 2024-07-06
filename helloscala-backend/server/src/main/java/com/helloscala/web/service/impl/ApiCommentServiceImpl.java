@@ -11,7 +11,7 @@ import com.helloscala.common.mapper.CommentMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.vo.message.ApiCommentListVO;
 import com.helloscala.common.web.exception.GenericException;
 import com.helloscala.web.handle.RelativeDateFormat;
@@ -118,8 +118,8 @@ public class ApiCommentServiceImpl implements ApiCommentService {
     }
 
     @Override
-    public Page<ListArticleVO> selectMyComment() {
-        Page<ListArticleVO> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+    public Page<RecommendedArticleVO> selectMyComment() {
+        Page<RecommendedArticleVO> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
         String loginId = StpUtil.getLoginIdAsString();
         return commentMapper.selectMyComment(page, loginId);
     }

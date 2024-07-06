@@ -27,7 +27,7 @@
     </resultMap>
 
 
-    <select id="selectArticle" resultType="com.helloscala.common.vo.article.SystemArticleListVO">
+    <select id="selectArticle" resultType="com.helloscala.common.vo.article.ArticleVO">
         SELECT
         a.*,
         b.NAME AS categoryName,
@@ -105,7 +105,7 @@
         where LOWER(a.title) like concat('%', #{keywords}, '%') and a.is_publish = 1 order by a.create_time desc
     </select>
 
-    <select id="selectPublicArticleList" resultType="com.helloscala.common.vo.article.ListArticleVO">
+    <select id="selectPublicArticleList" resultType="com.helloscala.common.vo.article.RecommendedArticleVO">
         select a.id, a.title, a.avatar,a.summary,a.quantity,a.is_stick,a.is_original,a.user_id,c.id as categoryId,c.name as categoryName,
                a.create_time, u.nickname,u.avatar as userAvatar,a.user_id
         from b_article a
@@ -154,25 +154,25 @@
                  left join b_user u on a.user_id = u.id
         where a.id = #{id}
     </select>
-    <select id="selectListByBanner" resultType="com.helloscala.common.vo.article.SystemArticleListVO">
+    <select id="selectListByBanner" resultType="com.helloscala.common.vo.article.ArticleVO">
         select id, title, avatar
         from b_article
         where is_carousel = 1 and is_publish = 1
         order by is_stick desc ,create_time desc
     </select>
 
-    <select id="selectRecommendArticle" resultType="com.helloscala.common.vo.article.ListArticleVO">
+    <select id="selectRecommendArticle" resultType="com.helloscala.common.vo.article.RecommendedArticleVO">
         select id, title, avatar,create_time
          from b_article where is_recommend = 1
         order by create_time desc limit 5
     </select>
 
-    <select id="selectHotArticleList" resultType="com.helloscala.common.vo.article.ListArticleVO">
+    <select id="selectHotArticleList" resultType="com.helloscala.common.vo.article.RecommendedArticleVO">
         select id, title
         from b_article where is_publish = 1
         order by quantity desc limit 5
     </select>
-    <select id="selectMyArticle" resultType="com.helloscala.common.vo.article.ListArticleVO">
+    <select id="selectMyArticle" resultType="com.helloscala.common.vo.article.RecommendedArticleVO">
         SELECT
         a.*,
         u.nickname AS username,

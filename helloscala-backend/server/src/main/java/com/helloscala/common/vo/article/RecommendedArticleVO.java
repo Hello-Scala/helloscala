@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ListArticleVO {
+public class RecommendedArticleVO {
 
     @Schema(name = "主键id")
     private Long id;

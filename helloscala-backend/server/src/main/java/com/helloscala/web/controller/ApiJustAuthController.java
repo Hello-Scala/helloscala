@@ -12,7 +12,6 @@ import com.helloscala.common.vo.user.UserInfoVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
-import com.helloscala.web.dto.WechatAppletDTO;
 import com.helloscala.web.service.ApiUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -104,14 +103,6 @@ public class ApiJustAuthController {
     public EmptyResponse forgetPassword(@Valid @RequestBody EmailForgetPasswordDTO emailForgetPasswordDTO) {
         userService.forgetPassword(emailForgetPasswordDTO);
         return ResponseHelper.ok();
-    }
-
-    @RequestMapping(value = "/applet", method = RequestMethod.POST)
-    @Operation(summary = "Login by applet", method = "GET")
-    @ApiResponse(responseCode = "200", description = "Login by applet")
-    public Response<UserInfoVO> appletLogin(@RequestBody WechatAppletDTO wechatAppletDTO) {
-        UserInfoVO userInfoVO = userService.appletLogin(wechatAppletDTO);
-        return ResponseHelper.ok(userInfoVO);
     }
 
     /**

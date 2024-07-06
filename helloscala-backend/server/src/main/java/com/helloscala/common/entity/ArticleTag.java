@@ -28,5 +28,7 @@ public class ArticleTag implements Serializable {
     private Long tagId;
 
     @Schema(name = "创建时间")
-    private Long createTime;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    private Date createTime;
 }

@@ -1,8 +1,8 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import com.helloscala.common.annotation.BusinessLogger;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.user.UserInfoDTO;
 import com.helloscala.common.vo.user.UserCountView;
 import com.helloscala.common.vo.user.UserInfoVO;
@@ -13,57 +13,46 @@ import com.helloscala.web.service.ApiUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-// todo remove
-@Deprecated
-@RequestMapping("/v1/user")
+@RequestMapping("/user")
 @RestController
 @Tag(name = "User API")
 @RequiredArgsConstructor
-public class ApiUserController {
-
+public class ApiUserV2Controller {
     private final ApiUserService userService;
 
     @SaCheckLogin
     @BusinessLogger(value = "Website get userinfo",type = "search",desc = "Website get userinfo")
-    @RequestMapping(value = "/info",method = RequestMethod.GET)
-    public Response<UserInfoVO> selectUserInfo(@RequestParam(name = "userId", required = true) String userId){
+    @GetMapping
+    public Response<UserInfoVO> get(@RequestParam(name = "userId", required = true) String userId){
         UserInfoVO userInfoVO = userService.selectUserInfo(userId);
         return ResponseHelper.ok(userInfoVO);
     }
 
     @SaCheckLogin
     @BusinessLogger(value = "Update userinfo",type = "update",desc = "Update userinfo")
-    @RequestMapping(value = "/",method = RequestMethod.PUT)
-    public EmptyResponse updateUser(@RequestBody UserInfoDTO vo){
+    @PutMapping
+    public EmptyResponse update(@RequestBody UserInfoDTO vo){
         userService.updateUser(vo);
         return ResponseHelper.ok();
     }
 
-    @RequestMapping(value = "selectUserInfoByToken",method = RequestMethod.GET)
-    @Operation(summary = "Get userinfo by token", method = "GET")
-    @ApiResponse(responseCode = "200", description = "Get userinfo by token")
-    public Response<UserInfoVO> selectUserInfoByToken(@RequestParam(name = "token", required = true) String token){
-        UserInfoVO userInfoVO = userService.selectUserInfoByToken(token);
+    @RequestMapping(value = "/current",method = RequestMethod.GET)
+    @Operation(summary = "Get current user", method = "GET")
+    @ApiResponse(responseCode = "200", description = "Get current user")
+    public Response<UserInfoVO> getCurrent(){
+        String tokenValue = StpUtil.getTokenValue();
+        UserInfoVO userInfoVO = userService.selectUserInfoByToken(tokenValue);
         return ResponseHelper.ok(userInfoVO);
     }
 
-    // todo refactor
-    @Deprecated
-    @RequestMapping(value = "getUserCount",method = RequestMethod.GET)
+    @RequestMapping(value = "count",method = RequestMethod.GET)
     @Operation(summary = "Get user counts", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get user counts")
-    public ResponseResult getUserCount(@RequestParam(name = "id", required = true) String id){
-        ResponseResult userCount = userService.getUserCount(id);
-        return userCount;
-    }
-
-    @RequestMapping(value = "count",method = RequestMethod.GET)
-    @Operation(summary = "Get user counts V2", method = "GET")
-    @ApiResponse(responseCode = "200", description = "Get user counts V2")
-    public Response<UserCountView> getUserCountV2(@RequestParam(name = "id", required = true) String id){
+    public Response<UserCountView> getUserCounts(@RequestParam(name = "id", required = true) String id){
         UserCountView userCount = userService.getUserCounts(id);
         return ResponseHelper.ok(userCount);
     }

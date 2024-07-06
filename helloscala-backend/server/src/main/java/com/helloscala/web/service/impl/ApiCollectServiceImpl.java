@@ -7,7 +7,7 @@ import com.helloscala.common.entity.Collect;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.mapper.CollectMapper;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.web.service.ApiArticleService;
 import com.helloscala.web.service.ApiCollectService;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +28,11 @@ public class ApiCollectServiceImpl implements ApiCollectService {
     private final CollectMapper collectMapper;
 
     @Override
-    public Page<ListArticleVO> selectCollectList() {
-        Page<ListArticleVO> list = collectMapper.selectCollectList(new Page<ListArticleVO>(PageUtil.getPageNo(), PageUtil.getPageSize()),StpUtil.getLoginIdAsString());
+    public Page<RecommendedArticleVO> selectCollectList() {
+        Page<RecommendedArticleVO> list = collectMapper.selectCollectList(new Page<RecommendedArticleVO>(PageUtil.getPageNo(), PageUtil.getPageSize()),StpUtil.getLoginIdAsString());
 
-        List<ListArticleVO> records = list.getRecords();
-        Set<Long> articleIds = records.stream().map(ListArticleVO::getId).collect(Collectors.toSet());
+        List<RecommendedArticleVO> records = list.getRecords();
+        Set<Long> articleIds = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
         Map<Long, List<Tag>> articleTagListMap = articleService.getArticleTagListMap(articleIds);
         records.forEach(item -> item.setTagList(articleTagListMap.get(item.getId())));
         return list;

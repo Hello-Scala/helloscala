@@ -3,7 +3,7 @@ package com.helloscala.web.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.AccessLimit;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -27,8 +27,8 @@ public class ApiCollectController {
     @GetMapping(value = "/")
     @Operation(summary = "我的收藏列表", method = "GET")
     @ApiResponse(responseCode = "200", description = "我的收藏列表")
-    public Response<Page<ListArticleVO>> selectCollectList() {
-        Page<ListArticleVO> listArticleVOPage = apiCollectService.selectCollectList();
+    public Response<Page<RecommendedArticleVO>> selectCollectList() {
+        Page<RecommendedArticleVO> listArticleVOPage = apiCollectService.selectCollectList();
         return ResponseHelper.ok(listArticleVOPage);
     }
 

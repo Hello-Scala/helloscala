@@ -1,38 +1,28 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.annotation.AccessLimit;
 import com.helloscala.common.annotation.BusinessLogger;
 import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.utils.DateHelper;
-import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
-import com.helloscala.common.vo.article.ListArticleVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
-import com.helloscala.web.dto.ListPublishedArticleResponse;
-import com.helloscala.web.dto.PublishedArticleView;
+import com.helloscala.web.response.ListPublishedArticleResponse;
+import com.helloscala.web.response.PublishedArticleView;
 import com.helloscala.web.service.ApiArticleService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,10 +39,10 @@ public class ApiArticleV2Controller {
     @GetMapping(value = "/")
     @Operation(summary = "list articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "article list")
-    public Response<Page<ListArticleVO>> selectArticleList(@RequestParam(name = "categoryId", required = false) Integer categoryId,
-                                                           @RequestParam(name = "tagId", required = false) Integer tagId,
-                                                           @RequestParam(name = "orderByDescColumn", required = false) String orderByDescColumn) {
-        Page<ListArticleVO> listArticleVOPage = articleService.selectArticleList(categoryId, tagId, orderByDescColumn);
+    public Response<Page<RecommendedArticleVO>> selectArticleList(@RequestParam(name = "categoryId", required = false) Integer categoryId,
+                                                                  @RequestParam(name = "tagId", required = false) Integer tagId,
+                                                                  @RequestParam(name = "orderByDescColumn", required = false) String orderByDescColumn) {
+        Page<RecommendedArticleVO> listArticleVOPage = articleService.selectArticleList(categoryId, tagId, orderByDescColumn);
         return ResponseHelper.ok(listArticleVOPage);
     }
 
@@ -162,9 +152,9 @@ public class ApiArticleV2Controller {
     @BusinessLogger(value = "List article by user id", type = "search", desc = "List article by user id")
     @Operation(summary = "List article by user id", method = "GET")
     @ApiResponse(responseCode = "200", description = "List article by user id")
-    public Response<Page<ListArticleVO>> listByUserId(@RequestParam(name = "userId", required = true) String userId,
-                                                      @RequestParam(name = "type", required = false) Integer type) {
-        Page<ListArticleVO> listArticleVOPage = articleService.listByUserId(userId, type);
+    public Response<Page<RecommendedArticleVO>> listByUserId(@RequestParam(name = "userId", required = true) String userId,
+                                                             @RequestParam(name = "type", required = false) Integer type) {
+        Page<RecommendedArticleVO> listArticleVOPage = articleService.listByUserId(userId, type);
         return ResponseHelper.ok(listArticleVOPage);
     }
 

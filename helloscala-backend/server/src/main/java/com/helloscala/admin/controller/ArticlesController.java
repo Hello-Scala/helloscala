@@ -6,7 +6,7 @@ import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.service.ArticleService;
-import com.helloscala.common.vo.article.SystemArticleListVO;
+import com.helloscala.common.vo.article.ArticleVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -30,11 +30,11 @@ public class ArticlesController {
     @GetMapping(value = "/list")
     @Operation(summary = "List articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "文章列表")
-    public Response<Page<SystemArticleListVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
-                                                                 @RequestParam(name = "tagId", required = false) Integer tagId,
-                                                                 @RequestParam(name = "categoryId", required = false) Integer categoryId,
-                                                                 @RequestParam(name = "isPublish", required = false) Integer isPublish) {
-        Page<SystemArticleListVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
+    public Response<Page<ArticleVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
+                                                       @RequestParam(name = "tagId", required = false) Integer tagId,
+                                                       @RequestParam(name = "categoryId", required = false) Integer categoryId,
+                                                       @RequestParam(name = "isPublish", required = false) Integer isPublish) {
+        Page<ArticleVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
         return ResponseHelper.ok(articlePage);
     }
 

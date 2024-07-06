@@ -5,8 +5,8 @@ import com.helloscala.common.dto.user.EmailForgetPasswordDTO;
 import com.helloscala.common.dto.user.EmailLoginDTO;
 import com.helloscala.common.dto.user.EmailRegisterDTO;
 import com.helloscala.common.dto.user.UserInfoDTO;
+import com.helloscala.common.vo.user.UserCountView;
 import com.helloscala.common.vo.user.UserInfoVO;
-import com.helloscala.web.dto.WechatAppletDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.zhyd.oauth.model.AuthResponse;
@@ -38,6 +38,5 @@ public interface ApiUserService {
 
     public ResponseResult getUserCount(String id);
 
-    UserInfoVO appletLogin(WechatAppletDTO wechatAppletDTO);
-
+    UserCountView getUserCounts(String userId);
 }

@@ -2,15 +2,14 @@ package com.helloscala.common.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.helloscala.common.ResponseResult;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
-import com.helloscala.common.vo.article.SystemArticleListVO;
+import com.helloscala.common.vo.article.ArticleVO;
 
 import java.util.List;
 
 public interface ArticleService extends IService<Article> {
-    Page<SystemArticleListVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish);
+    Page<ArticleVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish);
 
     ArticleDTO selectArticleById(Long id);
 
