@@ -1,11 +1,12 @@
 package com.helloscala.common.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.entity.Tag;
-import com.helloscala.common.mapper.TagsMapper;
-import com.helloscala.common.service.TagsService;
+import com.helloscala.common.mapper.TagMapper;
+import com.helloscala.common.service.TagService;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.tag.SystemTagListVo;
 import com.helloscala.common.web.exception.ConflictException;
@@ -13,11 +14,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @Service
-public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tag> implements TagsService {
+public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
 
     @Override
     public Page<SystemTagListVo> selectByName(String name) {
@@ -56,6 +59,16 @@ public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tag> implements Tag
         baseMapper.deleteBatchIds(ids);
     }
 
+    @Override
+    public List<Tag> listByIds(Set<Long> idSet) {
+        if (ObjectUtil.isEmpty(idSet)) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<Tag> tagQuery = new LambdaQueryWrapper<>();
+        tagQuery.in(Tag::getId, idSet);
+        return baseMapper.selectList(tagQuery);
+    }
+
     private void validateTagIdIsExistArticle(Long id) {
         int count = baseMapper.validateTagIdIsExistArticle(id);
         if (count > 0) {
@@ -63,7 +76,7 @@ public class TagsServiceImpl extends ServiceImpl<TagsMapper, Tag> implements Tag
         }
     }
 
-    public void validateName(String name) {
+    private void validateName(String name) {
         Tag entity = baseMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, name));
         if (ObjectUtils.isNotEmpty(entity)) {
             throw new ConflictException("Tag exist!");

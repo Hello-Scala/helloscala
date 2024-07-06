@@ -17,7 +17,7 @@ import com.helloscala.common.enums.YesOrNoEnum;
 import com.helloscala.common.event.DataEventPublisherService;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CategoryMapper;
-import com.helloscala.common.mapper.TagsMapper;
+import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.service.ArticleService;
 import com.helloscala.common.service.ArticleTagService;
@@ -57,7 +57,7 @@ import java.util.List;
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
-    private final TagsMapper tagsMapper;
+    private final TagMapper tagMapper;
     private final RestTemplate restTemplate;
     private final ArticleTagService articleTagService;
     private final DataEventPublisherService dataEventPublisherService;
@@ -77,7 +77,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ArticleDTO selectArticleById(Long id) {
         ArticleDTO articleDTO = baseMapper.selectArticlePrimaryKey(id);
-        articleDTO.setTags(tagsMapper.selectByArticleId(id));
+        articleDTO.setTags(tagMapper.selectByArticleId(id));
         return articleDTO;
     }
 
@@ -193,10 +193,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             tags.forEach(item -> {
                 // todo refactor
                 String tag = item.text();
-                Tag result = tagsMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, tag));
+                Tag result = tagMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, tag));
                 if (result == null) {
                     result = Tag.builder().name(tag).build();
-                    tagsMapper.insert(result);
+                    tagMapper.insert(result);
                 }
                 tagsId.add(result.getId());
             });
@@ -223,10 +223,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private List<Long> getTagsList(ArticleDTO article) {
         List<Long> tagList = new ArrayList<>();
         article.getTags().forEach(item -> {
-            Tag tags = tagsMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, item));
+            Tag tags = tagMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, item));
             if (tags == null) {
                 tags = Tag.builder().name(item).sort(0).build();
-                tagsMapper.insert(tags);
+                tagMapper.insert(tags);
             }
             tagList.add(tags.getId());
         });

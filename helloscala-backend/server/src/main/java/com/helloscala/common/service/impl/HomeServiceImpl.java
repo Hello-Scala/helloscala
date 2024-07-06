@@ -23,7 +23,7 @@ import static com.helloscala.common.enums.PublishEnum.PUBLISH;
 public class HomeServiceImpl {
     private final ArticleMapper articleMapper;
     private final MessageMapper messageMapper;
-    private final TagsMapper tagsMapper;
+    private final TagMapper tagMapper;
     private final CategoryMapper categoryMapper;
     private final UserLogMapper userLogMapper;
     private final SystemConfigService systemConfigService;
@@ -51,7 +51,7 @@ public class HomeServiceImpl {
         Map<String, Object> categoryCount = this.categoryCount();
         List<Map<String, Object>> userAccess = this.userAccess();
 
-        List<Map<String, Object>> tagsList = tagsMapper.countTags();
+        List<Map<String, Object>> tagsList = tagMapper.countTags();
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
 
         return SystemHomeDataVO.builder().dashboard(systemConfig.getDashboardNotification())

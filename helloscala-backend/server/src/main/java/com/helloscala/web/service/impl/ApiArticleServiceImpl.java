@@ -13,6 +13,7 @@ import com.helloscala.common.mapper.*;
 import com.helloscala.common.service.ArticleTagService;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.service.SystemConfigService;
+import com.helloscala.common.service.TagService;
 import com.helloscala.common.strategy.context.SearchStrategyContext;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
@@ -45,7 +46,7 @@ import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
 public class ApiArticleServiceImpl implements ApiArticleService {
     private final ArticleMapper articleMapper;
     private final RedisService redisService;
-    private final TagsMapper tagMapper;
+    private final TagService tagService;
     private final CommentMapper commentMapper;
     private final CollectMapper collectMapper;
     private final FollowedMapper followedMapper;
@@ -87,16 +88,14 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     @NotNull
     @Override
     public Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet) {
-        LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
-        articleTagQuery.in(ArticleTag::getArticleId, articleIdSet);
+        if (ObjectUtil.isEmpty(articleIdSet)) {
+            return new HashMap<>();
+        }
         List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
-
         Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
-        Set<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
-        LambdaQueryWrapper<Tag> tagQuery = new LambdaQueryWrapper<>();
-        tagQuery.in(Tag::getId, tagIds);
-        List<Tag> tags = tagMapper.selectList(tagQuery);
+        Set<Long> tagIdSet = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        List<Tag> tags = tagService.listByIds(tagIdSet);
         Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
         return articleTagMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList()));
     }

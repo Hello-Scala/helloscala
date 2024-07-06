@@ -6,7 +6,7 @@ import com.helloscala.common.entity.Article;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.service.ArticleService;
 import com.helloscala.common.service.RedisService;
-import com.helloscala.common.service.TagsService;
+import com.helloscala.common.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ import static com.helloscala.common.RedisConstants.TAG_CLICK_VOLUME;
 public class BlogQuartz {
     private final RedisService redisService;
     private final ArticleService articleService;
-    private final TagsService tagsService;
+    private final TagService tagsService;
 
     public void ryMultipleParams(String s, Boolean b, Long l, Double d, Integer i) {
         log.info(StrUtil.format("ryMultipleParams: String:{},Boolean:{}, Long:{}, Float:{}, Integer:{}", s, b, l, d, i));
