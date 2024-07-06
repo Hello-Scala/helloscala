@@ -10,10 +10,7 @@ import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.ReadTypeEnum;
 import com.helloscala.common.enums.SearchModelEnum;
 import com.helloscala.common.mapper.*;
-import com.helloscala.common.service.ArticleTagService;
-import com.helloscala.common.service.RedisService;
-import com.helloscala.common.service.SystemConfigService;
-import com.helloscala.common.service.TagService;
+import com.helloscala.common.service.*;
 import com.helloscala.common.strategy.context.SearchStrategyContext;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
@@ -47,7 +44,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final ArticleMapper articleMapper;
     private final RedisService redisService;
     private final TagService tagService;
-    private final CommentMapper commentMapper;
+    private final CommentService commentService;
     private final CollectMapper collectMapper;
     private final FollowedMapper followedMapper;
     private final ArticleTagService articleTagService;
@@ -64,9 +61,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
         Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
 
-        LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<Comment>().select(Comment::getId, Comment::getArticleId)
-                .in(Comment::getArticleId, articleIdSet);
-        List<Comment> comments = commentMapper.selectList(commentQuery);
+        List<Comment> comments = commentService.listArticleComment(articleIdSet);
         Map<Long, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
 
         Map<String, Object> articleLikeCountMap = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
@@ -101,7 +96,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public ArticleInfoVO selectArticleInfo(Integer id) {
+    public ArticleInfoVO selectArticleInfo(Long id) {
         ArticleInfoVO articleInfoVO = articleMapper.selectArticleByIdToVO(id);
         if (articleInfoVO == null) {
             throw new NotFoundException("Article not found, id={}!", id);
@@ -110,18 +105,17 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(articleInfoVO.getId()));
         List<Tag> tags = articleTagListMap.get(articleInfoVO.getId());
 
-        List<Comment> comments = commentMapper.selectList(
-                new LambdaQueryWrapper<Comment>().eq(Comment::getArticleId, id));
+        Long commentCount = commentService.countByArticleId(id);
 
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
 
         articleInfoVO.setTagList(tags);
         articleInfoVO.setCollectCount(collectCount.intValue());
-        articleInfoVO.setCommentCount(comments.size());
+        articleInfoVO.setCommentCount(commentCount);
         if (map != null && !map.isEmpty()) {
             articleInfoVO.setLikeCount(map.get(id.toString()));
         }
-        Object userId = StpUtil.getLoginIdDefaultNull();
+        String userId = (String) StpUtil.getLoginIdDefaultNull();
         if (userId != null) {
             String articleLikeKey = ARTICLE_USER_LIKE + userId;
             if (redisService.sIsMember(articleLikeKey, id)) {
@@ -131,7 +125,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
                 }
             }
             if (articleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index) {
-                Long count = commentMapper.selectCount(new LambdaQueryWrapper<Comment>().eq(Comment::getUserId, userId));
+                Long count = commentService.countByUserId(userId);
                 if (count != null && count > 0) {
                     articleInfoVO.setActiveReadType(true);
                 }

@@ -15,7 +15,7 @@ import java.util.Set;
 public interface ApiArticleService {
     Page<RecommendedArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
 
-    ArticleInfoVO selectArticleInfo(Integer id);
+    ArticleInfoVO selectArticleInfo(Long id);
 
     Page<ApiArticleSearchVO> searchArticle(String keywords);
 

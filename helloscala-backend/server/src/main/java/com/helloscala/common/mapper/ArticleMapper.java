@@ -29,7 +29,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
                                                        @Param("orderByDescColumn")String orderByDescColumn);
 
 
-    ArticleInfoVO selectArticleByIdToVO(Integer id);
+    ArticleInfoVO selectArticleByIdToVO(Long id);
 
     List<ArticleVO> selectListByBanner();
 
