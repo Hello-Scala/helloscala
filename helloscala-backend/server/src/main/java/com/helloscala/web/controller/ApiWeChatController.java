@@ -27,10 +27,11 @@ import java.util.regex.Pattern;
 @RequestMapping("/wechat")
 @RequiredArgsConstructor
 public class ApiWeChatController {
+    private static final String VERIFICATION_CODE_PREFIX = "DL";
+    private static final Pattern pattern = Pattern.compile("(?i)^DL\\d{4}$");
     private final RedisService redisService;
     private final WxMpService wxMpService;
     private final ApiUserService userService;
-    private final Pattern pattern = Pattern.compile("(?i)^DL\\d{4}$");
 
     @Operation(summary = "check token", method = "get")
     @GetMapping(produces = "text/plain;charset=utf-8")
@@ -52,24 +53,28 @@ public class ApiWeChatController {
             WxMpXmlMessage message = WxMpXmlMessage.fromXml(request.getInputStream());
             String content = message.getContent();
             log.info("Official account request type:{};content:{}", message.getMsgType(), content);
-            if (WxConsts.XmlMsgType.TEXT.equals(message.getMsgType())) {
-                if ("验证码".equals(content)) {
-                    String code = RandomUtil.generationNumberChar(6);
-                    String msg = MessageFormat.format("您的本次验证码:{0},该验证码30分钟内有效。", code);
-                    redisService.setCacheObject(RedisConstants.WECHAT_CODE + code, code, 30, TimeUnit.MINUTES);
-                    return returnMsg(msg, message);
-                }
-                //登录逻辑
-                Matcher matcher = pattern.matcher(content);
-                if (!matcher.matches()) {
-                    return returnMsg("验证不正确或已过期", message);
-                } else {
-                    String msg = userService.wechatLogin(message);
-                    return returnMsg(msg, message);
-                }
-
+            if (!WxConsts.XmlMsgType.TEXT.equals(message.getMsgType())) {
+                log.warn("ignore msg from {}, type={}", message.getFromUser(), message.getMsgType());
+                return "";
             }
-
+            if ("验证码".equals(content)) {
+                String code = RandomUtil.generationNumberChar(6);
+                String msg = MessageFormat.format("您的本次验证码:{0},该验证码30分钟内有效。", code);
+                redisService.setCacheObject(RedisConstants.WECHAT_CODE + code, code, 30, TimeUnit.MINUTES);
+                return returnMsg(msg, message);
+            }
+            if (!content.startsWith(VERIFICATION_CODE_PREFIX)) {
+                log.warn("ignore msg from {}, content={}", message.getFromUser(), message.getContent());
+                return "";
+            }
+            // check verification code
+            Matcher matcher = pattern.matcher(content);
+            if (!matcher.matches()) {
+                return returnMsg("验证不正确或已过期", message);
+            } else {
+                String msg = userService.wechatLogin(message);
+                return returnMsg(msg, message);
+            }
         } catch (Exception e) {
             log.error("Failed to handle message!", e);
         }
