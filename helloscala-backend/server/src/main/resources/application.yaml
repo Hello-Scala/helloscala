@@ -142,3 +142,15 @@ sys:
     roleId: 1
   aesEncrypt:
     key: helloscala2024
+
+forest:
+  max-connections: 1000
+  connect-timeout: 30000 # 30s
+  read-timeout: 30000 # 30s
+  backend: okhttp3
+
+coze:
+  baseUrl: https://api.coze.cn/v1
+  accessToken: xxx
+  spaceId: 123
+  botId: 123

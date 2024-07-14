@@ -1,6 +1,7 @@
 package com.helloscala;
 
 import cn.dev33.satoken.SaManager;
+import com.dtflys.forest.springboot.annotation.ForestScan;
 import com.helloscala.web.im.WebSocketChanneInitializer;
 import com.helloscala.web.im.WebSocketConstant;
 import com.helloscala.web.im.WebSocketInfoService;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 @MapperScan(basePackages = {"com.helloscala.common.mapper"})
 @EsMapperScan("com.helloscala.common.esmapper")
+@ForestScan(basePackages = "com.helloscala.web.service.client")
 @ServletComponentScan
 @EnableAsync
 @EnableFileStorage
