@@ -18,5 +18,5 @@ public class ObjectContent {
     private String fileId;
 
     @JSONField(name = "file_url")
-    private String file_url;
+    private String fileUrl;
 }

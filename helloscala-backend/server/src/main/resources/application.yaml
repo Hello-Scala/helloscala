@@ -150,7 +150,7 @@ forest:
   backend: okhttp3
 
 coze:
-  baseUrl: https://api.coze.cn/v1
+  baseUrl: https://api.coze.cn
   accessToken: xxx
   spaceId: 123
   botId: 123
