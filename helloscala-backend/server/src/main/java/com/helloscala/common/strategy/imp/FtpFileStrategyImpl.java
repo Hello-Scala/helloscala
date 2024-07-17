@@ -71,10 +71,15 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @Override
     public void download(String key, ServletResponse response) {
+        String[] split = key.split("/");
+        String fileName = split[split.length - 1];
+        String parentPath = StrUtil.removeSuffix(key, fileName);
+        String path = StrUtil.removePrefix(parentPath, ftpConfig.getBasePath());
         FileInfo fileInfo = new FileInfo()
                 .setPlatform(platform)
                 .setBasePath(ftpConfig.getBasePath())
-                .setFilename(StrUtil.removePrefix(key, ftpConfig.getBasePath()));
+                .setPath(path)
+                .setFilename(fileName);
         try {
             service.download(fileInfo).outputStream(response.getOutputStream());
         } catch (Exception e) {
