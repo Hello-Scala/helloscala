@@ -2,7 +2,6 @@ package com.helloscala.common.strategy.imp;
 
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.config.FtpConfig;
-import com.helloscala.common.service.SystemConfigService;
 import com.helloscala.common.strategy.FileStrategy;
 import com.helloscala.common.utils.DateUtil;
 import jakarta.annotation.PostConstruct;
@@ -28,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 public class FtpFileStrategyImpl implements FileStrategy {
     private final Logger logger = LoggerFactory.getLogger(FtpFileStrategyImpl.class);
-    private final SystemConfigService systemConfigService;
     private final FileStorageService service;
     private final FtpConfig ftpConfig;
     private final String platform = "ftp";
