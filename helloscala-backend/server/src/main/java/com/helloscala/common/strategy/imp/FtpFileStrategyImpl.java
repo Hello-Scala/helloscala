@@ -2,7 +2,6 @@ package com.helloscala.common.strategy.imp;
 
 import cn.hutool.core.util.StrUtil;
 import com.helloscala.common.config.FtpConfig;
-import com.helloscala.common.entity.SystemConfig;
 import com.helloscala.common.service.SystemConfigService;
 import com.helloscala.common.strategy.FileStrategy;
 import com.helloscala.common.utils.DateUtil;
@@ -34,7 +33,7 @@ public class FtpFileStrategyImpl implements FileStrategy {
     private String baseUrl;
 
     @PostConstruct
-    private void init(){
+    private void init() {
         FileStorageProperties.FtpConfig config = new FileStorageProperties.FtpConfig();
         config.setPlatform(platform);
         config.setHost(ftpConfig.getHost());
@@ -46,25 +45,24 @@ public class FtpFileStrategyImpl implements FileStrategy {
         config.setDomain(ftpConfig.getDomain());
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
         service.getFileStorageList().addAll(ftpFileStorages);
-
         baseUrl = ftpConfig.getDomain();
         logger.info("------init ftp settings success-----");
     }
 
     @Override
-    public String upload(MultipartFile file,String suffix) {
-        String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD)  + "/";
+    public String upload(MultipartFile file, String suffix) {
+        String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD) + "/";
         return service.of(file).setPath(path).setPlatform(platform).setSaveFilename(file.getOriginalFilename()).upload().getUrl();
     }
 
 
     @Override
-    public Boolean delete(String ...keys) {
+    public Boolean delete(String... keys) {
         for (String key : keys) {
             String[] str = key.split(baseUrl);
             FileInfo fileInfo = new FileInfo()
-                .setPlatform(platform)
-                .setFilename(str[1]);
+                    .setPlatform(platform)
+                    .setFilename(str[1]);
             service.delete(fileInfo);
         }
         return true;
@@ -73,8 +71,9 @@ public class FtpFileStrategyImpl implements FileStrategy {
     @Override
     public void download(String key, ServletResponse response) {
         FileInfo fileInfo = new FileInfo()
-            .setPlatform(platform)
-            .setFilename(StrUtil.removePrefix(key, "/"));
+                .setPlatform(platform)
+                .setBasePath(ftpConfig.getBasePath())
+                .setFilename(StrUtil.removePrefix(key, ftpConfig.getBasePath()));
         try {
             service.download(fileInfo).outputStream(response.getOutputStream());
         } catch (Exception e) {
