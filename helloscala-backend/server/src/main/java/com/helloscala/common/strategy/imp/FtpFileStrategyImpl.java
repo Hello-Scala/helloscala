@@ -34,6 +34,11 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @PostConstruct
     private void init() {
+        baseUrl = ftpConfig.getDomain();
+        logger.info("------init ftp settings success-----");
+    }
+
+    private void setServiceContext(String domain) {
         FileStorageProperties.FtpConfig config = new FileStorageProperties.FtpConfig();
         config.setPlatform(platform);
         config.setHost(ftpConfig.getHost());
@@ -42,15 +47,15 @@ public class FtpFileStrategyImpl implements FileStrategy {
         config.setPassword(ftpConfig.getPassword());
         config.setBasePath(ftpConfig.getBasePath());
         config.setStoragePath("");
-        config.setDomain(ftpConfig.getDomain());
+        config.setDomain(domain);
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
         service.setFileStorageList(new CopyOnWriteArrayList<>(ftpFileStorages));
-        baseUrl = ftpConfig.getDomain();
-        logger.info("------init ftp settings success-----");
     }
 
     @Override
     public String upload(MultipartFile file, String suffix) {
+        setServiceContext(ftpConfig.getDomain());
+
         String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD) + "/";
         UploadPretreatment uploadPretreatment = service.of(file).setPath(path).setPlatform(platform).setSaveFilename(file.getOriginalFilename());
         return uploadPretreatment.upload().getUrl();
@@ -71,6 +76,8 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @Override
     public void download(String key, ServletResponse response) {
+        setServiceContext(StrUtil.removePrefix(ftpConfig.getDomain(), ftpConfig.getBasePath()));
+
         FileInfo fileInfo = new FileInfo()
                 .setPlatform(platform)
                 .setFilename(StrUtil.removePrefix(key, "/"));
