@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 @Service("ftpFileStrategyImpl")
@@ -44,7 +45,7 @@ public class FtpFileStrategyImpl implements FileStrategy {
         config.setStoragePath("./");
         config.setDomain(ftpConfig.getDomain());
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
-        service.getFileStorageList().addAll(ftpFileStorages);
+        service.setFileStorageList(new CopyOnWriteArrayList<>(ftpFileStorages));
         baseUrl = ftpConfig.getDomain();
         logger.info("------init ftp settings success-----");
     }
