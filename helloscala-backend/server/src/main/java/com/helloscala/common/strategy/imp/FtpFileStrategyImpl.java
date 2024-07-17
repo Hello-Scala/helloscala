@@ -13,6 +13,7 @@ import org.dromara.x.file.storage.core.FileStorageProperties;
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.FileStorageServiceBuilder;
 import org.dromara.x.file.storage.core.platform.FtpFileStorage;
+import org.dromara.x.file.storage.core.upload.UploadPretreatment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class FtpFileStrategyImpl implements FileStrategy {
         config.setUser(ftpConfig.getUsername());
         config.setPassword(ftpConfig.getPassword());
         config.setBasePath(ftpConfig.getBasePath());
-        config.setStoragePath("./");
+        config.setStoragePath("");
         config.setDomain(ftpConfig.getDomain());
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
         service.setFileStorageList(new CopyOnWriteArrayList<>(ftpFileStorages));
@@ -53,7 +54,8 @@ public class FtpFileStrategyImpl implements FileStrategy {
     @Override
     public String upload(MultipartFile file, String suffix) {
         String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD) + "/";
-        return service.of(file).setPath(path).setPlatform(platform).setSaveFilename(file.getOriginalFilename()).upload().getUrl();
+        UploadPretreatment uploadPretreatment = service.of(file).setPath(path).setPlatform(platform).setSaveFilename(file.getOriginalFilename());
+        return uploadPretreatment.upload().getUrl();
     }
 
 
@@ -71,15 +73,9 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @Override
     public void download(String key, ServletResponse response) {
-        String[] split = key.split("/");
-        String fileName = split[split.length - 1];
-        String parentPath = StrUtil.removeSuffix(key, fileName);
-        String path = StrUtil.removePrefix(parentPath, ftpConfig.getBasePath());
         FileInfo fileInfo = new FileInfo()
                 .setPlatform(platform)
-                .setBasePath(ftpConfig.getBasePath())
-                .setPath(path)
-                .setFilename(fileName);
+                .setFilename(StrUtil.removePrefix(key, "/"));
         try {
             service.download(fileInfo).outputStream(response.getOutputStream());
         } catch (Exception e) {
