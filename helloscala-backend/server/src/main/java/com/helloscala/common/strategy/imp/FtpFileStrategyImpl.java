@@ -54,7 +54,7 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @Override
     public String upload(MultipartFile file, String suffix) {
-        setServiceContext(ftpConfig.getDomain());
+        setServiceContext(StrUtil.removeSuffix(ftpConfig.getDomain(), ftpConfig.getBasePath()));
 
         String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD) + "/";
         UploadPretreatment uploadPretreatment = service.of(file).setPath(path).setPlatform(platform).setSaveFilename(file.getOriginalFilename());
@@ -76,7 +76,7 @@ public class FtpFileStrategyImpl implements FileStrategy {
 
     @Override
     public void download(String key, ServletResponse response) {
-        setServiceContext(StrUtil.removePrefix(ftpConfig.getDomain(), ftpConfig.getBasePath()));
+        setServiceContext(ftpConfig.getDomain());
 
         FileInfo fileInfo = new FileInfo()
                 .setPlatform(platform)
