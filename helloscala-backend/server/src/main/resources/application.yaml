@@ -128,7 +128,8 @@ file:
 baidu.url: https://www.baidu.com
 
 ftp:
-  storagePath: /helloscala/asserts/
+  storagePath: /home/ftpuser/ftp-files
+  basePath: /helloscala/asserts/
   host: 192.168.1.8
   port: 21
   username: ftpuser

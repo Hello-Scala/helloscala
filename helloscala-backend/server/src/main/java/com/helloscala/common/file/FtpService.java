@@ -7,6 +7,7 @@ import com.helloscala.common.config.FtpConfig;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.FailedDependencyException;
+import com.helloscala.common.web.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class FtpService {
+    public static final String ABSOLUTE_BASE_PATH = "/home/ftpuser/ftp-files";
     private final FtpConfig ftpConfig;
     @Value(value = "${spring.servlet.multipart.max-file-size:5MB}")
     private String maxFileSizeStr;
@@ -34,7 +36,7 @@ public class FtpService {
     @PostConstruct
     public void init() {
         if (Objects.isNull(ftpClient)) {
-            ftpClient = new Ftp(ftpConfig.getHost(), ftpConfig.getPort(), ftpConfig.getUsername(), ftpConfig.getPassword());
+            ftpClient = new Ftp(ftpConfig.getHost(), ftpConfig.getPort(), ftpConfig.getUsername(), ftpConfig.getPassword()).setBackToPwd(true);
         }
     }
 
@@ -51,6 +53,7 @@ public class FtpService {
         String filename = file.getOriginalFilename();
         String absolutePath = storagePath + path;
 
+        ftpClient.cd("/home/ftpuser/ftp-files");
         boolean dirExist = ftpClient.isDir(absolutePath);
         if (!dirExist) {
             ftpClient.mkDirs(absolutePath);
@@ -70,7 +73,11 @@ public class FtpService {
     public void download(String key, OutputStream outputStream) {
         String[] split = key.split("/");
         String fileName = split[split.length - 1];
-        String path = StrUtil.removeSuffix(key, fileName);
+        String path = ABSOLUTE_BASE_PATH + StrUtil.removeSuffix(key, fileName);
+        boolean existFile = ftpClient.existFile(ABSOLUTE_BASE_PATH + key);
+        if (!existFile) {
+            throw new NotFoundException("File not found, key={}", key);
+        }
         ftpClient.download(path, key, outputStream);
     }
 
