@@ -19,11 +19,12 @@ public class FailedDependencyException extends AbstractException {
     public FailedDependencyException(Throwable throwable) {
         super(STATUS, CODE, MESSAGE, throwable);
     }
+
     public FailedDependencyException(String msgFmt, Object... params) {
         super(STATUS, CODE, StrUtil.format(msgFmt, params));
     }
 
-    public FailedDependencyException(String msgFmt, Throwable throwable, Object... params) {
+    public FailedDependencyException(Throwable throwable, String msgFmt, Object... params) {
         super(STATUS, CODE, StrUtil.format(msgFmt, params), throwable);
     }
 }

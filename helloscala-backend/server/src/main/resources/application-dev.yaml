@@ -124,13 +124,13 @@ file:
 baidu.url: https://www.baidu.com
 
 ftp:
-  basePath: helloscala/asserts/
+  storagePath: /helloscala/asserts/
   host: 192.168.1.8
   port: 21
   username: ftpuser
-  password: howard123
-  httpPath: http://localhost:8400
-  domain: https://helloscala.cpolar.top/helloscala/asserts/
+  password: helloftp123!
+  httpPath: https://helloscala.cpolar.top
+  domain: https://helloscala.cpolar.top
 
 sys:
   admin:
