@@ -25,7 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // ref https://blog.csdn.net/wu2374633583/article/details/131559324
         registry.addInterceptor(new SaInterceptor(handler -> StpUtil.checkLogin()))
-                .addPathPatterns("/system/**").excludePathPatterns("/login", "/logout", "/verify", "/asserts");
+                .addPathPatterns("/system/**")
+                .excludePathPatterns("/login", "/logout", "/verify", "/asserts", "/websocket/**");
 
     }
 

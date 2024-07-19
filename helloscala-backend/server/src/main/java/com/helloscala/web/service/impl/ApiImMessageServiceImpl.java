@@ -2,6 +2,7 @@ package com.helloscala.web.service.impl;
 
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.ImMessage;
@@ -76,11 +77,12 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     @Override
     public List<ImRoomListVO> selectRoomList() {
         List<ImRoomListVO> list = new ArrayList<>();
-        List<ImRoom> imRooms = imRoomMapper.selectList(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, StpUtil.getLoginIdAsString())
-                .orderByDesc(ImRoom::getCreateTime));
+        LambdaQueryWrapper<ImRoom> imRoomQuery = new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, StpUtil.getLoginIdAsString())
+                .orderByDesc(ImRoom::getCreateTime);
+        List<ImRoom> imRooms = imRoomMapper.selectList(imRoomQuery);
 
         Set<String> userIdSet = imRooms.stream().map(ImRoom::getToUserId).collect(Collectors.toSet());
-        List<User> users = userMapper.selectBatchIds(userIdSet);
+        List<User> users = ObjectUtil.isEmpty(userIdSet) ? new ArrayList<>() : userMapper.selectBatchIds(userIdSet);
         Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
 
         for (ImRoom imRoom : imRooms) {

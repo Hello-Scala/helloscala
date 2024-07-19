@@ -96,6 +96,9 @@ public class IpUtil {
     }
 
     public static String getCityInfo(String ip) {
+        if ("127.0.0.1".equals(ip) || "local".equals(ip)) {
+            return "LOCAL";
+        }
         String s = analyzeIp(ip);
         Map map = JSONUtil.toBean(s, Map.class);
         Integer status = (Integer) map.get("status");

@@ -54,7 +54,7 @@ public class Application {
             "Api documents: \thttp://" + ip + ":" + port + path + "/swagger-ui/index.html\n\t" +
             "----------------------------------------------------------");
         LOGGER.info("Sa-token config:" + SaManager.getConfig());
-        startNettyMsgServer();
+//        startNettyMsgServer();
     }
 
     private static void startNettyMsgServer() {
