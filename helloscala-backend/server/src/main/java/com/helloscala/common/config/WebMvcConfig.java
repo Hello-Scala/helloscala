@@ -4,7 +4,6 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 import com.helloscala.common.config.intercept.PageableInterceptor;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
 
@@ -13,10 +12,6 @@ import org.springframework.web.servlet.config.annotation.*;
 public class WebMvcConfig implements WebMvcConfigurer {
     @Resource
     private PageableInterceptor pageableInterceptor;
-
-    @Value("${file.upload-folder}")
-    private String UPLOAD_FOLDER;
-
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
