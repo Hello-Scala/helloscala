@@ -27,7 +27,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class FtpService {
-    public static final String ABSOLUTE_BASE_PATH = "/home/ftpuser/ftp-files";
     private final FtpConfig ftpConfig;
     @Value(value = "${spring.servlet.multipart.max-file-size:5MB}")
     private String maxFileSizeStr;
@@ -48,14 +47,12 @@ public class FtpService {
         if (!Constants.FIELD_SUFFIX.toUpperCase().contains(suffix.toUpperCase())) {
             throw new BadRequestException("请选择jpg,jpeg,gif,png,mp4格式的图片");
         }
-        String storagePath = ftpConfig.getStoragePath();
         String path = DateUtil.dateTimeToStr(DateUtil.getNowDate(), DateUtil.YYYYMMDD) + "/";
         String filename = file.getOriginalFilename();
-        String absolutePath = storagePath + path;
-
-        ftpClient.cd("/home/ftpuser/ftp-files");
+        String absolutePath = ftpConfig.getStoragePath() + ftpConfig.getBasePath() + path;
         boolean dirExist = ftpClient.isDir(absolutePath);
         if (!dirExist) {
+            log.warn("Created absolute path:{}", absolutePath);
             ftpClient.mkDirs(absolutePath);
         }
         try {
@@ -73,8 +70,8 @@ public class FtpService {
     public void download(String key, OutputStream outputStream) {
         String[] split = key.split("/");
         String fileName = split[split.length - 1];
-        String path = ABSOLUTE_BASE_PATH + StrUtil.removeSuffix(key, fileName);
-        boolean existFile = ftpClient.existFile(ABSOLUTE_BASE_PATH + key);
+        String path = ftpConfig.getStoragePath() + StrUtil.removeSuffix(key, fileName);
+        boolean existFile = ftpClient.existFile(ftpConfig.getStoragePath() + key);
         if (!existFile) {
             throw new NotFoundException("File not found, key={}", key);
         }

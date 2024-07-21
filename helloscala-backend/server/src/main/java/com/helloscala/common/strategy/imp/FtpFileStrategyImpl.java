@@ -40,7 +40,6 @@ public class FtpFileStrategyImpl implements FileStrategy {
         config.setPassword(ftpConfig.getPassword());
         config.setStoragePath(ftpConfig.getStoragePath());
         config.setBasePath(ftpConfig.getBasePath());
-        config.setStoragePath("./");
         config.setDomain(ftpConfig.getDomain());
         List<FtpFileStorage> ftpFileStorages = FileStorageServiceBuilder.buildFtpFileStorage(Collections.singletonList(config), null);
         service.getFileStorageList().addAll(ftpFileStorages);
