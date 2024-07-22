@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-class PromptInfo {
+public class PromptInfo {
     @JSONField(name = "prompt")
     private String prompt;
 }

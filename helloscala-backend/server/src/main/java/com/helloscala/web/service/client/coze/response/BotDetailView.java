@@ -44,5 +44,5 @@ public class BotDetailView {
     private ModelView modelInfo;
 
     @JSONField(name = "plugin_info_list")
-    private List<Plugin> pluginInfoList; // 使用 Object 作为占位符，因为具体类型未知
+    private List<Plugin> pluginInfoList;
 }

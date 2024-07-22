@@ -5,11 +5,12 @@ import lombok.Data;
 
 @Data
 public class CozeResponse<T> {
+    // 0: success
     @JSONField(name = "code")
-    private String code;
+    private int code;
 
     @JSONField(name = "msg")
-    private int msg;
+    private String msg;
 
     @JSONField(name = "data")
     private T data;

@@ -41,7 +41,6 @@ import static com.helloscala.common.ResultCode.ERROR_USER_NOT_EXIST;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     private final AesEncryptUtil aesEncryptUtil;
     private final MenuService menuService;
-
     private final RedisService redisService;
 
     @Override
@@ -84,6 +83,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public SystemUserVO getCurrentUserInfo() {
+        SystemUserVO user = baseMapper.getById(StpUtil.getLoginIdAsString());
+        List<String> list = menuService.selectButtonPermissions(user.getId());
+        user.setPerms(list);
+        return user;
+    }
+
+    @Override
+    public SystemUserVO getWithPermissions(String id) {
         SystemUserVO user = baseMapper.getById(StpUtil.getLoginIdAsString());
         List<String> list = menuService.selectButtonPermissions(user.getId());
         user.setPerms(list);

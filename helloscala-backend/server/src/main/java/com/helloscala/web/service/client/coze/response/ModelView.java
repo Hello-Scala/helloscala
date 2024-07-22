@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-class ModelView {
+public class ModelView {
     @JSONField(name = "model_id")
     private String modelId;
 

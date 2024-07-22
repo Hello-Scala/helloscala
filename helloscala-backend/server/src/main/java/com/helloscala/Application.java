@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -30,14 +31,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@EnableAsync
+@EnableCaching
+@EnableFileStorage
 @RestController
 @SpringBootApplication
-@MapperScan(basePackages = {"com.helloscala.common.mapper"})
-@EsMapperScan("com.helloscala.common.esmapper")
-@ForestScan(basePackages = "com.helloscala.web.service.client")
 @ServletComponentScan
-@EnableAsync
-@EnableFileStorage
+@MapperScan(basePackages = {"com.helloscala.common.mapper"})
+@ForestScan(basePackages = "com.helloscala.web.service.client")
+@EsMapperScan("com.helloscala.common.esmapper")
 public class Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 

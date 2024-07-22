@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-class Plugin {
+public class Plugin {
     @JSONField(name = "plugin_id")
     private String pluginId;
 

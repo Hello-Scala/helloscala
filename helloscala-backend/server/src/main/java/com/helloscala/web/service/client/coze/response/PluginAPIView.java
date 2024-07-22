@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-class PluginAPIView {
+public class PluginAPIView {
     @JSONField(name = "api_id")
     private String apiId;
 

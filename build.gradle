@@ -58,6 +58,7 @@ project(":helloscala-backend:server") {
         implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-thymeleaf:$SPRING_BOOT_VERSION"
+        implementation "org.springframework.boot:spring-boot-starter-webflux:$SPRING_BOOT_VERSION"
         implementation ("org.springframework.boot:spring-boot-starter-websocket:$SPRING_BOOT_VERSION") {
             exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat')
         }

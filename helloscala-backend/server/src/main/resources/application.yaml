@@ -32,7 +32,13 @@ spring:
       port: 6380
       database: 0
       password: helloredis123!
-
+      jedis:
+        pool:
+          enabled: true
+          max-active: 8
+          max-idle: 4
+          min-idle: 1
+          time-between-eviction-runs: 10000
   datasource:
     url: jdbc:mysql://192.168.1.8:3306/hello_scala?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: helloscala
@@ -149,7 +155,10 @@ forest:
   connect-timeout: 30000 # 30s
   read-timeout: 30000 # 30s
   backend: okhttp3
-
+  log-enabled: true
+  log-request: false
+  log-response-status: true
+  log-response-content: false
 coze:
   baseUrl: https://api.coze.cn
   accessToken: xxx

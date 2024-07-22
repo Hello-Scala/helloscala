@@ -19,5 +19,4 @@ public class FileView {
 
     @JSONField(name = "file_name")
     private String fileName;
-
 }

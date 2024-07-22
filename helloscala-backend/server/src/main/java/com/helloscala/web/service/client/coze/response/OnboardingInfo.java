@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-class OnboardingInfo {
+public class OnboardingInfo {
     @JSONField(name = "prologue")
     private String prologue;
     

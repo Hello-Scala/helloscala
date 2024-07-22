@@ -1,12 +1,15 @@
 package com.helloscala.web.service.client.coze;
 
 import com.dtflys.forest.annotation.*;
+import com.dtflys.forest.backend.ContentType;
 import com.dtflys.forest.http.ForestResponse;
 import com.helloscala.web.service.client.ForestHttpMethod;
 import com.helloscala.web.service.client.coze.request.*;
 import com.helloscala.web.service.client.coze.response.*;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -16,9 +19,9 @@ import java.util.List;
 @BaseRequest(baseURL = "{cozeBaseUrl}")
 public interface CozeClient {
     @Request(type = ForestHttpMethod.GET,
-            url = "/v1/bot/get_online_info?bot_id={cozeBotId}",
+            url = "/v1/bot/get_online_info",
             headers = {"Authorization: Bearer {cozeAccessToken}"})
-    ForestResponse<CozeResponse<List<BotDetailView>>> getBotDetail();
+    ForestResponse<CozeResponse<BotDetailView>> getBotDetail(@Query("bot_id") String id);
 
     @Request(type = ForestHttpMethod.GET,
             url = "/v1/space/published_bots_list?space_id={cozeSpaceId}",
@@ -88,9 +91,8 @@ public interface CozeClient {
 
     @Request(type = ForestHttpMethod.POST,
             url = "/v1/files/upload",
-            headers = {"Authorization: Bearer {cozeAccessToken}"},
-            contentType = "multipart/form-data")
-    ForestResponse<CozeResponse<FileView>> uploadFile(HttpServletRequest request);
+            headers = {"Authorization: Bearer {cozeAccessToken}"})
+    ForestResponse<CozeResponse<FileView>> uploadFile(@DataFile("file") MultipartFile file);
 
     @Request(type = ForestHttpMethod.GET,
             url = "/v1/files/retrieve",

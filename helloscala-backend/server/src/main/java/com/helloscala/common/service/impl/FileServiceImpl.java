@@ -15,6 +15,7 @@ import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
@@ -66,6 +68,7 @@ public class FileServiceImpl implements FileService {
 
         Resource resource = Resource.builder().url(key).type(suffix).platform(strategy.getDesc()).userId(StpUtil.getLoginIdAsString()).build();
         dataEventPublisherService.publishData(DataEventEnum.RESOURCE_ADD, resource);
+        log.info("Upload file success, key={}!", key);
         return key;
     }
 
