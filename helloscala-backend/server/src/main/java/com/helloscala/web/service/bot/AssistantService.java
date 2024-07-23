@@ -10,6 +10,7 @@ import com.helloscala.common.service.FileService;
 import com.helloscala.common.utils.DateHelper;
 import com.helloscala.common.utils.ListHelper;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.web.controller.coze.request.ListConversationRequest;
 import com.helloscala.web.controller.coze.response.*;
 import com.helloscala.web.controller.coze.response.ConversationView;
 import com.helloscala.web.service.client.coze.CozeHandler;

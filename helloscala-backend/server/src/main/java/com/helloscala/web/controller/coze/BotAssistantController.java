@@ -7,6 +7,7 @@ import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
+import com.helloscala.web.controller.coze.request.ListConversationRequest;
 import com.helloscala.web.controller.coze.response.*;
 import com.helloscala.web.service.bot.AssistantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,6 +53,14 @@ public class BotAssistantController {
     @Operation(summary = "List conversation", method = "GET")
     @ApiResponse(responseCode = "200", description = "List conversation")
     public Response<ListConversationResponse> listConversation(@RequestBody ListConversationRequest request) {
+        ListConversationResponse response = assistantService.listConversation(request);
+        return ResponseHelper.ok(response);
+    }
+
+    @PostMapping("/{id}/chat")
+    @Operation(summary = "Chat with assistant", method = "Post")
+    @ApiResponse(responseCode = "200", description = "Chat with assistant")
+    public Response<ListConversationResponse> chat(@RequestBody ListConversationRequest request) {
         ListConversationResponse response = assistantService.listConversation(request);
         return ResponseHelper.ok(response);
     }

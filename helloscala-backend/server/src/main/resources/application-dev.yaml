@@ -58,10 +58,10 @@ spring:
   messages:
     encoding: UTF-8
   mail:
-    host:
-    port:
-    username:
-    password:
+    host: smtp.qq.com
+    port: 587
+    username: 2226069315@qq.com
+    password: rsbobiaoxziueafg
     properties:
       mail:
         debug: true

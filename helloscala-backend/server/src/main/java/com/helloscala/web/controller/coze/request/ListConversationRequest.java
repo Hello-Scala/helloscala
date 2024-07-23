@@ -1,4 +1,4 @@
-package com.helloscala.web.controller.coze.response;
+package com.helloscala.web.controller.coze.request;
 
 import lombok.Data;
 import org.springframework.web.bind.annotation.RequestParam;

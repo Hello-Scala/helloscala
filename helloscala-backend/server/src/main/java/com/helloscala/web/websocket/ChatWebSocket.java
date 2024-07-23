@@ -4,6 +4,9 @@ import cn.hutool.json.JSONUtil;
 import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.im.MessageConstant;
+import com.helloscala.web.im.SessionHolder;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import jakarta.annotation.PostConstruct;
 import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -100,5 +104,26 @@ public class ChatWebSocket {
         webSocketMessage.setCode(MessageConstant.PING_MESSAGE_CODE);
         String message = JSONUtil.toJsonStr(webSocketMessage);
         sessionPool.forEach((userId, session) -> session.getAsyncRemote().sendText(message));
+    }
+
+    public void chat(ImMessageVO messageData) {
+        String message = JSONUtil.toJsonStr(messageData);
+        switch (messageData.getCode()) {
+            case MessageConstant.PRIVATE_CHAT_CODE -> {
+                String toUserId = messageData.getToUserId();
+                String fromUserId = messageData.getFromUserId();
+                sendMsg(sessionPool.get(toUserId), message);
+                if (!toUserId.equals(fromUserId)) {
+                    sendMsg(sessionPool.get(fromUserId), message);
+                }
+            }
+            case MessageConstant.GROUP_CHAT_CODE, MessageConstant.SYSTEM_MESSAGE_CODE -> {
+                sessionPool.forEach((userId, session) -> sendMsg(session, message));
+            }
+        }
+    }
+
+    private static void sendMsg(Session nullableSession, String message) {
+        Optional.ofNullable(nullableSession).ifPresent(session -> session.getAsyncRemote().sendText(message));
     }
 }
