@@ -35,7 +35,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.Disposable;
 
 import java.util.Date;
 import java.util.List;
@@ -123,7 +122,7 @@ public class AssistantService {
         saveAndSendUserMsg(currentUserInfo, msgConversation, id, msg, msgView);
 
         final String finalMsgConversation = msgConversation;
-        Disposable disposable = cozeHandler.chat(id, currentUserInfo.getId(), msgConversation, msgView, streamResponse -> {
+        cozeHandler.chat(id, currentUserInfo.getId(), msgConversation, msgView, streamResponse -> {
             StreamEventEnum event = streamResponse.getEvent();
             if (event.isMsgEvent()) {
                 String jsonString = JSONObject.toJSONString(streamResponse.getData());
@@ -166,9 +165,6 @@ public class AssistantService {
                 chatWebSocket.chat(imMessageVO);
             }
         });
-        while (disposable.isDisposed()) {
-            disposable.dispose();
-        }
     }
 
     private void saveAndSendUserMsg(SystemUserVO currentUserInfo, String msgConversation, String id, MessageView msg, ConversationMsgView msgView) {
