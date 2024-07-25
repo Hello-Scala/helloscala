@@ -7,6 +7,7 @@ import lombok.Data;
  */
 @Data
 public class ChatWithAssistantRequest {
-    private String assistantId;
-    // todo
+    private String conversationId;
+
+    private MessageView msg;
 }

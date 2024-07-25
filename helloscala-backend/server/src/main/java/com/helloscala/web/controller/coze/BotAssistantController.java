@@ -1,12 +1,15 @@
 package com.helloscala.web.controller.coze;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.helloscala.common.service.UserService;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
+import com.helloscala.web.controller.coze.request.ChatWithAssistantRequest;
 import com.helloscala.web.controller.coze.request.ListConversationRequest;
 import com.helloscala.web.controller.coze.response.*;
 import com.helloscala.web.service.bot.AssistantService;
@@ -60,8 +63,17 @@ public class BotAssistantController {
     @PostMapping("/{id}/chat")
     @Operation(summary = "Chat with assistant", method = "Post")
     @ApiResponse(responseCode = "200", description = "Chat with assistant")
-    public Response<ListConversationResponse> chat(@RequestBody ListConversationRequest request) {
-        ListConversationResponse response = assistantService.listConversation(request);
+    public Response<ChatWithAssistantResponse> chat(@PathVariable(value = "id") String id, @RequestBody ChatWithAssistantRequest request) {
+        SystemUserVO currentUserInfo = userService.getCurrentUserInfo();
+        log.info("User {} chat with assistant={}, conversationId={}", currentUserInfo.getId(), id, request.getConversationId());
+        if (Objects.isNull(request.getMsg())) {
+            throw new BadRequestException("Message required!");
+        }
+        GetAssistantResponse assistant = assistantService.get(id);
+        if (Objects.isNull(assistant)) {
+            throw new NotFoundException("Assistant not found, id={}!", id);
+        }
+        ChatWithAssistantResponse response = assistantService.chat(assistant, currentUserInfo, request);
         return ResponseHelper.ok(response);
     }
 

@@ -7,4 +7,6 @@ import com.helloscala.common.entity.AssistantConversation;
 
 public interface AssistantConversationService extends IService<AssistantConversation> {
     IPage<AssistantConversation> list(String assistantId, Integer pageNo, Integer pageSize);
+
+    AssistantConversation getByCozeConversationId(String conversationId);
 }

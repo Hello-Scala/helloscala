@@ -8,7 +8,7 @@ import java.util.Date;
  * @author Steve Zou
  */
 @Data
-public class ConversationView {
+public class BOConversationView {
     private String id;
 
     private String botId;

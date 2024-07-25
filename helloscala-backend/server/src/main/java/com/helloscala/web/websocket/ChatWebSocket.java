@@ -1,12 +1,10 @@
 package com.helloscala.web.websocket;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.im.MessageConstant;
-import com.helloscala.web.im.SessionHolder;
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import jakarta.annotation.PostConstruct;
 import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
@@ -113,7 +111,7 @@ public class ChatWebSocket {
                 String toUserId = messageData.getToUserId();
                 String fromUserId = messageData.getFromUserId();
                 sendMsg(sessionPool.get(toUserId), message);
-                if (!toUserId.equals(fromUserId)) {
+                if (StrUtil.isNotBlank(fromUserId) && !toUserId.equals(fromUserId)) {
                     sendMsg(sessionPool.get(fromUserId), message);
                 }
             }

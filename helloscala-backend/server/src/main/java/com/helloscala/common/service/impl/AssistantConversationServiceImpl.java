@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.entity.AssistantConversation;
 import com.helloscala.common.mapper.AssistantConversationMapper;
 import com.helloscala.common.service.AssistantConversationService;
+import com.helloscala.common.utils.SqlHelper;
 import org.springframework.stereotype.Service;
 
 
@@ -19,5 +20,14 @@ public class AssistantConversationServiceImpl extends ServiceImpl<AssistantConve
         queryWrapper.orderByDesc(AssistantConversation::getCreateTime);
         IPage<AssistantConversation> page = PageDTO.of(pageNo, pageSize);
         return baseMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public AssistantConversation getByCozeConversationId(String conversationId) {
+        LambdaQueryWrapper<AssistantConversation> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(AssistantConversation::getConversationId, conversationId);
+        queryWrapper.orderByDesc(AssistantConversation::getCreateTime);
+        queryWrapper.last(SqlHelper.LIMIT_1);
+        return baseMapper.selectOne(queryWrapper);
     }
 }

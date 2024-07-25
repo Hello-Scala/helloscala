@@ -20,7 +20,7 @@ public class ConversationMsgView {
     private String content;
 
     @JSONField(name = "content_type")
-    private ContentTypeEnum contentType;
+    private MsgContentTypeEnum contentType;
 
     @JSONField(name = "meta_data")
     private Map<String, String> metaData;

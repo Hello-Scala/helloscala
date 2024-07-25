@@ -1,7 +1,7 @@
 package com.helloscala.web.service.client.coze.response;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.helloscala.web.service.client.coze.request.ContentTypeEnum;
+import com.helloscala.web.service.client.coze.request.MsgContentTypeEnum;
 import com.helloscala.web.service.client.coze.request.MessageTypeEnum;
 import com.helloscala.web.service.client.coze.request.RoleEnum;
 import lombok.Data;
@@ -35,7 +35,7 @@ public class MsgView {
     private String content;
 
     @JSONField(name = "content_type")
-    private ContentTypeEnum contentType;
+    private MsgContentTypeEnum contentType;
 
     @JSONField(name = "created_at")
     private long createdAt;

@@ -1,27 +1,43 @@
 package com.helloscala.web.service.bot;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.helloscala.common.entity.AssistantConversation;
+import com.helloscala.common.entity.AssistantMessage;
 import com.helloscala.common.entity.CozeFile;
+import com.helloscala.common.enums.ContentTypeEnum;
+import com.helloscala.common.enums.MsgTypeEnum;
+import com.helloscala.common.enums.SendFromEnum;
 import com.helloscala.common.service.AssistantConversationService;
+import com.helloscala.common.service.AssistantMessageService;
 import com.helloscala.common.service.CozeFileService;
 import com.helloscala.common.service.FileService;
 import com.helloscala.common.utils.DateHelper;
 import com.helloscala.common.utils.ListHelper;
+import com.helloscala.common.vo.message.ImMessageHelper;
+import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.web.exception.BadRequestException;
+import com.helloscala.web.controller.coze.request.ChatWithAssistantRequest;
 import com.helloscala.web.controller.coze.request.ListConversationRequest;
+import com.helloscala.web.controller.coze.request.MessageView;
 import com.helloscala.web.controller.coze.response.*;
-import com.helloscala.web.controller.coze.response.ConversationView;
+import com.helloscala.web.im.MessageConstant;
 import com.helloscala.web.service.client.coze.CozeHandler;
+import com.helloscala.web.service.client.coze.request.*;
 import com.helloscala.web.service.client.coze.response.*;
+import com.helloscala.web.websocket.ChatWebSocket;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.Disposable;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +53,8 @@ public class AssistantService {
     private final FileService fileService;
     private final CozeFileService cozeFileService;
     private final AssistantConversationService conversationService;
+    private final AssistantMessageService messageService;
+    private final ChatWebSocket chatWebSocket;
 
     @Cacheable(value = "assistant:list")
     public ListAssistantResponse list() {
@@ -52,9 +70,8 @@ public class AssistantService {
 
     public ListConversationResponse listConversation(ListConversationRequest request) {
         IPage<AssistantConversation> conversationPage = conversationService.list(request.getId(), request.getPageNo(), request.getPageSize());
-
-        List<ConversationView> conversationViews = conversationPage.getRecords().stream().map(conversation -> {
-            ConversationView conversationView = new ConversationView();
+        List<BOConversationView> conversationViews = conversationPage.getRecords().stream().map(conversation -> {
+            BOConversationView conversationView = new BOConversationView();
             conversationView.setId(conversation.getId());
             conversationView.setBotId(conversation.getBotId());
             conversationView.setSummary(conversation.getSummary());
@@ -68,6 +85,136 @@ public class AssistantService {
         response.setCurrentPage((int) conversationPage.getCurrent());
         response.setConversations(conversationViews);
         return response;
+    }
+
+    public ChatWithAssistantResponse chat(GetAssistantResponse assistant, SystemUserVO currentUserInfo, ChatWithAssistantRequest request) {
+        String id = assistant.getBotId();
+        String msgConversation = request.getConversationId();
+        MessageView msg = request.getMsg();
+        if (StrUtil.isBlank(request.getConversationId())) {
+            // todo create conversation
+            String content = msg.getContent();
+            String summary = content.length() < 50 ? content : StrUtil.subPre(content, 50) + "...";
+            ConversationView conversation = cozeHandler.createConversation();
+            AssistantConversation assistantConversation = new AssistantConversation();
+            assistantConversation.setBotId(id);
+            assistantConversation.setConversationId(conversation.getId());
+            assistantConversation.setUserId(currentUserInfo.getId());
+            assistantConversation.setSummary(summary);
+            assistantConversation.setCreateTime(CozeHelper.toDate(conversation.getCreatedAt()));
+            assistantConversation.setCreateBy(currentUserInfo.getUsername());
+            conversationService.save(assistantConversation);
+            msgConversation = assistantConversation.getId();
+        }
+        chat(assistant, currentUserInfo, msg, msgConversation, id);
+        ChatWithAssistantResponse assistantResponse = new ChatWithAssistantResponse();
+        assistantResponse.setConversationId(msgConversation);
+        return assistantResponse;
+    }
+
+    @Async
+    public void chat(GetAssistantResponse assistant, SystemUserVO currentUserInfo, MessageView msg, String msgConversation, String id) {
+        String msgContent = buildMsgContent(msg.getMsgType(), msg.getContent());
+        ConversationMsgView msgView = new ConversationMsgView();
+        msgView.setRole(RoleEnum.USER);
+        msgView.setType(MessageTypeEnum.QUERY);
+        msgView.setContent(msgContent);
+        msgView.setContentType(toContentType(msg.getMsgType()));
+        saveAndSendUserMsg(currentUserInfo, msgConversation, id, msg, msgView);
+
+        final String finalMsgConversation = msgConversation;
+        Disposable disposable = cozeHandler.chat(id, currentUserInfo.getId(), msgConversation, msgView, streamResponse -> {
+            StreamEventEnum event = streamResponse.getEvent();
+            if (event.isMsgEvent()) {
+                String jsonString = JSONObject.toJSONString(streamResponse.getData());
+                MsgView messageView = JSONObject.parseObject(jsonString, MsgView.class);
+                AssistantMessage assistantMessage = new AssistantMessage();
+                assistantMessage.setConversationId(finalMsgConversation);
+                assistantMessage.setBotId(id);
+                assistantMessage.setMessageId(null);
+                assistantMessage.setSendFrom(SendFromEnum.ASSISTANT);
+                assistantMessage.setContent(messageView.getContent());
+                assistantMessage.setContentType(ContentTypeEnum.create(messageView.getContentType().getValue().toUpperCase()));
+                assistantMessage.setUserId(currentUserInfo.getId());
+                assistantMessage.setCreateBy(currentUserInfo.getUsername());
+                assistantMessage.setCreateTime(new Date());
+                messageService.save(assistantMessage);
+
+                ImMessageVO imMessageVO = new ImMessageVO();
+                imMessageVO.setCode(MessageConstant.PRIVATE_CHAT_CODE);
+                imMessageVO.setFromUserId(assistant.getBotId());
+                imMessageVO.setFromUserNickname(assistant.getName());
+                imMessageVO.setFromUserAvatar(assistant.getIconUrl());
+                imMessageVO.setContent(assistantMessage.getContent());
+                imMessageVO.setType(ImMessageHelper.toType(assistantMessage.getContentType()));
+                chatWebSocket.chat(imMessageVO);
+            } else if (event.isChatEvent()) {
+                String jsonString = JSONObject.toJSONString(streamResponse.getData());
+                ChatView chatView = JSONObject.parseObject(jsonString, ChatView.class);
+                log.info(JSONObject.toJSONString(chatView));
+            } else if (event.isDone()) {
+                log.info("chat done, assistantId={}, conversationId={}, userId={}!", id, finalMsgConversation, currentUserInfo.getId());
+            } else if (event.isError()) {
+                log.error("Failed to handle chat, assistantId={}, conversationId={}, userId={}!", id, finalMsgConversation, currentUserInfo.getId());
+                ImMessageVO imMessageVO = new ImMessageVO();
+                imMessageVO.setCode(MessageConstant.PRIVATE_CHAT_CODE);
+                imMessageVO.setFromUserId(assistant.getBotId());
+                imMessageVO.setFromUserNickname(assistant.getName());
+                imMessageVO.setFromUserAvatar(assistant.getIconUrl());
+                imMessageVO.setContent("Failed to handle chat!");
+                imMessageVO.setType(1);
+                chatWebSocket.chat(imMessageVO);
+            }
+        });
+        while (disposable.isDisposed()) {
+            disposable.dispose();
+        }
+    }
+
+    private void saveAndSendUserMsg(SystemUserVO currentUserInfo, String msgConversation, String id, MessageView msg, ConversationMsgView msgView) {
+        AssistantMessage assistantMessage = new AssistantMessage();
+        assistantMessage.setConversationId(msgConversation);
+        assistantMessage.setBotId(id);
+        assistantMessage.setMessageId(null);
+        assistantMessage.setSendFrom(SendFromEnum.USER);
+        assistantMessage.setContent(msg.getContent());
+        assistantMessage.setContentType(ContentTypeEnum.create(msgView.getContentType().getValue().toUpperCase()));
+        assistantMessage.setUserId(currentUserInfo.getId());
+        assistantMessage.setCreateBy(currentUserInfo.getUsername());
+        assistantMessage.setCreateTime(new Date());
+        messageService.save(assistantMessage);
+
+        ImMessageVO imMessageVO = new ImMessageVO();
+        imMessageVO.setCode(MessageConstant.PRIVATE_CHAT_CODE);
+        imMessageVO.setFromUserId(currentUserInfo.getId());
+        imMessageVO.setFromUserNickname(currentUserInfo.getNickname());
+        imMessageVO.setFromUserAvatar(currentUserInfo.getAvatar());
+        imMessageVO.setContent(assistantMessage.getContent());
+        imMessageVO.setType(ImMessageHelper.toType(assistantMessage.getContentType()));
+        chatWebSocket.chat(imMessageVO);
+    }
+
+    private static String buildMsgContent(MsgTypeEnum msgType, String content) {
+        String msgContent;
+        if (MsgTypeEnum.TEXT.equals(msgType)) {
+            msgContent = content;
+        } else if (MsgTypeEnum.IMAGE.equals(msgType)) {
+            ObjectContent objectContent = new ObjectContent();
+            objectContent.setType(ObjectContentTypeEnum.IMAGE);
+            objectContent.setFileId(content);
+            List<ObjectContent> objectContents = List.of(objectContent);
+            msgContent = JSONObject.toJSONString(objectContents);
+        } else {
+            throw new BadRequestException("Unsupported message type={}!");
+        }
+        return msgContent;
+    }
+
+    private static MsgContentTypeEnum toContentType(MsgTypeEnum msgType) {
+        return switch (msgType) {
+            case TEXT -> MsgContentTypeEnum.TEXT;
+            case IMAGE -> MsgContentTypeEnum.OBJECT_STRING;
+        };
     }
 
     public UploadFileResponse uploadFile(SystemUserVO userVO, MultipartFile multipartFile) {

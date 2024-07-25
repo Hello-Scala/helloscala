@@ -13,6 +13,6 @@ public class ListConversationResponse {
 
     private Integer total;
 
-    private List<ConversationView> conversations;
+    private List<BOConversationView> conversations;
 
 }

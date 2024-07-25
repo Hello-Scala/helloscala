@@ -42,7 +42,7 @@ public interface CozeClient {
     @Request(type = ForestHttpMethod.POST,
             url = "/v1/conversation/message/create",
             headers = {"Authorization: Bearer {cozeAccessToken}"})
-    ForestResponse<CozeResponse<MsgView>> createConversation(@Query(name = "conversation_id") String id,
+    ForestResponse<CozeResponse<MsgView>> createMessage(@Query(name = "conversation_id") String id,
                                                              @Body CreateMsgRequest request);
 
     @Request(type = ForestHttpMethod.POST,
