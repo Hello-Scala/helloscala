@@ -9,7 +9,7 @@ import java.util.List;
  */
 @Data
 public class GetAssistantResponse {
-    private String botId;
+    private String id;
 
     private String name;
 

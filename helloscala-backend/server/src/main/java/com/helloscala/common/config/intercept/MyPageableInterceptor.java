@@ -15,7 +15,7 @@ import java.util.Optional;
  *
  **/
 @Component
-public class PageableInterceptor implements HandlerInterceptor {
+public class MyPageableInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {

@@ -36,6 +36,10 @@ public enum DocumentTypeEnum {
             throw new ConflictException("Unsupported enum value={}", value);
         }
         return enumOptional.get();
+    }
 
+    @Override
+    public String toString() {
+        return this.getValue();
     }
 }

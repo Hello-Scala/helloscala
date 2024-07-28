@@ -28,8 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @EnableWebSocket
 @EnableScheduling
-@ServerEndpoint("/websocket/{userId}/chat")
-public class ChatWebSocket {
+@ServerEndpoint("/websocket/{userId}/assistant")
+public class AssistantChatWebSocket {
     private static final ConcurrentHashMap<String, Session> sessionPool = new ConcurrentHashMap<>();
 
     @PostConstruct
@@ -87,8 +87,7 @@ public class ChatWebSocket {
 
     @OnMessage
     public void onMessage(String message, @PathParam(value = "userId") String userId) {
-        ImMessageVO imMessageVO = JSONObject.parseObject(message, ImMessageVO.class);
-        chat(imMessageVO);
+        log.info("got assistant chat msg={}", message);
     }
 
     @OnError
@@ -109,23 +108,6 @@ public class ChatWebSocket {
 
     public void chatWithAssistant(String userId, AssistantMsgView assistantMsgView) {
         sendMsg(sessionPool.get(userId), JSONObject.toJSONString(assistantMsgView));
-    }
-
-    public void chat(ImMessageVO messageData) {
-        String message = JSONUtil.toJsonStr(messageData);
-        switch (messageData.getCode()) {
-            case MessageConstant.PRIVATE_CHAT_CODE -> {
-                String toUserId = messageData.getToUserId();
-                String fromUserId = messageData.getFromUserId();
-                sendMsg(sessionPool.get(toUserId), message);
-                if (StrUtil.isNotBlank(fromUserId) && !toUserId.equals(fromUserId)) {
-                    sendMsg(sessionPool.get(fromUserId), message);
-                }
-            }
-            case MessageConstant.GROUP_CHAT_CODE, MessageConstant.SYSTEM_MESSAGE_CODE -> {
-                sessionPool.forEach((userId, session) -> sendMsg(session, message));
-            }
-        }
     }
 
     private static void sendMsg(Session nullableSession, String message) {

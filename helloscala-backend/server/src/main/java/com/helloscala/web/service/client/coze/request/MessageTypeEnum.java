@@ -41,4 +41,9 @@ public enum MessageTypeEnum {
         }
         return enumOptional.get();
     }
+
+    @Override
+    public String toString() {
+        return this.getValue();
+    }
 }

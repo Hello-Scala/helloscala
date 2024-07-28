@@ -8,12 +8,12 @@ import java.util.List;
  * @author Steve Zou
  */
 @Data
-public class ListConversationResponse {
+public class ListConversationMsgResponse {
     private Integer currentPage;
 
     private Integer totalPage;
 
     private Integer total;
 
-    private List<BOConversationView> conversations;
+    private List<AssistantMsgView> msgs;
 }

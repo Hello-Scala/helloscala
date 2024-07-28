@@ -32,7 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @EnableAsync
-@EnableCaching
 @EnableFileStorage
 @RestController
 @SpringBootApplication

@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `b_assistant_message`
     `id`              CHAR(36)     NOT NULL,
     `conversation_id` VARCHAR(255) NOT NULL,
     `bot_id`          VARCHAR(255) NOT NULL,
-    `message_id`      VARCHAR(255) NOT NULL,
+    `message_id`      VARCHAR(255) NULL,
     `send_from`       VARCHAR(50)  NOT NULL,
     `content`         TEXT         NOT NULL,
     `content_type`    VARCHAR(50)  NOT NULL,
@@ -47,6 +47,16 @@ WHERE table_schema = 'hello_scala' AND TABLE_NAME = 'b_assistant_conversation' a
 set @exec_sql = 'alter table b_assistant_conversation add column last_send_time DATETIME NULL after summary;';
 set @exist_sql = 'select \'exist\';';
 select if(@count >= 1, @exist_sql, @exec_sql) into @sql;
+PREPARE stmt FROM @sql;
+execute stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT COUNT(*) INTO @count
+FROM information_schema.COLUMNS
+WHERE table_schema = 'hello_scala' AND TABLE_NAME = 'b_assistant_message' and COLUMN_NAME = 'message_id';
+set @exec_sql = 'alter table b_assistant_message modify column `message_id` VARCHAR(255) NULL after `bot_id`;';
+set @exist_sql = 'select \'Not exist\';';
+select if(@count < 1, @exist_sql, @exec_sql) into @sql;
 PREPARE stmt FROM @sql;
 execute stmt;
 DEALLOCATE PREPARE stmt;

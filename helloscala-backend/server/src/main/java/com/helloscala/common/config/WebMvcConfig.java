@@ -2,7 +2,7 @@ package com.helloscala.common.config;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
-import com.helloscala.common.config.intercept.PageableInterceptor;
+import com.helloscala.common.config.intercept.MyPageableInterceptor;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.*;
 @EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
     @Resource
-    private PageableInterceptor pageableInterceptor;
+    private MyPageableInterceptor pageableInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

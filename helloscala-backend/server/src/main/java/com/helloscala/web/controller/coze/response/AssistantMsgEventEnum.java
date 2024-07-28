@@ -1,4 +1,4 @@
-package com.helloscala.web.service.client.coze.response;
+package com.helloscala.web.controller.coze.response;
 
 import com.alibaba.fastjson.annotation.JSONCreator;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -12,31 +12,31 @@ import java.util.Optional;
  * @author Steve Zou
  */
 @Getter
-public enum StreamEventEnum {
-    CHAT_CREATED("conversation.chat.created", "Chat created", "Chat created"),
-    CHAT_IN_PROGRESS("conversation.chat.in_progress", "Chat in progress", "Chat in progress"),
-    CHAT_COMPLETED("conversation.chat.completed", "Chat completed", "Chat completed"),
-    CHAT_FAILED("conversation.chat.failed", "Chat failed", "Chat failed"),
-    CHAT_REQUIRES_ACTION("conversation.chat.requires_action", "Chat requires action", "Chat requires action"),
-    MESSAGE_DELTA("conversation.message.delta", "Message delta", "Message delta"),
-    MESSAGE_COMPLETED("conversation.message.completed", "Message completed", "Message completed"),
-    ERROR("error", "Error", "Error"),
-    DONE("done", "Done", "Done");
+public enum AssistantMsgEventEnum {
+    CHAT_CREATED("CHAT_CREATED", "Chat created", "Chat created"),
+    CHAT_IN_PROGRESS("CHAT_IN_PROGRESS", "Chat in progress", "Chat in progress"),
+    CHAT_COMPLETED("CHAT_COMPLETED", "Chat completed", "Chat completed"),
+    CHAT_FAILED("CHAT_FAILED", "Chat failed", "Chat failed"),
+    CHAT_REQUIRES_ACTION("CHAT_REQUIRES_ACTION", "Chat requires action", "Chat requires action"),
+    MESSAGE_DELTA("MESSAGE_DELTA", "Message delta", "Message delta"),
+    MESSAGE_COMPLETED("MESSAGE_COMPLETED", "Message completed", "Message completed"),
+    ERROR("ERROR", "Error", "Error"),
+    DONE("DONE", "Done", "Done");
 
     private final String name;
     @JSONField
     private final String value;
     private final String description;
 
-    StreamEventEnum(String value, String name, String description) {
+    AssistantMsgEventEnum(String value, String name, String description) {
         this.value = value;
         this.name = name;
         this.description = description;
     }
 
     @JSONCreator
-    public static StreamEventEnum create(String value) {
-        Optional<StreamEventEnum> enumOptional = Arrays.stream(StreamEventEnum.values()).filter(e -> e.getValue().equals(value)).findFirst();
+    public static AssistantMsgEventEnum create(String value) {
+        Optional<AssistantMsgEventEnum> enumOptional = Arrays.stream(AssistantMsgEventEnum.values()).filter(e -> e.getValue() == value).findFirst();
         if (enumOptional.isEmpty()) {
             throw new ConflictException("Unsupported enum value={}", value);
         }

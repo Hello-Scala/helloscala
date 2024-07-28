@@ -1,6 +1,8 @@
 package com.helloscala.web.controller.coze.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.helloscala.common.enums.ContentTypeEnum;
+import com.helloscala.common.enums.SendFromEnum;
 import com.helloscala.common.utils.DateUtil;
 import lombok.Data;
 
@@ -10,15 +12,24 @@ import java.util.Date;
  * @author Steve Zou
  */
 @Data
-public class BOConversationView {
+public class AssistantMsgView {
     private String id;
+
+    private String conversationId;
 
     private String botId;
 
-    private String summary;
+    private SendFromEnum sendFrom;
 
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
-    private Date lastSendTime;
+    private AssistantMsgEventEnum event;
+
+    private AssistantMsgTypeEnum type;
+
+    private String content;
+
+    private ContentTypeEnum contentType;
+
+    private String userId;
 
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;

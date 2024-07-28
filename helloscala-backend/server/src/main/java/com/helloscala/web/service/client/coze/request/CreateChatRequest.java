@@ -12,11 +12,9 @@ import java.util.Map;
  */
 @Data
 public class CreateChatRequest {
-    @NotNull
     @JSONField(name = "bot_id")
     private String botId;
 
-    @NotNull
     @JSONField(name = "user_id")
     private String userId;
 

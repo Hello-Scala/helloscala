@@ -37,4 +37,9 @@ public enum ObjectContentTypeEnum {
         }
         return enumOptional.get();
     }
+
+    @Override
+    public String toString() {
+        return this.getValue();
+    }
 }

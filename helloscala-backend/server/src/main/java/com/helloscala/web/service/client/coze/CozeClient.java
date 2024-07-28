@@ -7,6 +7,7 @@ import com.helloscala.web.service.client.ForestHttpMethod;
 import com.helloscala.web.service.client.coze.request.*;
 import com.helloscala.web.service.client.coze.response.*;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -66,9 +67,10 @@ public interface CozeClient {
 
     @Request(type = ForestHttpMethod.POST,
             url = "/v3/chat",
-            headers = {"Authorization: Bearer {cozeAccessToken}"})
+            headers = {"Authorization: Bearer {cozeAccessToken}"},
+            contentType = MediaType.APPLICATION_JSON_VALUE)
     ForestResponse<CozeResponse<ChatView>> createChat(@Query(name = "conversation_id") String conversationId,
-                                                      @Body CreateChatRequest request);
+                                                      @Body String request);
 
     @Request(type = ForestHttpMethod.POST,
             url = "/v3/chat/retrieve",

@@ -1,6 +1,7 @@
 package com.helloscala.web.service.client.coze;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.helloscala.web.config.CozeConfiguration;
 import com.helloscala.web.service.client.coze.request.CreateChatRequest;
 import com.helloscala.web.service.client.coze.response.StreamResponse;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -34,15 +36,16 @@ public class CozeStreamClient {
         }
     }
 
-    Flux<StreamResponse> createChat(String conversationId,
+    Flux<ServerSentEvent> createChat(String conversationId,
                                     CreateChatRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", StrUtil.format("Bearer {}", cozeConfig.getAccessToken()));
-        return webClient.post().uri(CHAT_URL + "?conversation_id={}", conversationId)
+        String uri = StrUtil.isBlank(conversationId) ? CHAT_URL : CHAT_URL + "?conversation_id=" + conversationId;
+        return webClient.post().uri(uri)
                 .headers(h -> h.addAll(headers))
-                .body(Flux.just(request), CreateChatRequest.class)
+                .body(Flux.just(JSONObject.toJSONString(request)), String.class)
                 .retrieve()
-                .bodyToFlux(StreamResponse.class);
+                .bodyToFlux(ServerSentEvent.class);
     }
 }

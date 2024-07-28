@@ -7,6 +7,8 @@ import lombok.Data;
  */
 @Data
 public class ChatWithAssistantResponse {
+    private String id;
+
     private String conversationId;
 
     private String messageId;

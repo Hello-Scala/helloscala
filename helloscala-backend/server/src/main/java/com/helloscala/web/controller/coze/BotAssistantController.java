@@ -1,7 +1,6 @@
 package com.helloscala.web.controller.coze;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.helloscala.common.service.UserService;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.BadRequestException;
@@ -10,7 +9,6 @@ import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
 import com.helloscala.web.controller.coze.request.ChatWithAssistantRequest;
-import com.helloscala.web.controller.coze.request.ListConversationRequest;
 import com.helloscala.web.controller.coze.response.*;
 import com.helloscala.web.service.bot.AssistantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +45,7 @@ public class BotAssistantController {
     @GetMapping("/{id}")
     @Operation(summary = "get assistant", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get assistant")
-    public Response<GetAssistantResponse> get(String id) {
+    public Response<GetAssistantResponse> get(@PathVariable("id") String id) {
         GetAssistantResponse response = assistantService.get(id);
         return ResponseHelper.ok(response);
     }
@@ -55,8 +53,21 @@ public class BotAssistantController {
     @GetMapping("/{id}/conversation")
     @Operation(summary = "List conversation", method = "GET")
     @ApiResponse(responseCode = "200", description = "List conversation")
-    public Response<ListConversationResponse> listConversation(@RequestBody ListConversationRequest request) {
-        ListConversationResponse response = assistantService.listConversation(request);
+    public Response<ListConversationResponse> listConversation(@PathVariable("id") String id,
+                                                               @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+                                                               @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
+        ListConversationResponse response = assistantService.listConversation(id, pageNo, pageSize);
+        return ResponseHelper.ok(response);
+    }
+
+    @GetMapping("/conversation/{conversationId}/msg")
+    @Operation(summary = "List conversation messages", method = "GET")
+    @ApiResponse(responseCode = "200", description = "List conversation messages")
+    public Response<ListConversationMsgResponse> listConversationMsg(@PathVariable("conversationId") String conversationId,
+                                                                     @RequestParam(name = "createTimeEnd", required = false) String createTimeEnd,
+                                                                     @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                     @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
+        ListConversationMsgResponse response = assistantService.listConversationMsg(conversationId, createTimeEnd, pageNo, pageSize);
         return ResponseHelper.ok(response);
     }
 
@@ -73,7 +84,7 @@ public class BotAssistantController {
         if (Objects.isNull(assistant)) {
             throw new NotFoundException("Assistant not found, id={}!", id);
         }
-        ChatWithAssistantResponse response = assistantService.chat(assistant, currentUserInfo, request);
+        ChatWithAssistantResponse response = assistantService.streamingChat(assistant, currentUserInfo, request);
         return ResponseHelper.ok(response);
     }
 
