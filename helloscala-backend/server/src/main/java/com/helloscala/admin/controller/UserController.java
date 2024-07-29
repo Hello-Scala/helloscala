@@ -1,6 +1,7 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.user.SystemUserDTO;
@@ -81,7 +82,8 @@ public class UserController {
     @Operation(summary = "Get current user info", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get current user info")
     public Response<SystemUserVO> getCurrentUserInfo() {
-        SystemUserVO userInfo = userService.getCurrentUserInfo();
+        String loginId = StpUtil.getLoginIdAsString();
+        SystemUserVO userInfo = userService.getWithPermissions(loginId);
         return ResponseHelper.ok(userInfo);
     }
 

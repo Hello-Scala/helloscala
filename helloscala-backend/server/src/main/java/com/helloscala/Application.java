@@ -1,6 +1,7 @@
 package com.helloscala;
 
 import cn.dev33.satoken.SaManager;
+import com.dtflys.forest.springboot.annotation.ForestScan;
 import com.helloscala.web.im.WebSocketChanneInitializer;
 import com.helloscala.web.im.WebSocketConstant;
 import com.helloscala.web.im.WebSocketInfoService;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -29,13 +31,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@RestController
-@SpringBootApplication
-@MapperScan(basePackages = {"com.helloscala.common.mapper"})
-@EsMapperScan("com.helloscala.common.esmapper")
-@ServletComponentScan
 @EnableAsync
 @EnableFileStorage
+@RestController
+@SpringBootApplication
+@ServletComponentScan
+@MapperScan(basePackages = {"com.helloscala.common.mapper"})
+@ForestScan(basePackages = "com.helloscala.web.service.client")
+@EsMapperScan("com.helloscala.common.esmapper")
 public class Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
@@ -52,7 +55,7 @@ public class Application {
             "Api documents: \thttp://" + ip + ":" + port + path + "/swagger-ui/index.html\n\t" +
             "----------------------------------------------------------");
         LOGGER.info("Sa-token config:" + SaManager.getConfig());
-        startNettyMsgServer();
+//        startNettyMsgServer();
     }
 
     private static void startNettyMsgServer() {

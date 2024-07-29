@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 @Schema(description = "邮箱注册信息")
 public class EmailRegisterDTO {
-
     @NotBlank(message = "邮箱不能为空")
     @Schema(name = "email", required = true, type = "String")
     private String email;

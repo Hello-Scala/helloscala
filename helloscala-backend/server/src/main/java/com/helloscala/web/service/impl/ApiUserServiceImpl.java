@@ -66,6 +66,7 @@ public class ApiUserServiceImpl implements ApiUserService {
     private final static String[] userAvatarList = {"/asserts/20240505/buxie.png","/asserts/20240505/daizhi.png",
             "/asserts/20240505/fennu.png","/asserts/20240505/jingxi.png","/asserts/20240505/kaixin.png",
             "/asserts/20240505/shuashuai.png"};
+    public static final int SESSION_TIMEOUT_SECONDS = 60 * 60 * 24 * 7;
     private final FtpConfig ftpConfig;
     private final AesEncryptUtil aesEncryptUtil;
     private final UserMapper userMapper;
@@ -95,7 +96,7 @@ public class ApiUserServiceImpl implements ApiUserService {
             throw new BadRequestException(DISABLE_ACCOUNT.desc);
         }
 
-        StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(60 * 60 * 24 * 7));
+        StpUtil.login(user.getId(), new SaLoginModel().setDevice("PC").setTimeout(SESSION_TIMEOUT_SECONDS));
         String token = StpUtil.getTokenValueByLoginId(user.getId());
         SystemUserVO userVO = userMapper.getById(user.getId());
         StpUtil.getSession().set(Constants.CURRENT_USER, userVO);

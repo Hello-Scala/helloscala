@@ -39,14 +39,16 @@ def SA_TOKEN_VERSION = "1.38.0"
 
 project(":helloscala-backend:server") {
     dependencies {
+        implementation 'com.alibaba:fastjson:2.0.52'
+
         implementation("cn.dev33:sa-token-spring-boot3-starter:$SA_TOKEN_VERSION") {
             exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-web')
         }
-        implementation ("cn.dev33:sa-token-redis-jackson:$SA_TOKEN_VERSION") {
+        implementation("cn.dev33:sa-token-redis-jackson:$SA_TOKEN_VERSION") {
             exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-data-redis')
         }
         implementation("org.springframework.boot:spring-boot-starter-undertow:$SPRING_BOOT_VERSION") {
-            exclude(group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket')
+            exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat')
         }
 
         implementation "org.springframework.boot:spring-boot-starter-aop:$SPRING_BOOT_VERSION"
@@ -56,7 +58,14 @@ project(":helloscala-backend:server") {
         implementation "org.springframework.boot:spring-boot-starter-mail:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-data-redis:$SPRING_BOOT_VERSION"
         implementation "org.springframework.boot:spring-boot-starter-thymeleaf:$SPRING_BOOT_VERSION"
-        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0-beta8')
+        implementation "org.springframework.boot:spring-boot-starter-webflux:$SPRING_BOOT_VERSION"
+        implementation ("org.springframework.boot:spring-boot-starter-websocket:$SPRING_BOOT_VERSION") {
+            exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat')
+        }
+
+        implementation('org.dromara.easy-es:easy-es-boot-starter:2.0.0') {
+            exclude(group: 'com.alibaba', module: 'fastjson')
+        }
 
         implementation("mysql:mysql-connector-java:$MYSQL_VERSION")
         implementation 'com.alibaba:druid-spring-boot-starter:1.2.22'
@@ -74,7 +83,9 @@ project(":helloscala-backend:server") {
 
         implementation 'org.projectlombok:lombok:1.18.32'
         annotationProcessor 'org.projectlombok:lombok:1.18.32'
-        implementation 'me.zhyd.oauth:JustAuth:1.16.6'
+        implementation('me.zhyd.oauth:JustAuth:1.16.6') {
+            exclude(group: 'com.alibaba', module: 'fastjson')
+        }
         implementation 'com.github.binarywang:weixin-java-mp:4.6.0'
 
         implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0') {
@@ -90,7 +101,9 @@ project(":helloscala-backend:server") {
 
         implementation 'commons-io:commons-io:2.16.1'
         implementation 'com.ibeetl:beetl-framework-starter:1.2.40.Beetl.RELEASE' // todo replace
-
+        implementation ('com.dtflys.forest:forest-spring-boot3-starter:1.5.36') {
+            exclude(group: 'com.alibaba', module: 'fastjson')
+        }
     }
 
 }

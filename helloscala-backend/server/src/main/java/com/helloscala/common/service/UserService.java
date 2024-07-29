@@ -26,6 +26,8 @@ public interface UserService extends IService<User> {
 
     SystemUserVO getCurrentUserInfo();
 
+    SystemUserVO getWithPermissions(String id);
+
     List<RouterVO> getCurrentUserMenu();
 
     void updatePassword(UserPasswordDTO userPasswordDTO);

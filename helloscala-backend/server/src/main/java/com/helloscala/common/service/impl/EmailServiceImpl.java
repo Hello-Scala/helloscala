@@ -94,7 +94,6 @@ public class EmailServiceImpl implements EmailService {
 
     private void sendEmailByTemplate(String email, String subject, String template, Map<String, Object> variables) throws MessagingException {
         MimeMessage message = javaMailSender.createMimeMessage();
-
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setTo(email);
         helper.setSubject(subject);

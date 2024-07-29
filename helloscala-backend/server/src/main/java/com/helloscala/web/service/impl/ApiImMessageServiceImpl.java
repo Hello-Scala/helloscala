@@ -2,6 +2,7 @@ package com.helloscala.web.service.impl;
 
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.entity.ImMessage;
@@ -23,8 +24,8 @@ import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.im.MessageConstant;
-import com.helloscala.web.im.WebSocketInfoService;
 import com.helloscala.web.service.ApiImMessageService;
+import com.helloscala.web.websocket.ChatWebSocket;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,7 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     private final ImMessageMapper imMessageMapper;
     private final ImRoomMapper imRoomMapper;
     private final UserMapper userMapper;
-    private final WebSocketInfoService webSocketInfoService;
+    private final ChatWebSocket chatWebSocket;
 
     @Override
     public Page<ImMessageVO> selectHistoryList() {
@@ -76,11 +77,12 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
     @Override
     public List<ImRoomListVO> selectRoomList() {
         List<ImRoomListVO> list = new ArrayList<>();
-        List<ImRoom> imRooms = imRoomMapper.selectList(new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, StpUtil.getLoginIdAsString())
-                .orderByDesc(ImRoom::getCreateTime));
+        LambdaQueryWrapper<ImRoom> imRoomQuery = new LambdaQueryWrapper<ImRoom>().eq(ImRoom::getFromUserId, StpUtil.getLoginIdAsString())
+                .orderByDesc(ImRoom::getCreateTime);
+        List<ImRoom> imRooms = imRoomMapper.selectList(imRoomQuery);
 
         Set<String> userIdSet = imRooms.stream().map(ImRoom::getToUserId).collect(Collectors.toSet());
-        List<User> users = userMapper.selectBatchIds(userIdSet);
+        List<User> users = ObjectUtil.isEmpty(userIdSet) ? new ArrayList<>() : userMapper.selectBatchIds(userIdSet);
         Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
 
         for (ImRoom imRoom : imRooms) {
@@ -172,7 +174,7 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
 
         obj.setId(imMessage.getId());
         obj.setCreateTimeStr(RelativeDateFormat.format(imMessage.getCreateTime()));
-        webSocketInfoService.chat(obj);
+        chatWebSocket.chat(obj);
     }
 
     @Override
@@ -189,7 +191,7 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
         imMessage.setIp(IpUtil.getIp());
         imMessage.setIpSource(IpUtil.getIp2region(imMessage.getIp()));
         imMessageMapper.updateById(imMessage);
-        webSocketInfoService.chat(message);
+        chatWebSocket.chat(message);
     }
 
     @Override

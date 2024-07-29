@@ -35,24 +35,25 @@ public class MySaTokenListener implements SaTokenListener {
 
     @Override
     public void doLogin(String loginType, Object loginId, String tokenValue, SaLoginModel loginModel) {
+        String id = String.valueOf(loginId);
         String ip = IpUtil.getIp();
         String cityInfo = IpUtil.getCityInfo(ip);
         UserAgent userAgent = IpUtil.getUserAgent(Objects.requireNonNull(IpUtil.getRequest()));
-        userMapper.updateLoginInfo(loginId,ip,cityInfo,userAgent.getOperatingSystem().getName(),userAgent.getBrowser().getName());
+        userMapper.updateLoginInfo(id, ip, cityInfo, userAgent.getOperatingSystem().getName(), userAgent.getBrowser().getName());
 
-        User user = userMapper.selectById(loginId.toString());
+        User user = userMapper.selectById(id);
         String token = StpUtil.getTokenValueByLoginId(loginId);
 
         OnlineUser build = OnlineUser.builder()
-            .avatar(user.getAvatar())
-            .ip(ip)
-            .city(cityInfo)
-            .loginTime(DateUtil.getNowDate())
-            .os(userAgent.getOperatingSystem().getName())
-            .userId(loginId.toString())
-            .tokenValue(token)
-            .nickname(userMapper.getById(loginId).getNickname())
-            .browser(userAgent.getBrowser().getName()).build();
+                .avatar(user.getAvatar())
+                .ip(ip)
+                .city(cityInfo)
+                .loginTime(DateUtil.getNowDate())
+                .os(userAgent.getOperatingSystem().getName())
+                .userId(id)
+                .tokenValue(token)
+                .nickname(userMapper.getById(id).getNickname())
+                .browser(userAgent.getBrowser().getName()).build();
         redisService.setCacheObject(RedisConstants.LOGIN_TOKEN + token, JSONUtil.toJsonStr(build), timeout, TimeUnit.SECONDS);
 
         logger.info("User login, useId:{}, token:{}", loginId, token);

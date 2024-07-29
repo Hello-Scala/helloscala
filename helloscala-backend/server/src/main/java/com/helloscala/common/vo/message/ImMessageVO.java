@@ -29,7 +29,6 @@ public class ImMessageVO {
     @Schema(name = "发送用户昵称")
     private String fromUserNickname;
 
-
     @Schema(name = "内容")
     private String content;
 

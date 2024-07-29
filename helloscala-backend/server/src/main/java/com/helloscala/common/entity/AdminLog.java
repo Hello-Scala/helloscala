@@ -17,11 +17,11 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Schema(name="AdminLog对象", description="")
+@Schema(name = "AdminLog对象", description = "")
 @TableName("b_admin_log")
 public class AdminLog implements Serializable {
     @Schema(name = "主键ID")
-      @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @Schema(name = "操作用户")
@@ -56,17 +56,18 @@ public class AdminLog implements Serializable {
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
-    public AdminLog(){}
+    public AdminLog() {
+    }
 
     public AdminLog(String ip, String source, String type, String requestUrl, String nickname,
                     String paramsJson, String classPath,
                     String methodName, String operationName,
-                 Long spendTime) {
+                    Long spendTime) {
         this.ip = ip;
-        this.source = StrUtil.isBlank(source) ? "未知": source;
+        this.source = StrUtil.isBlank(source) ? "未知" : source;
         this.type = type;
         this.requestUrl = requestUrl;
         this.username = nickname;
