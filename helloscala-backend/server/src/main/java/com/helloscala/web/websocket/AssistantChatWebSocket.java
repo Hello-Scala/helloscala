@@ -51,7 +51,6 @@ public class AssistantChatWebSocket {
         } catch (Exception e) {
             throw new ConflictException("Failed to remove session, userId={}", userId);
         }
-
     }
 
     public void pushMessage(String userId, String message) {
