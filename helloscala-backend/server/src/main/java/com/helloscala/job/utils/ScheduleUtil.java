@@ -3,14 +3,14 @@ package com.helloscala.job.utils;
 import com.helloscala.common.entity.Job;
 import com.helloscala.common.enums.ScheduleConstants;
 import com.helloscala.common.enums.TaskException;
-import com.helloscala.job.quartz.QuartzDisallowConcurrentExecution;
-import com.helloscala.job.quartz.QuartzJobExecution;
+import com.helloscala.job.quartz.DisallowConcurrentJob;
+import com.helloscala.job.quartz.AllowConcurrentJob;
 import org.quartz.*;
 
 public class ScheduleUtil {
     private static Class<? extends org.quartz.Job> getQuartzJobClass(Job job) {
         boolean isConcurrent = "0".equals(job.getConcurrent());
-        return isConcurrent ? QuartzJobExecution.class : QuartzDisallowConcurrentExecution.class;
+        return isConcurrent ? AllowConcurrentJob.class : DisallowConcurrentJob.class;
     }
 
     public static TriggerKey getTriggerKey(Long jobId, String jobGroup) {

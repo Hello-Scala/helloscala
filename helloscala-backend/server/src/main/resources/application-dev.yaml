@@ -148,6 +148,6 @@ forest:
 
 coze:
   baseUrl: https://api.coze.cn
-  accessToken: pat_c9PDnCmd1PkMxoDPc9EO7rvaQW8WDoEtMTixJyF1p54ODdCR4UHjNzDjcH5fLz8h
-  spaceId: 7390248186109771811
-  botId: 7390985480239972393
+  accessToken: 123
+  spaceId: 123
+  botId: 123
