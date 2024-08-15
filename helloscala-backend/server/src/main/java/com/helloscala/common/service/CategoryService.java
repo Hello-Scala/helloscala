@@ -6,6 +6,7 @@ import com.helloscala.common.entity.Category;
 import com.helloscala.common.vo.category.SystemCategoryListVO;
 
 import java.util.List;
+import java.util.Set;
 
 
 public interface CategoryService extends IService<Category> {
@@ -18,4 +19,6 @@ public interface CategoryService extends IService<Category> {
     void updateCategory(Category category);
 
     void deleteCategory(List<Long> list);
+
+    List<Category> listByIds(Set<String> categoryIds);
 }

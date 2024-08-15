@@ -1,6 +1,7 @@
 package com.helloscala.web.controller.coze;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.http.ContentType;
 import com.helloscala.common.service.UserService;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.BadRequestException;
@@ -108,7 +109,7 @@ public class BotAssistantController {
     @PostMapping("/file/{fileId}")
     @Operation(summary = "Get file", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get file")
-    public Response<GetFileResponse> uploadFile(@PathVariable("fileId") String fileId) {
+    public Response<GetFileResponse> getFile(@PathVariable("fileId") String fileId) {
         GetFileResponse fileResponse = assistantService.getFile(fileId);
         return ResponseHelper.ok(fileResponse);
     }

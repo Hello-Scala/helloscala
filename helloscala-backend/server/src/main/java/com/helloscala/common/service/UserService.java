@@ -11,6 +11,7 @@ import com.helloscala.common.vo.user.SystemUserVO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public interface UserService extends IService<User> {
@@ -35,4 +36,6 @@ public interface UserService extends IService<User> {
     Map<String, Object> listOnlineUsers(String keywords);
 
     void kick(String token);
+
+    List<User> listByIds(Set<String> ids);
 }

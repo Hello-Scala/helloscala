@@ -2,6 +2,7 @@ package com.helloscala.common.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,9 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.common.Constants;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.dto.article.ArticleDTO;
-import com.helloscala.common.entity.Article;
-import com.helloscala.common.entity.Category;
-import com.helloscala.common.entity.Tag;
+import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.DataEventEnum;
 import com.helloscala.common.enums.YesOrNoEnum;
 import com.helloscala.common.event.DataEventPublisherService;
@@ -19,14 +18,12 @@ import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CategoryMapper;
 import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.mapper.UserMapper;
-import com.helloscala.common.service.ArticleService;
-import com.helloscala.common.service.ArticleTagService;
+import com.helloscala.common.service.*;
 import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.ArticleVO;
-import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.NotFoundException;
@@ -35,6 +32,7 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -46,9 +44,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -57,7 +55,10 @@ import java.util.List;
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
+    private final UserService userService;
     private final TagMapper tagMapper;
+    private final TagService tagService;
+    private final CategoryService categoryService;
     private final RestTemplate restTemplate;
     private final ArticleTagService articleTagService;
     private final DataEventPublisherService dataEventPublisherService;
@@ -65,19 +66,111 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String baiduUrl;
 
     @Override
-    public Page<ArticleVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish) {
-        Page<ArticleVO> data = baseMapper.selectArticle(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()), title, tagId, categoryId, isPublish);
-        data.getRecords().forEach(item -> {
-            SystemUserVO userInfo = userMapper.getById(item.getUserId());
-            item.setNickname(userInfo.getNickname());
+    public Page<ArticleVO> selectArticlePage(String title, Long tagId, Long categoryId, Integer isPublish) {
+        List<String> articleIds = articleTagService.listArticleIds(tagId);
+
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
+        articleQuery.in(ObjectUtil.isNotEmpty(articleIds), Article::getId, articleIds);
+        articleQuery.like(StrUtil.isNotBlank(title), Article::getTitle, title);
+        articleQuery.eq(Objects.nonNull(categoryId), Article::getCategoryId, categoryId);
+        articleQuery.eq(Objects.nonNull(isPublish), Article::getIsPublish, isPublish);
+
+        Page<Article> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<Article> articlePage = baseMapper.selectPage(page, articleQuery);
+
+        List<Article> articles = articlePage.getRecords();
+        Set<Long> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
+        Map<Long, List<String>> articleTagNameMap = fetchArticleTagNameMap(articleIdSet);
+
+        Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
+        List<Category> categories = categoryService.listByIds(categoryIds);
+        Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
+
+        Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
+        List<User> users = userService.listByIds(userIds);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+        List<ArticleVO> articleViews = articles.stream().map(item -> {
+            User user = userMap.get(item.getUserId());
+            Category category = categoryMap.get(item.getCategoryId());
+            List<String> tagNames = articleTagNameMap.get(item.getId());
+
+            ArticleVO articleVO = new ArticleVO();
+            articleVO.setId(item.getId());
+            articleVO.setUserId(item.getUserId());
+            articleVO.setTitle(item.getTitle());
+            if (Objects.nonNull(user)) {
+                articleVO.setNickname(user.getNickname());
+            }
+            articleVO.setAvatar(item.getAvatar());
+            articleVO.setReadType(item.getReadType());
+            articleVO.setIsStick(item.getIsStick());
+            articleVO.setIsOriginal(item.getIsOriginal());
+            articleVO.setQuantity(item.getQuantity());
+            articleVO.setCreateTime(item.getCreateTime());
+            articleVO.setIsPublish(item.getIsPublish());
+            if (Objects.nonNull(category)) {
+                articleVO.setCategoryName(category.getName());
+            }
+            articleVO.setTagNames(String.join(",", tagNames));
+            return articleVO;
+        }).toList();
+
+        Page<ArticleVO> resultPage = Page.of(articlePage.getCurrent(), articlePage.getSize(), articlePage.getTotal());
+        resultPage.setRecords(articleViews);
+        return resultPage;
+    }
+
+    @NotNull
+    private Map<Long, List<String>> fetchArticleTagNameMap(Set<Long> articleIdSet) {
+        List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
+        Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+
+        Set<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        List<Tag> tags = tagService.listByIds(tagIds);
+        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
+
+        Map<Long, List<String>> articleTagNameMap = new HashMap<>();
+        articleTagMap.forEach((articleId, tagList) -> {
+            List<String> tagNameList = tagList.stream().map(articleTag -> Optional.ofNullable(tagMap.get(articleTag.getTagId())).map(Tag::getName).orElse(null))
+                    .filter(Objects::nonNull).toList();
+            articleTagNameMap.put(articleId, tagNameList);
         });
-        return data;
+        return articleTagNameMap;
     }
 
     @Override
     public ArticleDTO selectArticleById(Long id) {
-        ArticleDTO articleDTO = baseMapper.selectArticlePrimaryKey(id);
-        articleDTO.setTags(tagMapper.selectByArticleId(id));
+        Article article = getById(id);
+        if (Objects.isNull(article)) {
+            throw new NotFoundException("Article not found, id={}!", id);
+        }
+        Category category = categoryService.getById(article.getCategoryId());
+        Map<Long, List<String>> articleTagNameMap = fetchArticleTagNameMap(Set.of(id));
+
+        ArticleDTO articleDTO = new ArticleDTO();
+        articleDTO.setId(article.getId());
+        articleDTO.setUserId(Long.parseLong(article.getUserId()));
+        articleDTO.setTitle(article.getTitle());
+        articleDTO.setAvatar(article.getAvatar());
+        articleDTO.setSummary(article.getSummary());
+        articleDTO.setQuantity(article.getQuantity());
+        articleDTO.setContent(article.getContent());
+        articleDTO.setContentMd(article.getContentMd());
+        articleDTO.setKeywords(article.getKeywords());
+        articleDTO.setReadType(article.getReadType());
+        articleDTO.setIsStick(article.getIsStick());
+        articleDTO.setIsOriginal(article.getIsOriginal());
+        articleDTO.setOriginalUrl(article.getOriginalUrl());
+        if (Objects.nonNull(category)) {
+            articleDTO.setCategoryName(category.getName());
+        }
+        articleDTO.setIsPublish(article.getIsPublish());
+        articleDTO.setIsCarousel(article.getIsCarousel());
+        articleDTO.setIsRecommend(article.getIsRecommend());
+        articleDTO.setTags(articleTagNameMap.getOrDefault(article.getId(), List.of()));
+        articleDTO.setCreateTime(article.getCreateTime());
+        articleDTO.setUpdateTime(article.getUpdateTime());
         return articleDTO;
     }
 
@@ -220,6 +313,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return "https://picsum.photos/500/300?random=" + System.currentTimeMillis();
     }
 
+    // todo
     private List<Long> getTagsList(ArticleDTO article) {
         List<Long> tagList = new ArrayList<>();
         article.getTags().forEach(item -> {

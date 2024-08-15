@@ -31,8 +31,8 @@ public class ArticlesController {
     @Operation(summary = "List articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "文章列表")
     public Response<Page<ArticleVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
-                                                       @RequestParam(name = "tagId", required = false) Integer tagId,
-                                                       @RequestParam(name = "categoryId", required = false) Integer categoryId,
+                                                       @RequestParam(name = "tagId", required = false) Long tagId,
+                                                       @RequestParam(name = "categoryId", required = false) Long categoryId,
                                                        @RequestParam(name = "isPublish", required = false) Integer isPublish) {
         Page<ArticleVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
         return ResponseHelper.ok(articlePage);

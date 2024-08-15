@@ -62,7 +62,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Override
     public List<Tag> listByIds(Set<Long> idSet) {
         if (ObjectUtil.isEmpty(idSet)) {
-            return new ArrayList<>();
+            return List.of();
         }
         LambdaQueryWrapper<Tag> tagQuery = new LambdaQueryWrapper<>();
         tagQuery.in(Tag::getId, idSet);

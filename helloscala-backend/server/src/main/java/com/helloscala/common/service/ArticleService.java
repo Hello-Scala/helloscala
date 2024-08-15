@@ -9,7 +9,7 @@ import com.helloscala.common.vo.article.ArticleVO;
 import java.util.List;
 
 public interface ArticleService extends IService<Article> {
-    Page<ArticleVO> selectArticlePage(String title, Integer tagId, Integer categoryId, Integer isPublish);
+    Page<ArticleVO> selectArticlePage(String title, Long tagId, Long categoryId, Integer isPublish);
 
     ArticleDTO selectArticleById(Long id);
 

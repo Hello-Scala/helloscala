@@ -1,5 +1,6 @@
 package com.helloscala.common.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -70,5 +72,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
 
         baseMapper.deleteBatchIds(ids);
+    }
+
+    @Override
+    public List<Category> listByIds(Set<String> categoryIds) {
+        if (ObjectUtil.isEmpty(categoryIds)) {
+            return List.of();
+        }
+        return baseMapper.selectBatchIds(categoryIds);
     }
 }

@@ -15,4 +15,6 @@ public interface ArticleTagService extends IService<ArticleTag> {
     void resetArticleTags(Long articleId, Set<Long> newTagIds);
 
     List<ArticleTag> listByArticleIds(Set<Long> articleIds);
+
+    List<String> listArticleIds(Long tagId);
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -55,5 +56,17 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
         LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
         articleTagQuery.in(ArticleTag::getArticleId, articleIds);
         return baseMapper.selectList(articleTagQuery);
+    }
+
+    @Override
+    public List<String> listArticleIds(Long tagId) {
+        if (Objects.isNull(tagId)) {
+            return List.of();
+        }
+
+        LambdaQueryWrapper<ArticleTag> articleTagQuery = new LambdaQueryWrapper<>();
+        articleTagQuery.eq(ArticleTag::getTagId, tagId);
+        List<ArticleTag> articleTags = baseMapper.selectList(articleTagQuery);
+        return articleTags.stream().map(a -> String.valueOf(a.getArticleId())).toList();
     }
 }
