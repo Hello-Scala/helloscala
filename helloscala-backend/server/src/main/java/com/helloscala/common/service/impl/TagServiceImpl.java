@@ -64,9 +64,30 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
         if (ObjectUtil.isEmpty(idSet)) {
             return List.of();
         }
+        return baseMapper.selectBatchIds(idSet);
+    }
+
+    @Override
+    public List<Tag> listByNames(Set<String> nameSet) {
+        if (ObjectUtil.isEmpty(nameSet)) {
+            return List.of();
+        }
         LambdaQueryWrapper<Tag> tagQuery = new LambdaQueryWrapper<>();
-        tagQuery.in(Tag::getId, idSet);
+        tagQuery.in(Tag::getName, nameSet);
         return baseMapper.selectList(tagQuery);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<Tag> bulkCreateByNames(Set<String> nameSet) {
+        if (ObjectUtil.isEmpty(nameSet)) {
+            return List.of();
+        }
+
+        List<Tag> tagToCreateList = nameSet.stream()
+                .map(name -> Tag.builder().name(name).sort(0).build()).toList();
+        saveBatch(tagToCreateList);
+        return tagToCreateList;
     }
 
     private void validateTagIdIsExistArticle(Long id) {

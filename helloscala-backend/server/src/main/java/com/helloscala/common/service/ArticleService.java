@@ -13,9 +13,9 @@ public interface ArticleService extends IService<Article> {
 
     ArticleDTO selectArticleById(Long id);
 
-    void addArticle(ArticleDTO article);
+    void addArticle(String ipAddress, ArticleDTO article);
 
-    void updateArticle(ArticleDTO article);
+    void updateArticle(String userId, ArticleDTO article);
 
     void deleteBatchArticle(List<Long> ids);
 

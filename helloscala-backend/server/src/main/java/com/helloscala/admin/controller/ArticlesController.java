@@ -1,12 +1,19 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.common.Constants;
+import com.helloscala.common.ResultCode;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.service.ArticleService;
+import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.article.ArticleVO;
+import com.helloscala.common.web.exception.ForbiddenException;
+import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -52,7 +59,9 @@ public class ArticlesController {
     @Operation(summary = "Save article", method = "POST")
     @ApiResponse(responseCode = "200", description = "Save article")
     public EmptyResponse addArticle(@RequestBody ArticleDTO article) {
-        articleService.addArticle(article);
+        article.setUserId(StpUtil.getLoginIdAsString());
+        String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
+        articleService.addArticle(ipAddress, article);
         return ResponseHelper.ok();
     }
 
@@ -62,7 +71,15 @@ public class ArticlesController {
     @Operation(summary = "Edit article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Edit article")
     public EmptyResponse updateArticle(@RequestBody ArticleDTO article) {
-        articleService.updateArticle(article);
+        String userId = StpUtil.getLoginIdAsString();
+        Article originArticle = articleService.getById(article.getId());
+        if (ObjectUtil.isNull(originArticle)) {
+            throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
+        }
+        if (!originArticle.getUserId().equals(userId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
+        }
+        articleService.updateArticle(userId, article);
         return ResponseHelper.ok();
     }
 

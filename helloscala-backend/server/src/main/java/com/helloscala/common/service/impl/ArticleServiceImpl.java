@@ -20,9 +20,7 @@ import com.helloscala.common.mapper.TagMapper;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.service.*;
 import com.helloscala.common.service.util.ArticleEntityHelper;
-import com.helloscala.common.utils.BeanCopyUtil;
-import com.helloscala.common.utils.IpUtil;
-import com.helloscala.common.utils.PageUtil;
+import com.helloscala.common.utils.*;
 import com.helloscala.common.vo.article.ArticleVO;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.common.web.exception.ForbiddenException;
@@ -150,7 +148,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         ArticleDTO articleDTO = new ArticleDTO();
         articleDTO.setId(article.getId());
-        articleDTO.setUserId(Long.parseLong(article.getUserId()));
+        articleDTO.setUserId(article.getUserId());
         articleDTO.setTitle(article.getTitle());
         articleDTO.setAvatar(article.getAvatar());
         articleDTO.setSummary(article.getSummary());
@@ -176,29 +174,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addArticle(ArticleDTO article) {
+    public void addArticle(String ipAddress, ArticleDTO article) {
+        Long categoryId = getOrCreateCategory(article.getCategoryName());
+        Set<String> tagNames = new HashSet<>(article.getTags());
+        List<Tag> tags = tagService.listByNames(tagNames);
+        Set<String> existTagNames = tags.stream().map(Tag::getName).collect(Collectors.toSet());
+        Set<String> tagNameToCreateList = tagNames.stream().filter(n -> !existTagNames.contains(n)).collect(Collectors.toSet());
+        List<Tag> tagsCreated = tagService.bulkCreateByNames(tagNameToCreateList);
+        List<Tag> articleTags = ListHelper.concat(tags, tagsCreated);
+
         Article blogArticle = BeanCopyUtil.copyObject(article, Article.class);
-        blogArticle.setUserId(StpUtil.getLoginIdAsString());
-        Long categoryId = savaCategory(article.getCategoryName());
-        List<Long> tagList = getTagsList(article);
-
         blogArticle.setCategoryId(categoryId);
-
-        String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
-        if ("UNKNOWN".equals(ipAddress)) {
-            blogArticle.setAddress("Earth");
-        } else if (StringUtils.isNotBlank(ipAddress)) {
+        if (StrUtil.isNotBlank(ipAddress)
+                && !"UNKNOWN".equals(ipAddress)
+                && ipAddress.split("\\|").length > 1) {
             String[] split = ipAddress.split("\\|");
-            if (ipAddress.length() > 1) {
-                String address = split[1];
-                blogArticle.setAddress(address);
-            } else {
-                blogArticle.setAddress("Earth");
-            }
+            String address = split[1];
+            blogArticle.setAddress(address);
+        } else {
+            blogArticle.setAddress("Earth");
         }
         int insert = baseMapper.insert(blogArticle);
         if (insert > 0) {
-            articleTagService.insertIgnoreArticleTags(blogArticle.getId(), new HashSet<>(tagList));
+            Set<Long> tagIds = articleTags.stream().map(Tag::getId).collect(Collectors.toSet());
+            articleTagService.resetArticleTags(article.getId(), tagIds);
         }
 
         //发布消息去同步es 不进行判断是否是发布状态了，因为后面修改成下架的话就还得去删除es里面的数据，多次一举了，在查询时添加条件发布状态为已发布
@@ -207,26 +206,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateArticle(ArticleDTO article) {
-        Article blogArticle = baseMapper.selectById(article.getId());
-        if (ObjectUtil.isNull(blogArticle)) {
-            throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
-        }
-        String loginId = StpUtil.getLoginIdAsString();
-        if (!blogArticle.getUserId().equals(loginId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
-            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
-        }
+    public void updateArticle(String userId, ArticleDTO articleDTO) {
+        Long categoryId = getOrCreateCategory(articleDTO.getCategoryName());
+        List<Long> tagList = getTagsList(articleDTO);
 
-        Long categoryId = savaCategory(article.getCategoryName());
-        List<Long> tagList = getTagsList(article);
-
-        blogArticle = BeanCopyUtil.copyObject(article, Article.class);
-        blogArticle.setCategoryId(categoryId);
-        baseMapper.updateById(blogArticle);
-
-        articleTagService.resetArticleTags(blogArticle.getId(), new HashSet<>(tagList));
-
-        dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE_ARTICLE, ArticleEntityHelper.toElasticEntity(blogArticle));
+        Article article = BeanCopyUtil.copyObject(articleDTO, Article.class);
+        article.setCategoryId(categoryId);
+        baseMapper.updateById(article);
+        articleTagService.resetArticleTags(article.getId(), new HashSet<>(tagList));
+        dataEventPublisherService.publishData(DataEventEnum.ES_UPDATE_ARTICLE, ArticleEntityHelper.toElasticEntity(article));
     }
 
     @Override
@@ -275,11 +263,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             String newContent = content.get(0).toString().replaceAll("<code>", "<code class=\"lang-java\">");
             MutableDataSet options = new MutableDataSet();
             String markdown = FlexmarkHtmlConverter.builder(options).build().convert(newContent)
-                .replace("lang-java", "java");
+                    .replace("lang-java", "java");
 
             Article entity = Article.builder().userId(StpUtil.getLoginIdAsString()).contentMd(markdown)
-                .categoryId(16L).isOriginal(YesOrNoEnum.NO.getCode()).originalUrl(url)
-                .title(title.get(0).text()).avatar("https://picsum.photos/500/300").content(newContent).build();
+                    .categoryId(16L).isOriginal(YesOrNoEnum.NO.getCode()).originalUrl(url)
+                    .title(title.get(0).text()).avatar("https://picsum.photos/500/300").content(newContent).build();
 
             baseMapper.insert(entity);
             List<Long> tagsId = new ArrayList<>();
@@ -327,12 +315,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return tagList;
     }
 
-    private Long savaCategory(String categoryName) {
-        Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>().eq(Category::getName, categoryName));
-        if (category == null) {
-            category = Category.builder().name(categoryName).sort(0).build();
-            categoryMapper.insert(category);
+    private Long getOrCreateCategory(String categoryName) {
+        LambdaQueryWrapper<Category> categoryQuery = new LambdaQueryWrapper<>();
+        categoryQuery.eq(Category::getName, categoryName)
+                .last(SqlHelper.LIMIT_1);
+        Category category = categoryMapper.selectOne(categoryQuery);
+        if (Objects.nonNull(category)) {
+            return category.getId();
         }
+        category = Category.builder().name(categoryName).sort(0).build();
+        categoryMapper.insert(category);
         return category.getId();
     }
 }

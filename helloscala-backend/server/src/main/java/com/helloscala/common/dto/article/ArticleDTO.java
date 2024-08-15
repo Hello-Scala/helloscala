@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class ArticleDTO {
     private Long id;
-    private Long userId;
+    private String userId;
     private String title;
     private String avatar;
     private String summary;
