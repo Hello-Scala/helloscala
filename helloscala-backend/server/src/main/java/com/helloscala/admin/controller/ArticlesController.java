@@ -100,7 +100,7 @@ public class ArticlesController {
     @Operation(summary = "Topping article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "置顶文章")
     public EmptyResponse topArticle(@RequestBody ArticleDTO article) {
-        articleService.topArticle(article);
+        articleService.stick(article.getId(), article.getIsStick() != 0);
         return ResponseHelper.ok();
     }
 

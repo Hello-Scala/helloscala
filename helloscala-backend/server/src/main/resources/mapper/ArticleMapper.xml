@@ -38,12 +38,6 @@
         ORDER BY blog.date ASC
     </select>
 
-
-    <update id="putTopArticle">
-        update b_article
-        set is_stick = #{article.isStick}
-        where id = #{article.id}
-    </update>
     <select id="selectSearchArticle" resultType="com.helloscala.common.vo.article.ApiArticleSearchVO">
         select a.id,
                a.title,
@@ -136,12 +130,5 @@
             and a.is_publish = #{type}
         </if>
         order by a.create_time desc
-    </select>
-    <select id="selectMyArticleInfo" resultType="com.helloscala.common.dto.article.ArticlePostDTO">
-        SELECT
-            *
-        FROM
-            b_article
-        where id = #{id}
     </select>
 </mapper>

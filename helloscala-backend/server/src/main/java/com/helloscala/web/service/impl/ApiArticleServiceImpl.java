@@ -22,6 +22,7 @@ import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.service.ApiArticleService;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,7 @@ import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
 @Service
 @RequiredArgsConstructor
 public class ApiArticleServiceImpl implements ApiArticleService {
+    private final ArticleService articleService;
     private final ArticleMapper articleMapper;
     private final RedisService redisService;
     private final TagService tagService;
@@ -233,16 +235,30 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public ArticlePostDTO selectMyArticleInfo(Long id) {
-        ArticlePostDTO articlePostDTO = articleMapper.selectMyArticleInfo(id);
-        if (Objects.isNull(articlePostDTO)) {
+    public ArticlePostDTO getById(Long id) {
+        Article article = articleService.getById(id);
+        if (Objects.isNull(article)) {
             throw new NotFoundException("Article not found, id={}!", id);
         }
-        if (!articlePostDTO.getUserId().equals(StpUtil.getLoginIdAsString())) {
+        if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
         Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(id));
-        List<Long> tagIds = articleTagListMap.get(articlePostDTO.getId()).stream().map(Tag::getId).toList();
+        List<Long> tagIds = articleTagListMap.get(article.getId()).stream().map(Tag::getId).toList();
+
+        ArticlePostDTO articlePostDTO = new ArticlePostDTO();
+        articlePostDTO.setId(article.getId());
+        articlePostDTO.setTitle(article.getTitle());
+        articlePostDTO.setSummary(article.getSummary());
+        articlePostDTO.setAvatar(article.getAvatar());
+        articlePostDTO.setCategoryId(article.getCategoryId());
+        articlePostDTO.setIsPublish(article.getIsPublish());
+        articlePostDTO.setIsOriginal(article.getIsOriginal());
+        articlePostDTO.setOriginalUrl(article.getOriginalUrl());
+        articlePostDTO.setContent(article.getContent());
+        articlePostDTO.setContentMd(article.getContentMd());
+        articlePostDTO.setKeywords(article.getKeywords());
+        articlePostDTO.setUserId(article.getUserId());
         articlePostDTO.setTagList(tagIds);
         return articlePostDTO;
     }

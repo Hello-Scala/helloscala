@@ -174,7 +174,7 @@ public class ApiArticleV2Controller {
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get article detail")
     public Response<ArticlePostDTO> selectMyArticleInfo(@RequestParam(name = "id", required = true) Long id) {
-        ArticlePostDTO articlePostDTO = articleService.selectMyArticleInfo(id);
+        ArticlePostDTO articlePostDTO = articleService.getById(id);
         return ResponseHelper.ok(articlePostDTO);
     }
 }

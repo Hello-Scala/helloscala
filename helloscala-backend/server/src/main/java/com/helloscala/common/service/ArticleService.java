@@ -19,7 +19,7 @@ public interface ArticleService extends IService<Article> {
 
     void deleteBatchArticle(List<Long> ids);
 
-    void topArticle(ArticleDTO article);
+    int stick(Long id, boolean stick);
 
     void psArticle(Article article);
 

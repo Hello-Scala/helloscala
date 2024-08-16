@@ -33,7 +33,7 @@ public interface ApiArticleService {
 
     void deleteMyArticle(Long id);
 
-    ArticlePostDTO selectMyArticleInfo(Long id);
+    ArticlePostDTO getById(Long id);
 
     void updateMyArticle(ArticlePostDTO dto);
 }

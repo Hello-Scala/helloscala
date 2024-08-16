@@ -5,9 +5,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.common.Constants;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.*;
@@ -23,7 +23,6 @@ import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.*;
 import com.helloscala.common.vo.article.ArticleVO;
 import com.helloscala.common.web.exception.FailedDependencyException;
-import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.util.data.MutableDataSet;
@@ -226,9 +225,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void topArticle(ArticleDTO article) {
-        baseMapper.putTopArticle(article);
+    public int stick(Long id, boolean stick) {
+        LambdaUpdateWrapper<Article> articleUpdateWrapper = new LambdaUpdateWrapper<>();
+        articleUpdateWrapper.eq(Article::getId, id);
+        articleUpdateWrapper.set(Article::getIsStick, stick ? 0 : 1);
+        return baseMapper.update(articleUpdateWrapper);
     }
 
     @Override
