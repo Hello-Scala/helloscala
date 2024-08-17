@@ -18,6 +18,7 @@ import com.helloscala.common.utils.ListHelper;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
+import com.helloscala.web.controller.coze.request.ChatObjectContentView;
 import com.helloscala.web.controller.coze.request.ChatWithAssistantRequest;
 import com.helloscala.web.controller.coze.request.MessageView;
 import com.helloscala.web.controller.coze.response.*;
@@ -343,9 +344,12 @@ public class AssistantService {
         if (MsgTypeEnum.TEXT.equals(msgType)) {
             msgContent = content;
         } else if (MsgTypeEnum.IMAGE.equals(msgType)) {
+            ChatObjectContentView contentView = JSONObject.parseObject(content, ChatObjectContentView.class);
             ObjectContent objectContent = new ObjectContent();
-            objectContent.setType(ObjectContentTypeEnum.IMAGE);
-            objectContent.setFileId(content);
+            objectContent.setType(ObjectContentTypeEnum.create(contentView.getType().getValue().toLowerCase()));
+            objectContent.setText(contentView.getText());
+            objectContent.setFileId(contentView.getFileId());
+            objectContent.setFileUrl(contentView.getFileUrl());
             List<ObjectContent> objectContents = List.of(objectContent);
             msgContent = JSONObject.toJSONString(objectContents);
         } else {
