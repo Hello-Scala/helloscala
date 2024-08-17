@@ -141,7 +141,10 @@ public class ApiImMessageServiceImpl implements ApiImMessageService {
         try {
             while (matcher.find()) {
                 url = matcher.group();
-                if (url.contains("res.wx.qq.com") || url.contains("npm.elemecdn.com")) {
+                if (url.contains("res.wx.qq.com")
+                        || url.contains("npm.elemecdn.com")
+                        || url.contains("helloscala")
+                ) {
                     continue;
                 }
                 Document doc = Jsoup.connect(url).get();
