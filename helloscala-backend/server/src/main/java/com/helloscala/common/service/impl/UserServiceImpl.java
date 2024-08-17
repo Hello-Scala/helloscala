@@ -158,4 +158,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         StpUtil.logoutByTokenValue(token);
         redisService.deleteObject(RedisConstants.LOGIN_TOKEN.concat(token));
     }
+
+    @Override
+    public List<User> listByIds(Set<String> ids) {
+        if (ObjectUtils.isEmpty(ids)) {
+            return List.of();
+        }
+        return baseMapper.selectBatchIds(ids);
+    }
 }
