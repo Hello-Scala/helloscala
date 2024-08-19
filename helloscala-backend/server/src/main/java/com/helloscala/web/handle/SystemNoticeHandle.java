@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SystemNoticeHandle {
-    public static void sendNotice(String toUserId,Integer noticeType,Integer noticeCode,Long articleId,Integer commentMark,String content) {
+    public static void sendNotice(String toUserId, Integer noticeType, Integer noticeCode, String articleId, Integer commentMark, String content) {
         ImMessageMapper imMessageMapper = SpringUtil.getBean(ImMessageMapper.class);
         try {
             String ip = IpUtil.getIp();

@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ApiCommentListVO {
     @Schema(name = "主键id")
-    private Integer id;
+    private String id;
     @Schema(name = "发表用户id")
     private String userId;
     @Schema(name = "评论用户id")

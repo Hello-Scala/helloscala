@@ -157,9 +157,9 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public void incrArticle(Long id, String key, String ip) {
+    public void incrArticle(String id, String key, String ip) {
         Map<String, Object> map = getCacheMap(key);
-        List<String> ipList = (List<String>) map.get(id.toString());
+        List<String> ipList = (List<String>) map.get(id);
         if (ipList != null) {
             if (!ipList.contains(ip)) {
                 ipList.add(ip);

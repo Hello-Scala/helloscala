@@ -20,14 +20,14 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("b_category")
-@Schema(name="Category对象", description="博客分类表")
+@Schema(name = "Category对象", description = "博客分类表")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Category implements Serializable {
     @Schema(name = "主键id")
-      @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private String id;
 
     @Schema(name = "分类名称")
     private String name;
@@ -42,12 +42,12 @@ public class Category implements Serializable {
     private String icon;
 
     @Schema(name = "创建时间")
-      @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "最后更新时间")
     @TableField(fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 }

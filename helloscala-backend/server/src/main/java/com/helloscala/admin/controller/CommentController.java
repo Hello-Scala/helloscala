@@ -37,7 +37,7 @@ public class CommentController {
     @Operation(summary = "Batch delete", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Batch delete")
     @OperationLogger(value = "Batch delete")
-    public EmptyResponse deleteBatch(@RequestBody List<Integer> ids){
+    public EmptyResponse deleteBatch(@RequestBody List<String> ids){
         commentService.deleteComment(ids);
         return ResponseHelper.ok();
     }

@@ -8,7 +8,7 @@ import com.helloscala.common.vo.message.ApiCommentListVO;
 public interface ApiCommentService {
     Comment addComment(Comment comment);
 
-    Page<ApiCommentListVO> selectCommentByArticleId(Long articleId);
+    Page<ApiCommentListVO> selectCommentByArticleId(String articleId);
 
     Page<RecommendedArticleVO> selectMyComment();
 }

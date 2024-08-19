@@ -38,8 +38,8 @@ public class ArticlesController {
     @Operation(summary = "List articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "文章列表")
     public Response<Page<ArticleVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
-                                                       @RequestParam(name = "tagId", required = false) Long tagId,
-                                                       @RequestParam(name = "categoryId", required = false) Long categoryId,
+                                                       @RequestParam(name = "tagId", required = false) String tagId,
+                                                       @RequestParam(name = "categoryId", required = false) String categoryId,
                                                        @RequestParam(name = "isPublish", required = false) Integer isPublish) {
         Page<ArticleVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
         return ResponseHelper.ok(articlePage);
@@ -48,7 +48,7 @@ public class ArticlesController {
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
-    public Response<ArticleDTO> selectArticleById(@PathVariable(value = "id") Long id) {
+    public Response<ArticleDTO> selectArticleById(@PathVariable(value = "id") String id) {
         ArticleDTO articleDTO = articleService.selectArticleById(id);
         return ResponseHelper.ok(articleDTO);
     }
@@ -89,7 +89,7 @@ public class ArticlesController {
     @OperationLogger(value = "Delete article")
     @Operation(summary = "Delete article", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "删除文章")
-    public EmptyResponse deleteBatchArticle(@RequestBody List<Long> ids) {
+    public EmptyResponse deleteBatchArticle(@RequestBody List<String> ids) {
         articleService.deleteBatchArticle(ids);
         return ResponseHelper.ok();
     }
@@ -120,19 +120,8 @@ public class ArticlesController {
     @OperationLogger(value = "Bulk SEO")
     @Operation(summary = "Bulk SEO", method = "POST")
     @ApiResponse(responseCode = "200", description = "SEO")
-    public EmptyResponse seoArticle(@RequestBody List<Long> ids) {
+    public EmptyResponse seoArticle(@RequestBody List<String> ids) {
         articleService.seoArticle(ids);
-        return ResponseHelper.ok();
-    }
-
-    // todo path
-    @GetMapping(value = "/reptile")
-    @SaCheckPermission("system:article:reptile")
-    @OperationLogger(value = "fetch")
-    @Operation(summary = "fetch", method = "GET")
-    @ApiResponse(responseCode = "200", description = "fetch")
-    public EmptyResponse fetch(@RequestParam(name = "url", required = true) String url) {
-        articleService.retch(url);
         return ResponseHelper.ok();
     }
 

@@ -25,13 +25,13 @@ import java.util.Set;
 public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, ArticleTag> implements ArticleTagService {
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertIgnoreArticleTags(Long articleId, Set<Long> tagIds) {
+    public void insertIgnoreArticleTags(String articleId, Set<String> tagIds) {
         baseMapper.insertIgnoreArticleTags(articleId, tagIds);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteByArticleIds(Set<Long> articleIds) {
+    public void deleteByArticleIds(Set<String> articleIds) {
         if (ObjectUtil.isEmpty(articleIds)) {
             log.warn("not tags to delete, since articleIds is empty!");
             return;
@@ -43,13 +43,13 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void resetArticleTags(Long articleId, Set<Long> newTagIds) {
+    public void resetArticleTags(String articleId, Set<String> newTagIds) {
         deleteByArticleIds(Set.of(articleId));
         insertIgnoreArticleTags(articleId, newTagIds);
     }
 
     @Override
-    public List<ArticleTag> listByArticleIds(Set<Long> articleIds) {
+    public List<ArticleTag> listByArticleIds(Set<String> articleIds) {
         if (ObjectUtil.isEmpty(articleIds)) {
             return new ArrayList<>();
         }
@@ -59,7 +59,7 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
     }
 
     @Override
-    public List<String> listArticleIds(Long tagId) {
+    public List<String> listArticleIds(String tagId) {
         if (Objects.isNull(tagId)) {
             return List.of();
         }

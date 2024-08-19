@@ -12,7 +12,6 @@ import com.helloscala.common.ResultCode;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.*;
 import com.helloscala.common.enums.DataEventEnum;
-import com.helloscala.common.enums.YesOrNoEnum;
 import com.helloscala.common.event.DataEventPublisherService;
 import com.helloscala.common.mapper.ArticleMapper;
 import com.helloscala.common.mapper.CategoryMapper;
@@ -22,10 +21,10 @@ import com.helloscala.common.service.*;
 import com.helloscala.common.service.util.ArticleEntityHelper;
 import com.helloscala.common.utils.*;
 import com.helloscala.common.vo.article.ArticleVO;
+import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.common.web.exception.NotFoundException;
-import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
-import com.vladsch.flexmark.util.data.MutableDataSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +62,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String baiduUrl;
 
     @Override
-    public Page<ArticleVO> selectArticlePage(String title, Long tagId, Long categoryId, Integer isPublish) {
+    public Page<ArticleVO> selectArticlePage(String title, String tagId, String categoryId, Integer isPublish) {
         List<String> articleIds = articleTagService.listArticleIds(tagId);
 
         LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
@@ -76,12 +75,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Page<Article> articlePage = baseMapper.selectPage(page, articleQuery);
 
         List<Article> articles = articlePage.getRecords();
-        Set<Long> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<Long, List<String>> articleTagNameMap = fetchArticleTagNameMap(articleIdSet);
+        Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
+        Map<String, List<String>> articleTagNameMap = fetchArticleTagNameMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
-        Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
+        Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
         List<User> users = userService.listByIds(userIds);
@@ -119,15 +118,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @NotNull
-    private Map<Long, List<String>> fetchArticleTagNameMap(Set<Long> articleIdSet) {
+    private Map<String, List<String>> fetchArticleTagNameMap(Set<String> articleIdSet) {
         List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
-        Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+        Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
-        Set<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        Set<String> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
         List<Tag> tags = tagService.listByIds(tagIds);
-        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
+        Map<String, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
 
-        Map<Long, List<String>> articleTagNameMap = new HashMap<>();
+        Map<String, List<String>> articleTagNameMap = new HashMap<>();
         articleTagMap.forEach((articleId, tagList) -> {
             List<String> tagNameList = tagList.stream().map(articleTag -> Optional.ofNullable(tagMap.get(articleTag.getTagId())).map(Tag::getName).orElse(null))
                     .filter(Objects::nonNull).toList();
@@ -137,13 +136,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public ArticleDTO selectArticleById(Long id) {
+    public ArticleDTO selectArticleById(String id) {
         Article article = getById(id);
         if (Objects.isNull(article)) {
             throw new NotFoundException("Article not found, id={}!", id);
         }
         Category category = categoryService.getById(article.getCategoryId());
-        Map<Long, List<String>> articleTagNameMap = fetchArticleTagNameMap(Set.of(id));
+        Map<String, List<String>> articleTagNameMap = fetchArticleTagNameMap(Set.of(id));
 
         ArticleDTO articleDTO = new ArticleDTO();
         articleDTO.setId(article.getId());
@@ -174,7 +173,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addArticle(String ipAddress, ArticleDTO article) {
-        Long categoryId = getOrCreateCategory(article.getCategoryName());
+        String categoryId = getOrCreateCategory(article.getCategoryName());
         Set<String> tagNames = new HashSet<>(article.getTags());
         List<Tag> tags = tagService.listByNames(tagNames);
         Set<String> existTagNames = tags.stream().map(Tag::getName).collect(Collectors.toSet());
@@ -195,7 +194,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         int insert = baseMapper.insert(blogArticle);
         if (insert > 0) {
-            Set<Long> tagIds = articleTags.stream().map(Tag::getId).collect(Collectors.toSet());
+            Set<String> tagIds = articleTags.stream().map(Tag::getId).collect(Collectors.toSet());
             articleTagService.resetArticleTags(article.getId(), tagIds);
         }
 
@@ -206,8 +205,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateArticle(String userId, ArticleDTO articleDTO) {
-        Long categoryId = getOrCreateCategory(articleDTO.getCategoryName());
-        List<Long> tagList = getTagsList(articleDTO);
+        String categoryId = getOrCreateCategory(articleDTO.getCategoryName());
+        List<String> tagList = getTagsList(articleDTO);
 
         Article article = BeanCopyUtil.copyObject(articleDTO, Article.class);
         article.setCategoryId(categoryId);
@@ -218,14 +217,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteBatchArticle(List<Long> ids) {
+    public void deleteBatchArticle(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
         articleTagService.deleteByArticleIds(new HashSet<>(ids));
         dataEventPublisherService.publishData(DataEventEnum.ES_DELETE_ARTICLE, ids);
     }
 
     @Override
-    public int stick(Long id, boolean stick) {
+    public int stick(String id, boolean stick) {
         LambdaUpdateWrapper<Article> articleUpdateWrapper = new LambdaUpdateWrapper<>();
         articleUpdateWrapper.eq(Article::getId, id);
         articleUpdateWrapper.set(Article::getIsStick, stick ? 0 : 1);
@@ -233,7 +232,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public void seoArticle(List<Long> ids) {
+    public void seoArticle(List<String> ids) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Host", "data.zz.baidu.com");
@@ -250,48 +249,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void retch(String url) {
-        try {
-            Document document = Jsoup.connect(url).get();
-            Elements title = document.getElementsByClass("title-article");
-            Elements tags = document.getElementsByClass("tag-link");
-            Elements content = document.getElementsByClass("article_content");
-            if (StringUtils.isBlank(content.toString())) {
-                throw new FailedDependencyException(ResultCode.FETCH_ARTICLE_FAILED.getDesc());
-            }
-
-            //爬取的是HTML内容，需要转成MD格式的内容
-            String newContent = content.get(0).toString().replaceAll("<code>", "<code class=\"lang-java\">");
-            MutableDataSet options = new MutableDataSet();
-            String markdown = FlexmarkHtmlConverter.builder(options).build().convert(newContent)
-                    .replace("lang-java", "java");
-
-            Article entity = Article.builder().userId(StpUtil.getLoginIdAsString()).contentMd(markdown)
-                    .categoryId(16L).isOriginal(YesOrNoEnum.NO.getCode()).originalUrl(url)
-                    .title(title.get(0).text()).avatar("https://picsum.photos/500/300").content(newContent).build();
-
-            baseMapper.insert(entity);
-            List<Long> tagsId = new ArrayList<>();
-            tags.forEach(item -> {
-                // todo refactor
-                String tag = item.text();
-                Tag result = tagMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, tag));
-                if (result == null) {
-                    result = Tag.builder().name(tag).build();
-                    tagMapper.insert(result);
-                }
-                tagsId.add(result.getId());
-            });
-            articleTagService.insertIgnoreArticleTags(entity.getId(), new HashSet<>(tagsId));
-
-            log.info("Fetch article success, content:{}", JSONUtil.toJsonStr(entity));
-        } catch (IOException e) {
-            throw new FailedDependencyException(e);
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public void psArticle(Article article) {
         baseMapper.updateById(article);
     }
@@ -302,21 +259,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return "https://picsum.photos/500/300?random=" + System.currentTimeMillis();
     }
 
-    // todo
-    private List<Long> getTagsList(ArticleDTO article) {
-        List<Long> tagList = new ArrayList<>();
+    private List<String> getTagsList(ArticleDTO article) {
+        List<String> tagList = new ArrayList<>();
         article.getTags().forEach(item -> {
-            Tag tags = tagMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, item));
-            if (tags == null) {
-                tags = Tag.builder().name(item).sort(0).build();
-                tagMapper.insert(tags);
+            Tag tag = tagMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getName, item));
+            if (Objects.isNull(tag)) {
+                tag = Tag.builder().name(item).sort(0).build();
+                tagMapper.insert(tag);
             }
-            tagList.add(tags.getId());
+            tagList.add(tag.getId());
         });
         return tagList;
     }
 
-    private Long getOrCreateCategory(String categoryName) {
+    private String getOrCreateCategory(String categoryName) {
         LambdaQueryWrapper<Category> categoryQuery = new LambdaQueryWrapper<>();
         categoryQuery.eq(Category::getName, categoryName)
                 .last(SqlHelper.LIMIT_1);

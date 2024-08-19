@@ -13,14 +13,14 @@ import org.dromara.easyes.annotation.rely.IdType;
 @IndexName(value = "blog")
 public class ArticleElastic {
     @IndexId(type = IdType.CUSTOMIZE)
-    private Long id;
+    private String id;
 
     @HighLight(preTag = "<em style='color:red'>", postTag = "</em>")
-    @IndexField(fieldType = FieldType.TEXT,analyzer = Analyzer.IK_MAX_WORD, searchAnalyzer = Analyzer.IK_MAX_WORD)
+    @IndexField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_MAX_WORD, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String title;
 
     @HighLight(preTag = "<em style='color:red'>", postTag = "</em>")
-    @IndexField(fieldType = FieldType.TEXT,analyzer = Analyzer.IK_MAX_WORD, searchAnalyzer = Analyzer.IK_MAX_WORD)
+    @IndexField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_MAX_WORD, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String summary;
 
     @IndexField(fieldType = FieldType.INTEGER)

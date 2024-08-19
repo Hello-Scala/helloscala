@@ -38,19 +38,19 @@ public class BlogQuartz {
         log.info("run without params");
     }
 
-    public void redisTimer(){
+    public void redisTimer() {
         redisService.redisTimer();
     }
 
     @SuppressWarnings("unchecked")
-    public void updateReadQuantity(){
+    public void updateReadQuantity() {
         List<Article> articles = new ArrayList<>();
         Map<String, Object> map = redisService.getCacheMap(ARTICLE_READING);
         for (Map.Entry<String, Object> stringEntry : map.entrySet()) {
             String id = stringEntry.getKey();
             List<String> list = (List<String>) stringEntry.getValue();
             Article article = Article.builder()
-                    .id(Long.parseLong(id)).quantity(list.size())
+                    .id(id).quantity(list.size())
                     .build();
             articles.add(article);
         }
@@ -58,17 +58,17 @@ public class BlogQuartz {
     }
 
 
-    public void removeCodePassInIp(){
+    public void removeCodePassInIp() {
         redisService.deleteObject(RedisConstants.CHECK_CODE_IP);
     }
 
-    public void updateTagsClickVolume(){
+    public void updateTagsClickVolume() {
         Map<String, Object> map = redisService.getCacheMap(TAG_CLICK_VOLUME);
         List<Tag> tagsList = new ArrayList<>();
         for (Map.Entry<String, Object> stringEntry : map.entrySet()) {
             String id = stringEntry.getKey();
-            Integer value = (Integer) stringEntry.getValue();
-            Tag tags = new Tag(Long.parseLong(id),value);
+            Long value = (Long) stringEntry.getValue();
+            Tag tags = new Tag(id, value);
             tagsList.add(tags);
         }
         tagsService.updateBatchById(tagsList);

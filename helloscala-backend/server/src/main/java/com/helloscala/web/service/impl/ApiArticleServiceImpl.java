@@ -54,17 +54,17 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     private final SearchStrategyContext searchStrategyContext;
 
     @Override
-    public Page<RecommendedArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn) {
+    public Page<RecommendedArticleVO> selectArticleList(String categoryId, String tagId, String orderByDescColumn) {
         Page<RecommendedArticleVO> articlePage = articleMapper.selectPublicArticleList(new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize()),
                 categoryId, tagId, orderByDescColumn);
         List<RecommendedArticleVO> records = articlePage.getRecords();
 
-        Set<Long> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
+        Set<String> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
 
-        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
+        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
 
         List<Comment> comments = commentService.listArticleComment(articleIdSet);
-        Map<Long, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
+        Map<String, List<Comment>> commentMap = comments.stream().collect(Collectors.groupingBy(Comment::getArticleId));
 
         Map<String, Object> articleLikeCountMap = redisService.getCacheMap(ARTICLE_LIKE_COUNT);
 
@@ -84,27 +84,27 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
     @NotNull
     @Override
-    public Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet) {
+    public Map<String, List<Tag>> getArticleTagListMap(Set<String> articleIdSet) {
         if (ObjectUtil.isEmpty(articleIdSet)) {
             return new HashMap<>();
         }
         List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
-        Map<Long, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+        Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
-        Set<Long> tagIdSet = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        Set<String> tagIdSet = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
         List<Tag> tags = tagService.listByIds(tagIdSet);
-        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
+        Map<String, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
         return articleTagMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList()));
     }
 
     @Override
-    public ArticleInfoVO selectArticleInfo(Long id) {
+    public ArticleInfoVO selectArticleInfo(String id) {
         ArticleInfoVO articleInfoVO = articleMapper.selectArticleByIdToVO(id);
         if (articleInfoVO == null) {
             throw new NotFoundException("Article not found, id={}!", id);
         }
         Long collectCount = collectMapper.selectCount(new LambdaQueryWrapper<Collect>().eq(Collect::getArticleId, id));
-        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(articleInfoVO.getId()));
+        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(articleInfoVO.getId()));
         List<Tag> tags = articleTagListMap.get(articleInfoVO.getId());
 
         Long commentCount = commentService.countByArticleId(id);
@@ -128,7 +128,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             }
             if (articleInfoVO.getReadType() == ReadTypeEnum.COMMENT.index) {
                 Long count = commentService.countByUserId(userId);
-                if (count != null && count > 0) {
+                if (Objects.nonNull(count) && count > 0) {
                     articleInfoVO.setActiveReadType(true);
                 }
             }
@@ -149,7 +149,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
             }
         }
 
-        redisService.incrArticle(id.longValue(), ARTICLE_READING, IpUtil.getIp());
+        redisService.incrArticle(id, ARTICLE_READING, IpUtil.getIp());
         return articleInfoVO;
     }
 
@@ -172,15 +172,15 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public void articleLike(Integer articleId) {
+    public void articleLike(String articleId) {
         String userId = StpUtil.getLoginIdAsString();
         String articleLikeKey = ARTICLE_USER_LIKE + userId;
         if (redisService.sIsMember(articleLikeKey, articleId)) {
             redisService.sRemove(articleLikeKey, articleId);
-            redisService.hDecr(ARTICLE_LIKE_COUNT, articleId.toString(), 1L);
+            redisService.hDecr(ARTICLE_LIKE_COUNT, articleId, 1L);
         } else {
             redisService.sAdd(articleLikeKey, articleId);
-            redisService.hIncr(ARTICLE_LIKE_COUNT, articleId.toString(), 1L);
+            redisService.hIncr(ARTICLE_LIKE_COUNT, articleId, 1L);
         }
     }
 
@@ -213,8 +213,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         Page<RecommendedArticleVO> articlePage = articleMapper.selectMyArticle(page, userId, type);
 
         List<RecommendedArticleVO> records = articlePage.getRecords();
-        Set<Long> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
-        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
+        Set<String> articleIdSet = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
+        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
         records.forEach(item -> {
             item.setTagList(articleTagListMap.get(item.getId()));
             item.setFormatCreateTime(RelativeDateFormat.format(item.getCreateTime()));
@@ -225,7 +225,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteMyArticle(Long id) {
+    public void deleteMyArticle(String id) {
         Article article = articleMapper.selectById(id);
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only delete your own article!");
@@ -235,7 +235,7 @@ public class ApiArticleServiceImpl implements ApiArticleService {
     }
 
     @Override
-    public ArticlePostDTO getById(Long id) {
+    public ArticlePostDTO getById(String id) {
         Article article = articleService.getById(id);
         if (Objects.isNull(article)) {
             throw new NotFoundException("Article not found, id={}!", id);
@@ -243,8 +243,8 @@ public class ApiArticleServiceImpl implements ApiArticleService {
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
-        Map<Long, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(id));
-        List<Long> tagIds = articleTagListMap.get(article.getId()).stream().map(Tag::getId).toList();
+        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(id));
+        List<String> tagIds = articleTagListMap.get(article.getId()).stream().map(Tag::getId).toList();
 
         ArticlePostDTO articlePostDTO = new ArticlePostDTO();
         articlePostDTO.setId(article.getId());

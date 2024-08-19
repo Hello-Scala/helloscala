@@ -21,35 +21,35 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("b_tags")
-@Schema(name="Tags对象", description="博客标签表")
+@Schema(name = "Tags对象", description = "博客标签表")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Tag implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
 
     @Schema(name = "标签名称")
     private String name;
 
     @Schema(name = "排序")
-    private int sort;
+    private Integer sort;
 
     @Schema(name = "点击量")
-    private int clickVolume;
+    private Long clickVolume;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "最后更新时间")
     @TableField(fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 
-    public Tag(Long id, int clickVolume) {
+    public Tag(String id, Long clickVolume) {
         this.id = id;
         this.clickVolume = clickVolume;
     }

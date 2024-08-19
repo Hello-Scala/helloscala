@@ -27,13 +27,13 @@ import java.util.Date;
 public class Article implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
 
     @Schema(name = "用户id")
     private String userId;
 
     @Schema(name = "分类id")
-    private Long categoryId;
+    private String categoryId;
 
     @Schema(name = "文章标题")
     private String title;

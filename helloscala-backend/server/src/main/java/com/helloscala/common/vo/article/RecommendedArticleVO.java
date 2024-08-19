@@ -19,7 +19,7 @@ import java.util.List;
 public class RecommendedArticleVO {
 
     @Schema(name = "主键id")
-    private Long id;
+    private String id;
 
     @Schema(name = "作者昵称")
     private String nickname;

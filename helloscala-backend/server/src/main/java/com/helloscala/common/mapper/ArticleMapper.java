@@ -14,10 +14,10 @@ import java.util.List;
 public interface ArticleMapper extends BaseMapper<Article> {
     List<SystemArticleContributeVO> contribute(@Param("lastTime") String lastTime, @Param("nowTime") String nowTime);
 
-    Page<RecommendedArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") Integer categoryId, @Param("tagId") Integer tagId,
+    Page<RecommendedArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") String categoryId, @Param("tagId") String tagId,
                                                        @Param("orderByDescColumn") String orderByDescColumn);
 
-    ArticleInfoVO selectArticleByIdToVO(Long id);
+    ArticleInfoVO selectArticleByIdToVO(String id);
 
     List<ArticleVO> selectListByBanner();
 

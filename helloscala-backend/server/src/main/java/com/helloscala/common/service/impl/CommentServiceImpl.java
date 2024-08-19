@@ -27,12 +27,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public void deleteComment(List<Integer> ids) {
+    public void deleteComment(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
     }
 
     @Override
-    public List<Comment> listArticleComment(Set<Long> articleIdSet) {
+    public List<Comment> listArticleComment(Set<String> articleIdSet) {
         if (ObjectUtil.isEmpty(articleIdSet)) {
             return new ArrayList<>();
         }
@@ -43,7 +43,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public Long countByArticleId(Long articleId) {
+    public Long countByArticleId(String articleId) {
         LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<>();
         commentQuery.eq(Comment::getArticleId, articleId);
         return baseMapper.selectCount(commentQuery);
