@@ -200,7 +200,7 @@ public class ApiUserServiceImpl implements ApiUserService {
                     .lastLoginTime(DateUtil.getNowDate())
                     .ipAddress(ipAddress)
                     .ipSource(ipSource)
-                    .roleId(2)
+                    .roleId("2")
                     .status(UserStatusEnum.NORMAL.getCode())
                     .nickname(source.equals("github") ? paramMap.get("username").toString() : paramMap.get("nickname").toString())
                     .avatar(paramMap.get("avatar").toString())
@@ -235,7 +235,7 @@ public class ApiUserServiceImpl implements ApiUserService {
                 .username(emailRegisterDTO.getEmail())
                 .password(aesEncryptUtil.aesEncrypt(emailRegisterDTO.getPassword()))
                 .loginType(LoginTypeEnum.getType("email"))
-                .roleId(2)
+                .roleId("2")
                 .status(UserStatusEnum.NORMAL.getCode())
                 .nickname(emailRegisterDTO.getNickname())
                 .build();
@@ -291,7 +291,7 @@ public class ApiUserServiceImpl implements ApiUserService {
                     .lastLoginTime(DateUtil.getNowDate())
                     .ipAddress(ip)
                     .ipSource(ipSource)
-                    .roleId(2)
+                    .roleId("2")
                     .build();
             userMapper.insert(user);
             userInfo = BeanCopyUtil.copyObject(user,UserInfoVO.class);

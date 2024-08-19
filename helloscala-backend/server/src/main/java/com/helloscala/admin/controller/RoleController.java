@@ -39,8 +39,8 @@ public class RoleController {
     @RequestMapping(value = "queryUserRole", method = RequestMethod.GET)
     @Operation(summary = "Get user role", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get user role")
-    public Response<List<Integer>> getCurrentUserRole() {
-        List<Integer> currentUserRole = roleService.getCurrentUserRole();
+    public Response<List<String>> getCurrentUserRole() {
+        List<String> currentUserRole = roleService.getCurrentUserRole();
         return ResponseHelper.ok(currentUserRole);
     }
 
@@ -48,8 +48,8 @@ public class RoleController {
     @RequestMapping(value = "getRoleMenuIds", method = RequestMethod.GET)
     @Operation(summary = "Get role menu ids", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get role menu ids")
-    public Response<List<Integer>> selectRoleMenuById(@RequestParam(name = "roleId", required = true) Integer roleId) {
-        List<Integer> menuIds = roleService.selectRoleMenuById(roleId);
+    public Response<List<String>> selectRoleMenuById(@RequestParam(name = "roleId", required = true) String roleId) {
+        List<String> menuIds = roleService.selectRoleMenuById(roleId);
         return ResponseHelper.ok(menuIds);
     }
 
@@ -87,7 +87,7 @@ public class RoleController {
     @Operation(summary = "Delete role", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Delete role")
     @OperationLogger(value = "Delete role")
-    public EmptyResponse deleteRole(@RequestBody List<Integer> ids) {
+    public EmptyResponse deleteRole(@RequestBody List<String> ids) {
         roleService.deleteRole(ids);
         return ResponseHelper.ok();
     }

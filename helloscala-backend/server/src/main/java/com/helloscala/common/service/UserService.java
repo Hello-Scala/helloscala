@@ -29,8 +29,6 @@ public interface UserService extends IService<User> {
 
     SystemUserVO getWithPermissions(String id);
 
-    List<RouterVO> getCurrentUserMenu();
-
     void updatePassword(UserPasswordDTO userPasswordDTO);
 
     Map<String, Object> listOnlineUsers(String keywords);

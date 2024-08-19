@@ -50,7 +50,7 @@ public class User implements Serializable {
     private Date lastLoginTime;
 
     @Schema(name = "角色ID")
-    private Integer roleId;
+    private String roleId;
 
     @Schema(name = "IP地址")
     private String ipAddress;

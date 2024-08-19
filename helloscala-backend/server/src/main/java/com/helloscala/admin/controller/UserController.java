@@ -3,11 +3,15 @@ package com.helloscala.admin.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.common.Constants;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.user.SystemUserDTO;
 import com.helloscala.common.dto.user.UserPasswordDTO;
+import com.helloscala.common.entity.Menu;
 import com.helloscala.common.entity.User;
+import com.helloscala.common.service.RoleMenuService;
 import com.helloscala.common.service.UserService;
+import com.helloscala.common.service.util.RouterHelper;
 import com.helloscala.common.vo.menu.RouterVO;
 import com.helloscala.common.vo.user.SystemUserInfoVO;
 import com.helloscala.common.vo.user.SystemUserVO;
@@ -30,6 +34,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final RoleMenuService roleMenuService;
 
     @GetMapping(value = "/list")
     @Operation(summary = "List user", method = "GET")
@@ -91,8 +96,17 @@ public class UserController {
     @Operation(summary = "Get current user menu", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get current user menu")
     public Response<List<RouterVO>> getCurrentUserMenu() {
-        List<RouterVO> currentUserMenus = userService.getCurrentUserMenu();
-        return ResponseHelper.ok(currentUserMenus);
+        if (StpUtil.hasRole(Constants.ADMIN_CODE)) {
+            List<Menu> menus = roleMenuService.listAllMenus();
+            List<RouterVO> routerVoList = RouterHelper.toRouterVo(menus);
+            return ResponseHelper.ok(routerVoList);
+        } else {
+            String userId = StpUtil.getLoginIdAsString();
+            User user = userService.getById(userId);
+            List<Menu> menus = roleMenuService.listByRoleId(user.getRoleId());
+            List<RouterVO> routerVoList = RouterHelper.toRouterVo(menus);
+            return ResponseHelper.ok(routerVoList);
+        }
     }
 
     @PostMapping(value = "/updatePassword")

@@ -20,13 +20,13 @@ import java.util.Date;
 public class RoleMenu implements Serializable {
     @Schema(name = "主键")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private String id;
 
     @Schema(name = "角色ID")
-    private Integer roleId;
+    private String roleId;
 
     @Schema(name = "菜单ID")
-    private Integer menuId;
+    private String menuId;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)

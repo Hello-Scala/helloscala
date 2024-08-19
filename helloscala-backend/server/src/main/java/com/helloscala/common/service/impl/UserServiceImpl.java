@@ -98,19 +98,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<RouterVO> getCurrentUserMenu() {
-        List<Menu> menus;
-        if (StpUtil.hasRole(Constants.ADMIN_CODE)) {
-            menus = menuService.list();
-        } else {
-            List<Integer> menuIds = baseMapper.getMenuId(StpUtil.getLoginIdAsString());
-            menus = menuService.listByIds(menuIds);
-        }
-        return menuService.buildRouterTree(menus);
-    }
-
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePassword(UserPasswordDTO passwordDTO) {
         User user = baseMapper.selectById(StpUtil.getLoginIdAsString());

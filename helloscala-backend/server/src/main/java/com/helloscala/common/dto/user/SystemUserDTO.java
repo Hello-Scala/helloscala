@@ -9,7 +9,7 @@ import lombok.Data;
 public class SystemUserDTO {
 
     @Schema(name = "id", description = "用户id", required = true, type = "Long")
-    private Long id;
+    private String id;
 
     @Schema(name = "avatar", description = "头像", required = true, type = "String")
     private String avatar;
@@ -30,5 +30,5 @@ public class SystemUserDTO {
     private int status;
 
     @Schema(name = "roleId", description = "角色", required = true, type = "int")
-    private int roleId;
+    private String roleId;
 }

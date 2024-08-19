@@ -23,10 +23,10 @@ import java.util.List;
 public class Menu implements Serializable {
     @Schema(name = "主键")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private String id;
 
     @Schema(name = "上级资源ID")
-    private Integer parentId;
+    private String parentId;
 
     @Schema(name = "路由路径")
     private String path;

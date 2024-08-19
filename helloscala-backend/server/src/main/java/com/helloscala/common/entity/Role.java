@@ -23,7 +23,7 @@ import java.util.List;
 public class Role implements Serializable {
     @Schema(name = "主键ID")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private String id;
 
     @Schema(name = "角色编码")
     private String code;
@@ -45,5 +45,5 @@ public class Role implements Serializable {
     private Date updateTime;
 
     @TableField(exist = false)
-    private List<Integer> menus;
+    private List<String> menus;
 }

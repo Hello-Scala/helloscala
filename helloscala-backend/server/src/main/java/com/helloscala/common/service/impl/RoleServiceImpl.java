@@ -47,7 +47,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteRole(List<Integer> ids) {
+    public void deleteRole(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
         LambdaQueryWrapper<RoleMenu> roleMenuQueryWrapper = new LambdaQueryWrapper<>();
         roleMenuQueryWrapper.in(RoleMenu::getRoleId, ids);
@@ -55,13 +55,13 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
-    public List<Integer> getCurrentUserRole() {
-        Integer roleId = baseMapper.queryByUserId(StpUtil.getLoginIdAsString());
+    public List<String> getCurrentUserRole() {
+        String roleId = baseMapper.queryByUserId(StpUtil.getLoginIdAsString());
         return baseMapper.getRoleMenuIdList(roleId);
     }
 
     @Override
-    public List<Integer> selectRoleMenuById(Integer roleId) {
+    public List<String> selectRoleMenuById(String roleId) {
         Role role = baseMapper.selectById(roleId);
         if (role.getCode().equals(Constants.ADMIN_CODE)) {
             return baseMapper.selectAllMenuId();

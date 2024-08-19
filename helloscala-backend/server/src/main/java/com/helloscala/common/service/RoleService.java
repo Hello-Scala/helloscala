@@ -16,11 +16,11 @@ public interface RoleService extends IService<Role> {
 
     void updateRole(Role role);
 
-    void deleteRole(List<Integer> ids);
+    void deleteRole(List<String> ids);
 
-    List<Integer> getCurrentUserRole();
+    List<String> getCurrentUserRole();
 
-    List<Integer> selectRoleMenuById(Integer roleId);
+    List<String> selectRoleMenuById(String roleId);
 
     void assignRoleMenus(RoleMenuDTO roleMenuDTO);
 }

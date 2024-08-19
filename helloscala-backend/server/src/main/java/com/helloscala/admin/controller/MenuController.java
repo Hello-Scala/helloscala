@@ -29,7 +29,7 @@ public class MenuController {
     @Operation(summary = "Get menu tree", method = "GET")
     @ApiResponse(responseCode = "200", description = "获取菜单树")
     public Response<List<Menu>> selectMenuTreeList() {
-        List<Menu> menus = menuService.selectMenuTreeList();
+        List<Menu> menus = menuService.listAllMenuTree();
         return ResponseHelper.ok(menus);
     }
 

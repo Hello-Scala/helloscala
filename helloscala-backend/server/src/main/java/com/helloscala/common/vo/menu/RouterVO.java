@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class RouterVO {
 
-    private Integer id;
+    private String id;
     private String component;
     private String path;
     private String name;
@@ -24,7 +24,7 @@ public class RouterVO {
     private List<RouterVO> children;
 
     @Data
-public static class MetaVO{
+    public static class MetaVO {
         private String title;
         private String icon;
         private Boolean hidden;

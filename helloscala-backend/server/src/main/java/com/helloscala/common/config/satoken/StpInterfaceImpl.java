@@ -10,6 +10,9 @@ import com.helloscala.common.mapper.MenuMapper;
 import com.helloscala.common.mapper.RoleMapper;
 import com.helloscala.common.mapper.RoleMenuMapper;
 import com.helloscala.common.mapper.UserMapper;
+import com.helloscala.common.service.RoleMenuService;
+import com.helloscala.common.service.UserRoleService;
+import com.helloscala.common.service.UserService;
 import com.helloscala.common.vo.user.UserInfoVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,12 +27,11 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class StpInterfaceImpl implements StpInterface {
-    private final UserMapper userMapper;
-    private final MenuMapper menuMapper;
-    private final RoleMenuMapper roleMenuMapper;
-    private final RoleMapper roleMapper;
+    private final UserService userService;
+    private final RoleMenuService roleMenuService;
+    private final UserRoleService userRoleService;
     @Value("${sys.admin.roleId:1}")
-    private Integer adminRoleId;
+    private String adminRoleId;
 
     @Value("${sys.admin.hasAllPermission:true}")
     private Boolean adminHasAllPermission;
@@ -39,38 +41,19 @@ public class StpInterfaceImpl implements StpInterface {
      */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        User user = userMapper.selectById(loginId.toString());
-        Integer roleId = user.getRoleId();
+        User user = userService.getById(loginId.toString());
+        String roleId = user.getRoleId();
         if (adminHasAllPermission && adminRoleId.equals(roleId)) {
-            QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
-            menuQueryWrapper.lambda().select(Menu::getPerm);
-            List<Menu> menus = menuMapper.selectList(menuQueryWrapper);
-            return menus.stream()
-                .filter(Objects::nonNull)
-                .map(Menu::getPerm).distinct().toList();
+            return roleMenuService.listAllPerms();
+        } else {
+            return roleMenuService.listRolePerms(roleId);
         }
-
-        QueryWrapper<RoleMenu> roleMenuQueryWrapper = new QueryWrapper<>();
-        roleMenuQueryWrapper.lambda()
-            .select(RoleMenu::getMenuId)
-            .eq(RoleMenu::getRoleId, roleId);
-        List<RoleMenu> roleMenus = roleMenuMapper.selectList(roleMenuQueryWrapper);
-
-        Set<Integer> menuIdSet = roleMenus.stream().map(RoleMenu::getMenuId).collect(Collectors.toSet());
-        if (menuIdSet.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        QueryWrapper<Menu> menuQueryWrapper = new QueryWrapper<>();
-        menuQueryWrapper.lambda().select(Menu::getPerm).in(Menu::getId, menuIdSet);
-        List<Menu> menus = menuMapper.selectList(menuQueryWrapper);
-        return menus.stream()
-            .filter(Objects::nonNull)
-            .map(Menu::getPerm).distinct().toList();
     }
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        return roleMapper.selectByUserId(loginId);
+        User user = userService.getById(loginId.toString());
+        String roleId = user.getRoleId();
+        return userRoleService.listRoleCodes(roleId);
     }
 }

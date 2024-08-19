@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class RoleMenuDTO {
 
-    private Integer roleId;
+    private String roleId;
 
-    private List<Integer> menuIds;
+    private List<String> menuIds;
 }

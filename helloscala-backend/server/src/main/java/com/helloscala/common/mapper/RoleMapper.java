@@ -11,14 +11,12 @@ import java.util.List;
 @Repository
 public interface RoleMapper extends BaseMapper<Role> {
 
-    Integer queryByUserId(Object userId);
+    String queryByUserId(String userId);
 
-    List<Integer> getRoleMenuIdList(Integer roleId);
+    List<String> getRoleMenuIdList(String roleId);
 
-    void insertBatchByRole(@Param("menus") List<Integer> menus, @Param("roleId") Integer roleId);
+    void insertBatchByRole(@Param("menus") List<String> menus, @Param("roleId") String roleId);
 
-    List<String> selectByUserId(Object loginId);
-
-    List<Integer> selectAllMenuId();
+    List<String> selectAllMenuId();
 
 }

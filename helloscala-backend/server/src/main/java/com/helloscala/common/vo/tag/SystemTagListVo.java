@@ -16,7 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class SystemTagListVo {
     @Schema(name = "主键id")
-    private Long id;
+    private String id;
 
     @Schema(name = "标签名称")
     private String name;
@@ -31,11 +31,11 @@ public class SystemTagListVo {
     private int clickVolume;
 
     @Schema(name = "创建时间")
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "最后更新时间")
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 
     @Schema(name = "文章量")
