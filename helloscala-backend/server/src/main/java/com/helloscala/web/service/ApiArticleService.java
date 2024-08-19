@@ -13,17 +13,17 @@ import java.util.Map;
 import java.util.Set;
 
 public interface ApiArticleService {
-    Page<RecommendedArticleVO> selectArticleList(Integer categoryId, Integer tagId, String orderByDescColumn);
+    Page<RecommendedArticleVO> selectArticleList(String categoryId, String tagId, String orderByDescColumn);
 
-    ArticleInfoVO selectArticleInfo(Long id);
+    ArticleInfoVO selectArticleInfo(String id);
 
     Page<ApiArticleSearchVO> searchArticle(String keywords);
 
-    Map<Long, List<Tag>> getArticleTagListMap(Set<Long> articleIdSet);
+    Map<String, List<Tag>> getArticleTagListMap(Set<String> articleIdSet);
 
     List<Article> listPublished();
 
-    void articleLike(Integer articleId);
+    void articleLike(String articleId);
 
     void checkCode(String code);
 
@@ -31,9 +31,9 @@ public interface ApiArticleService {
 
     Page<RecommendedArticleVO> listByUserId(String userId, Integer type);
 
-    void deleteMyArticle(Long id);
+    void deleteMyArticle(String id);
 
-    ArticlePostDTO selectMyArticleInfo(Long id);
+    ArticlePostDTO getById(String id);
 
     void updateMyArticle(ArticlePostDTO dto);
 }

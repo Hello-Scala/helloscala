@@ -19,16 +19,16 @@ import java.util.Date;
 public class ArticleTag implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
 
     @Schema(name = "文章id")
-    private Long articleId;
+    private String articleId;
 
     @Schema(name = "标签id")
-    private Long tagId;
+    private String tagId;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 }

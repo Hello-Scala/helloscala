@@ -26,57 +26,6 @@
         </association>
     </resultMap>
 
-
-    <select id="selectArticle" resultType="com.helloscala.common.vo.article.ArticleVO">
-        SELECT
-        a.*,
-        b.NAME AS categoryName,
-        group_concat( t.NAME SEPARATOR ',' ) AS tagNames
-        FROM
-        b_article a
-        JOIN b_category b ON a.category_id = b.id
-        JOIN b_article_tag atg ON a.id = atg.article_id
-        JOIN b_tags t ON atg.tag_id = t.id
-        <where>
-            <if test="title != null and title != ''">
-                a.title like concat('%',#{title},'%')
-            </if>
-            <if test="categoryId != null and categoryId != ''">
-                and a.category_id=#{categoryId}
-            </if>
-            <if test="isPublish != null and isPublish != ''">
-                and a.is_publish=#{isPublish}
-            </if>
-            <if test="tagId != null and tagId != ''">
-                and atg.tag_id=#{tagId}
-            </if>
-        </where>
-        GROUP BY a.id order by a.is_stick desc ,a.create_time desc
-    </select>
-
-    <select id="selectArticlePrimaryKey" resultType="com.helloscala.common.dto.article.ArticleDTO">
-        select a.id,
-               a.title,
-               a.avatar,
-               a.summary,
-               a.quantity,
-               a.content,
-               a.content_md,
-               a.read_type,
-               a.is_stick,
-               a.is_publish,
-               a.is_original,
-               a.original_url,
-               a.create_time,
-               b.name as categoryName,
-               a.is_carousel,
-               a.keywords,
-               a.is_recommend
-        from b_article a
-                 LEFT JOIN (SELECT id, name from b_category) b on a.category_id = b.id
-        where a.id = #{id}
-    </select>
-
     <select id="contribute" resultType="com.helloscala.common.vo.article.SystemArticleContributeVO">
         select count, date
         from
@@ -89,12 +38,6 @@
         ORDER BY blog.date ASC
     </select>
 
-
-    <update id="putTopArticle">
-        update b_article
-        set is_stick = #{article.isStick}
-        where id = #{article.id}
-    </update>
     <select id="selectSearchArticle" resultType="com.helloscala.common.vo.article.ApiArticleSearchVO">
         select a.id,
                a.title,
@@ -187,12 +130,5 @@
             and a.is_publish = #{type}
         </if>
         order by a.create_time desc
-    </select>
-    <select id="selectMyArticleInfo" resultType="com.helloscala.common.dto.article.ArticlePostDTO">
-        SELECT
-            *
-        FROM
-            b_article
-        where id = #{id}
     </select>
 </mapper>

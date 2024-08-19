@@ -13,7 +13,7 @@ import java.util.List;
 public class ArticleInfoVO {
 
     @Schema(name = "主键id")
-    private Long id;
+    private String id;
 
     @Schema(name = "用户id")
     private String userId;

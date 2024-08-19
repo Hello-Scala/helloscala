@@ -28,26 +28,29 @@ public class ApiCollectServiceImpl implements ApiCollectService {
     private final CollectMapper collectMapper;
 
     @Override
-    public Page<RecommendedArticleVO> selectCollectList() {
-        Page<RecommendedArticleVO> list = collectMapper.selectCollectList(new Page<RecommendedArticleVO>(PageUtil.getPageNo(), PageUtil.getPageSize()),StpUtil.getLoginIdAsString());
+    public Page<RecommendedArticleVO> selectCollectList(String userId) {
+        Page<RecommendedArticleVO> recommendedArticleVOPage = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<RecommendedArticleVO> list = collectMapper.selectCollectList(recommendedArticleVOPage, userId);
 
         List<RecommendedArticleVO> records = list.getRecords();
-        Set<Long> articleIds = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
-        Map<Long, List<Tag>> articleTagListMap = articleService.getArticleTagListMap(articleIds);
+        Set<String> articleIds = records.stream().map(RecommendedArticleVO::getId).collect(Collectors.toSet());
+        Map<String, List<Tag>> articleTagListMap = articleService.getArticleTagListMap(articleIds);
         records.forEach(item -> item.setTagList(articleTagListMap.get(item.getId())));
         return list;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void collect(Integer articleId) {
-        Collect collect = Collect.builder().userId(StpUtil.getLoginIdAsString()).articleId(articleId).build();
+    public void collect(String userId, String articleId) {
+        Collect collect = Collect.builder().userId(userId).articleId(articleId).build();
         collectMapper.insert(collect);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void cancel(Integer articleId) {
-        collectMapper.delete(new LambdaQueryWrapper<Collect>().eq(Collect::getUserId,StpUtil.getLoginIdAsString()).eq(Collect::getArticleId,articleId));
+    public void cancel(String userId, String articleId) {
+        LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Collect::getUserId, userId).eq(Collect::getArticleId, articleId);
+        collectMapper.delete(queryWrapper);
     }
 }

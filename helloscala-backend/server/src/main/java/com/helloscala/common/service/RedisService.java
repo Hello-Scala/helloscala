@@ -46,7 +46,7 @@ public interface RedisService {
 
     Long getCacheSetKeyNumber(String key);
 
-    void incrArticle(Long id,String key,String ip);
+    void incrArticle(String id,String key,String ip);
 
     void redisTimer();
 

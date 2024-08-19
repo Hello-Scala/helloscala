@@ -1,12 +1,19 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.common.Constants;
+import com.helloscala.common.ResultCode;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.article.ArticleDTO;
 import com.helloscala.common.entity.Article;
 import com.helloscala.common.service.ArticleService;
+import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.article.ArticleVO;
+import com.helloscala.common.web.exception.ForbiddenException;
+import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -31,8 +38,8 @@ public class ArticlesController {
     @Operation(summary = "List articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "文章列表")
     public Response<Page<ArticleVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
-                                                       @RequestParam(name = "tagId", required = false) Integer tagId,
-                                                       @RequestParam(name = "categoryId", required = false) Integer categoryId,
+                                                       @RequestParam(name = "tagId", required = false) String tagId,
+                                                       @RequestParam(name = "categoryId", required = false) String categoryId,
                                                        @RequestParam(name = "isPublish", required = false) Integer isPublish) {
         Page<ArticleVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
         return ResponseHelper.ok(articlePage);
@@ -41,7 +48,7 @@ public class ArticlesController {
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
-    public Response<ArticleDTO> selectArticleById(@PathVariable(value = "id") Long id) {
+    public Response<ArticleDTO> selectArticleById(@PathVariable(value = "id") String id) {
         ArticleDTO articleDTO = articleService.selectArticleById(id);
         return ResponseHelper.ok(articleDTO);
     }
@@ -52,7 +59,9 @@ public class ArticlesController {
     @Operation(summary = "Save article", method = "POST")
     @ApiResponse(responseCode = "200", description = "Save article")
     public EmptyResponse addArticle(@RequestBody ArticleDTO article) {
-        articleService.addArticle(article);
+        article.setUserId(StpUtil.getLoginIdAsString());
+        String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
+        articleService.addArticle(ipAddress, article);
         return ResponseHelper.ok();
     }
 
@@ -62,7 +71,15 @@ public class ArticlesController {
     @Operation(summary = "Edit article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Edit article")
     public EmptyResponse updateArticle(@RequestBody ArticleDTO article) {
-        articleService.updateArticle(article);
+        String userId = StpUtil.getLoginIdAsString();
+        Article originArticle = articleService.getById(article.getId());
+        if (ObjectUtil.isNull(originArticle)) {
+            throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
+        }
+        if (!originArticle.getUserId().equals(userId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
+        }
+        articleService.updateArticle(userId, article);
         return ResponseHelper.ok();
     }
 
@@ -72,7 +89,7 @@ public class ArticlesController {
     @OperationLogger(value = "Delete article")
     @Operation(summary = "Delete article", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "删除文章")
-    public EmptyResponse deleteBatchArticle(@RequestBody List<Long> ids) {
+    public EmptyResponse deleteBatchArticle(@RequestBody List<String> ids) {
         articleService.deleteBatchArticle(ids);
         return ResponseHelper.ok();
     }
@@ -83,7 +100,7 @@ public class ArticlesController {
     @Operation(summary = "Topping article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "置顶文章")
     public EmptyResponse topArticle(@RequestBody ArticleDTO article) {
-        articleService.topArticle(article);
+        articleService.stick(article.getId(), article.getIsStick() != 0);
         return ResponseHelper.ok();
     }
 
@@ -103,19 +120,8 @@ public class ArticlesController {
     @OperationLogger(value = "Bulk SEO")
     @Operation(summary = "Bulk SEO", method = "POST")
     @ApiResponse(responseCode = "200", description = "SEO")
-    public EmptyResponse seoArticle(@RequestBody List<Long> ids) {
+    public EmptyResponse seoArticle(@RequestBody List<String> ids) {
         articleService.seoArticle(ids);
-        return ResponseHelper.ok();
-    }
-
-    // todo path
-    @GetMapping(value = "/reptile")
-    @SaCheckPermission("system:article:reptile")
-    @OperationLogger(value = "fetch")
-    @Operation(summary = "fetch", method = "GET")
-    @ApiResponse(responseCode = "200", description = "fetch")
-    public EmptyResponse fetch(@RequestParam(name = "url", required = true) String url) {
-        articleService.retch(url);
         return ResponseHelper.ok();
     }
 

@@ -10,5 +10,5 @@ import java.util.Set;
 
 @Repository
 public interface ArticleTagMapper extends BaseMapper<ArticleTag> {
-    void insertIgnoreArticleTags(@Param("articleId") Long articleId, @Param("tagIds") Set<Long> tagIds);
+    void insertIgnoreArticleTags(@Param("articleId") String articleId, @Param("tagIds") Set<String> tagIds);
 }

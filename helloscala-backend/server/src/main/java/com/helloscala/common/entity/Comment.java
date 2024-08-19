@@ -26,7 +26,7 @@ import java.util.Date;
 public class Comment implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private String id;
 
     @Schema(name = "评论用户Id")
     private String userId;
@@ -35,13 +35,13 @@ public class Comment implements Serializable {
     private String replyUserId;
 
     @Schema(name = "文章id")
-    private Long articleId;
+    private String articleId;
 
     @Schema(name = "评论内容")
     private String content;
 
     @Schema(name = "父级id")
-    private Integer parentId;
+    private String parentId;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)

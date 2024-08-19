@@ -21,4 +21,8 @@ public interface TagService extends IService<Tag> {
     Tag getTagsById(Long id);
 
     List<Tag> listByIds(Set<Long> idSet);
+
+    List<Tag> listByNames(Set<String> nameSet);
+
+    List<Tag> bulkCreateByNames(Set<String> nameSet);
 }

@@ -1,6 +1,7 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.AccessLimit;
 import com.helloscala.common.vo.article.RecommendedArticleVO;
@@ -28,7 +29,8 @@ public class ApiCollectController {
     @Operation(summary = "我的收藏列表", method = "GET")
     @ApiResponse(responseCode = "200", description = "我的收藏列表")
     public Response<Page<RecommendedArticleVO>> selectCollectList() {
-        Page<RecommendedArticleVO> listArticleVOPage = apiCollectService.selectCollectList();
+        String userId = StpUtil.getLoginIdAsString();
+        Page<RecommendedArticleVO> listArticleVOPage = apiCollectService.selectCollectList(userId);
         return ResponseHelper.ok(listArticleVOPage);
     }
 
@@ -37,8 +39,9 @@ public class ApiCollectController {
     @GetMapping(value = "collect")
     @Operation(summary = "收藏文章", method = "GET")
     @ApiResponse(responseCode = "200", description = "收藏文章")
-    public EmptyResponse collect(@RequestParam(name = "articleId", required = true) Integer articleId) {
-        apiCollectService.collect(articleId);
+    public EmptyResponse collect(@RequestParam(name = "articleId", required = true) String articleId) {
+        String userId = StpUtil.getLoginIdAsString();
+        apiCollectService.collect(userId, articleId);
         return ResponseHelper.ok();
     }
 
@@ -47,8 +50,9 @@ public class ApiCollectController {
     @DeleteMapping(value = "/")
     @Operation(summary = "取消收藏", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "取消收藏")
-    public EmptyResponse cancel(@RequestParam(name = "articleId", required = true) Integer articleId) {
-        apiCollectService.cancel(articleId);
+    public EmptyResponse cancel(@RequestParam(name = "articleId", required = true) String articleId) {
+        String userId = StpUtil.getLoginIdAsString();
+        apiCollectService.cancel(userId, articleId);
         return ResponseHelper.ok();
     }
 }

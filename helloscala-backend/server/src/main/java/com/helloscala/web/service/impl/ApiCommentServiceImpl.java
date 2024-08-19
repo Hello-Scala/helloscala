@@ -72,15 +72,15 @@ public class ApiCommentServiceImpl implements ApiCommentService {
     }
 
     @Override
-    public Page<ApiCommentListVO> selectCommentByArticleId(Long articleId) {
+    public Page<ApiCommentListVO> selectCommentByArticleId(String articleId) {
         Page<ApiCommentListVO> commentListVOPage = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
         Page<ApiCommentListVO> pageList = commentMapper.selectCommentPage(commentListVOPage, articleId);
 
         List<ApiCommentListVO> records = pageList.getRecords();
-        Set<Integer> commentIdSet = records.stream().map(ApiCommentListVO::getId).collect(Collectors.toSet());
+        Set<String> commentIdSet = records.stream().map(ApiCommentListVO::getId).collect(Collectors.toSet());
         List<Comment> commentList = commentMapper.selectList(
                 new LambdaQueryWrapper<Comment>().in(Comment::getParentId, commentIdSet).orderByDesc(Comment::getCreateTime));
-        Map<Integer, List<Comment>> childCommentMap = commentList.stream().filter(c -> Objects.nonNull(c.getParentId())).collect(Collectors.groupingBy(Comment::getParentId));
+        Map<String, List<Comment>> childCommentMap = commentList.stream().filter(c -> Objects.nonNull(c.getParentId())).collect(Collectors.groupingBy(Comment::getParentId));
 
         Set<String> replyUserIds = commentList.stream().map(Comment::getReplyUserId).collect(Collectors.toSet());
         Set<String> allUserIdSet = commentList.stream().map(Comment::getUserId).collect(Collectors.toSet());

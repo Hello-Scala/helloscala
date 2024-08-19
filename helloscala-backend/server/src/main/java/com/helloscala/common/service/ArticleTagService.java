@@ -8,11 +8,13 @@ import java.util.Set;
 
 public interface ArticleTagService extends IService<ArticleTag> {
 
-    void insertIgnoreArticleTags(Long articleId, Set<Long> tagIdSet);
+    void insertIgnoreArticleTags(String articleId, Set<String> tagIdSet);
 
-    void deleteByArticleIds(Set<Long> articleIdSet);
+    void deleteByArticleIds(Set<String> articleIdSet);
 
-    void resetArticleTags(Long articleId, Set<Long> newTagIds);
+    void resetArticleTags(String articleId, Set<String> newTagIds);
 
-    List<ArticleTag> listByArticleIds(Set<Long> articleIds);
+    List<ArticleTag> listByArticleIds(Set<String> articleIds);
+
+    List<String> listArticleIds(String tagId);
 }

@@ -25,14 +25,14 @@ import java.util.Date;
 public class Collect implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private String id;
 
 
     @Schema(name = "评论用户Id")
     private String userId;
 
     @Schema(name = "文章id")
-    private Integer articleId;
+    private String articleId;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)

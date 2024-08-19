@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class ArticlePostDTO {
     @Schema(name = "id", description = "文章id")
-    private Long id;
+    private String id;
     @Schema(name = "title", description = "文章标题")
     private String title;
 
@@ -20,7 +20,7 @@ public class ArticlePostDTO {
     private String avatar;
 
     @Schema(name = "categoryId", description = "文章分类id")
-    private Long categoryId;
+    private String categoryId;
 
     @Schema(name = "是否发布")
     private Integer isPublish = 2;
@@ -44,5 +44,5 @@ public class ArticlePostDTO {
     private String userId;
 
     @Schema(name = "文章标签id集合")
-    private List<Long> tagList;
+    private List<String> tagList;
 }

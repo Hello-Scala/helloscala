@@ -10,7 +10,7 @@ import java.util.Date;
 @Data
 public class ArticleVO {
     @Schema(name = "主键id")
-    private Long id;
+    private String id;
 
     @Schema(name = "用户id")
     private String userId;

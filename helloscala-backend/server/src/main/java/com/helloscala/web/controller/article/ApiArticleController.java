@@ -1,4 +1,4 @@
-package com.helloscala.web.controller;
+package com.helloscala.web.controller.article;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -29,14 +29,13 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@RequestMapping("/article")
-@Tag(name = "Article management-V2")
+@Tag(name = "Article management")
 @RequiredArgsConstructor
-public class ApiArticleV2Controller {
+public class ApiArticleController {
     private final ApiArticleService articleService;
 
     @BusinessLogger(value = "Home page list articles", type = "search", desc = "list articles")
-    @GetMapping(value = "/")
+    @GetMapping(value = "/api/article")
     @Operation(summary = "list articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "article list")
     public Response<Page<RecommendedArticleVO>> selectArticleList(@RequestParam(name = "categoryId", required = false) String categoryId,
@@ -47,7 +46,7 @@ public class ApiArticleV2Controller {
     }
 
     @BusinessLogger(value = "Get article detail", type = "search", desc = "get article detail")
-    @GetMapping(value = "/info/{id}")
+    @GetMapping(value = "/api/article/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
     public Response<ArticleInfoVO> selectArticleInfo(@PathVariable(value = "id") String id) {

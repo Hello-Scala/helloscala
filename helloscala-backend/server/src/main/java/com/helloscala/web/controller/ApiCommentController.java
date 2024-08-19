@@ -38,7 +38,7 @@ public class ApiCommentController {
     @RequestMapping(value = "/",method = RequestMethod.GET)
     @Operation(summary = "Get article comments", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get article comments")
-    public Response<Page<ApiCommentListVO>> selectCommentByArticleId(@RequestParam(name = "articleId", required = true) Long articleId){
+    public Response<Page<ApiCommentListVO>> selectCommentByArticleId(@RequestParam(name = "articleId", required = true) String articleId){
         Page<ApiCommentListVO> apiCommentListVOPage = commentService.selectCommentByArticleId(articleId);
         return ResponseHelper.ok(apiCommentListVOPage);
     }

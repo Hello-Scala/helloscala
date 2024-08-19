@@ -24,7 +24,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name="ImMessage对象", description="群聊实体类")
+@Schema(name = "ImMessage对象", description = "群聊实体类")
 public class ImMessage implements Serializable {
     @Schema(name = "主键id")
     @TableId(value = "id", type = IdType.ASSIGN_UUID)
@@ -67,13 +67,13 @@ public class ImMessage implements Serializable {
     private Integer noticeType;
 
     @Schema(name = "文章id")
-    private Long articleId;
+    private String articleId;
 
     @Schema(name = "@用户id 多个逗号分隔")
     private String atUserId;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 }

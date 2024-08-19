@@ -107,10 +107,6 @@ public class ChatWebSocket {
         sessionPool.forEach((userId, session) -> session.getAsyncRemote().sendText(message));
     }
 
-    public void chatWithAssistant(String userId, AssistantMsgView assistantMsgView) {
-        sendMsg(sessionPool.get(userId), JSONObject.toJSONString(assistantMsgView));
-    }
-
     public void chat(ImMessageVO messageData) {
         String message = JSONUtil.toJsonStr(messageData);
         switch (messageData.getCode()) {
