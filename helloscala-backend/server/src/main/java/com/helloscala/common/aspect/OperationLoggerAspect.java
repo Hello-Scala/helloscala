@@ -2,6 +2,7 @@ package com.helloscala.common.aspect;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
+import com.helloscala.common.ResultCode;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.Constants;
 import com.helloscala.common.entity.AdminLog;
@@ -56,7 +57,7 @@ public class OperationLoggerAspect {
         HttpServletRequest request = IpUtil.getRequest();
         StpUtil.checkLogin();
         if (!StpUtil.hasRole(Constants.ADMIN_CODE)) {
-            throw new ForbiddenException(NO_PERMISSION.desc);
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
         }
         Date startTime = DateUtil.getNowDate();
         Object result = joinPoint.proceed();
@@ -73,7 +74,7 @@ public class OperationLoggerAspect {
         String ip = IpUtil.getIp();
         String operationName = AspectUtil.INSTANCE.parseParams(joinPoint.getArgs(), operationLogger.value());
         String paramsJson = getParamsJson((ProceedingJoinPoint) joinPoint);
-        SystemUserVO user = (SystemUserVO) StpUtil.getSession().get(CURRENT_USER);
+        SystemUserVO user = (SystemUserVO) StpUtil.getSession().get(Constants.CURRENT_USER);
 
         ExceptionLog exception = ExceptionLog.builder().ip(ip).ipSource(IpUtil.getIp2region(ip))
             .params(paramsJson).username(user.getUsername()).method(joinPoint.getSignature().getName())
@@ -98,7 +99,7 @@ public class OperationLoggerAspect {
         }
         try {
             String paramsJson = getParamsJson(point);
-            SystemUserVO user = (SystemUserVO) StpUtil.getSession().get(CURRENT_USER);
+            SystemUserVO user = (SystemUserVO) StpUtil.getSession().get(Constants.CURRENT_USER);
             String userName = "";
             if (!Objects.isNull(user)) {
                 userName = user.getNickname();

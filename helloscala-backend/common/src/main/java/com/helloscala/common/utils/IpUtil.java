@@ -3,6 +3,7 @@ package com.helloscala.common.utils;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.helloscala.common.Constants;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
 import org.lionsoul.ip2region.xdb.Searcher;
@@ -18,8 +19,6 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.helloscala.common.Constants.UNKNOWN;
 
 public class IpUtil {
     private static final Logger logger = LoggerFactory.getLogger(IpUtil.class);
@@ -102,7 +101,7 @@ public class IpUtil {
         String s = analyzeIp(ip);
         Map map = JSONUtil.toBean(s, Map.class);
         Integer status = (Integer) map.get("status");
-        String address = UNKNOWN;
+        String address = Constants.UNKNOWN;
         if (status == 0) {
             Map result = (Map) map.get("result");
             Map addressInfo = (Map) result.get("ad_info");
@@ -120,7 +119,7 @@ public class IpUtil {
             logger.error("Error: DbSearcher is null");
             return null;
         }
-        String ipInfo = UNKNOWN;
+        String ipInfo = Constants.UNKNOWN;
         try {
             ipInfo = searcher.search(ip);
             if (!StrUtil.isEmpty(ipInfo)) {

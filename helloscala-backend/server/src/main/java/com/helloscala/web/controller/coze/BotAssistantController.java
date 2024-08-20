@@ -1,7 +1,6 @@
 package com.helloscala.web.controller.coze;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.http.ContentType;
 import com.helloscala.common.service.UserService;
 import com.helloscala.common.vo.user.SystemUserVO;
 import com.helloscala.common.web.exception.BadRequestException;

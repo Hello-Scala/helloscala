@@ -22,7 +22,6 @@ import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.service.ApiArticleService;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

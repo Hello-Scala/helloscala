@@ -1,6 +1,5 @@
 package com.helloscala.web.websocket;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.helloscala.common.vo.message.ImMessageVO;

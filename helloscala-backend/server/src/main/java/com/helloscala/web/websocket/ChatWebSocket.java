@@ -5,7 +5,6 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.helloscala.common.vo.message.ImMessageVO;
 import com.helloscala.common.web.exception.ConflictException;
-import com.helloscala.web.controller.coze.response.AssistantMsgView;
 import com.helloscala.web.im.MessageConstant;
 import jakarta.annotation.PostConstruct;
 import jakarta.websocket.*;
