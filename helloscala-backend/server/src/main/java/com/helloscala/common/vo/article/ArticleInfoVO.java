@@ -1,5 +1,7 @@
 package com.helloscala.common.vo.article;
 
+import com.helloscala.admin.controller.view.BOArticleCategoryView;
+import com.helloscala.admin.controller.view.BOTagView;
 import com.helloscala.common.entity.Category;
 import com.helloscala.common.entity.Tag;
 import com.helloscala.common.vo.message.ApiCommentListVO;
@@ -73,10 +75,10 @@ public class ArticleInfoVO {
     private Date updateTime;
 
     @Schema(name = "标签集合")
-    private List<Tag> tagList;
+    private List<BOTagView> tagList;
 
     @Schema(name = "分类")
-    private Category category;
+    private BOArticleCategoryView category;
 
     @Schema(name = "当前用户是否点赞")
     private Boolean isLike = false;

@@ -2,12 +2,11 @@ package com.helloscala.admin.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.hutool.core.util.StrUtil;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.view.BOAdminLogView;
+import com.helloscala.admin.service.BOAdminLogService;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.entity.AdminLog;
-import com.helloscala.common.service.AdminLogService;
-import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -24,14 +23,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Admin log")
 public class AdminLogController {
-
-    private final AdminLogService adminLogService;
+    private final BOAdminLogService adminLogService;
 
     @GetMapping(value = "/list")
     @Operation(summary = "list admin operation log", method = "GET")
     @ApiResponse(responseCode = "200", description = "admin operation log list")
-    public Response<Page<AdminLog>> selectAdminLogPage() {
-        Page<AdminLog> adminLogPage = adminLogService.selectAdminLogPage();
+    public Response<Page<BOAdminLogView>> selectAdminLogPage() {
+        Page<BOAdminLogView> adminLogPage = adminLogService.selectAdminLogPage();
         return ResponseHelper.ok(adminLogPage);
     }
 
@@ -41,12 +39,9 @@ public class AdminLogController {
     @Operation(summary = "delete admin operation log", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "delete admin operation log")
     public EmptyResponse deleteAdminLog(@RequestBody List<Long> ids) {
-        int rows = adminLogService.deleteAdminLog(ids);
-        if (rows > 0) {
-            return ResponseHelper.ok();
-        } else {
-            throw new ConflictException("Failed to delete admin logs, ids=[{}]!", StrUtil.join(", ", ids));
-        }
+        String userId = StpUtil.getLoginIdAsString();
+        adminLogService.deleteAdminLog(userId, ids);
+        return ResponseHelper.ok();
     }
 }
 

@@ -1,8 +1,8 @@
 package com.helloscala.web.controller.coze.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.enums.ContentTypeEnum;
-import com.helloscala.common.enums.SendFromEnum;
+import com.helloscala.service.enums.ContentTypeEnum;
+import com.helloscala.service.enums.SendFromEnum;
 import com.helloscala.common.utils.DateUtil;
 import lombok.Data;
 

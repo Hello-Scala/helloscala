@@ -1,6 +1,6 @@
 package com.helloscala.web.controller;
 
-import com.helloscala.common.RedisConstants;
+import com.helloscala.service.service.RedisConstants;
 import com.helloscala.common.service.RedisService;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.web.service.ApiUserService;

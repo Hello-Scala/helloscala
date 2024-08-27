@@ -1,6 +1,6 @@
 package com.helloscala.web.controller.coze.request;
 
-import com.helloscala.common.enums.MsgTypeEnum;
+import com.helloscala.service.enums.MsgTypeEnum;
 import lombok.Data;
 
 /**

@@ -1,31 +1,27 @@
 package com.helloscala.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.common.annotation.AccessLimit;
 import com.helloscala.common.annotation.BusinessLogger;
 import com.helloscala.common.dto.article.ArticlePostDTO;
-import com.helloscala.common.entity.Article;
-import com.helloscala.common.utils.DateHelper;
+import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
 import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
+import com.helloscala.web.controller.article.request.APICreateArticleRequest;
+import com.helloscala.web.controller.article.request.APIUpdateArticleRequest;
 import com.helloscala.web.response.ListPublishedArticleResponse;
-import com.helloscala.web.response.PublishedArticleView;
 import com.helloscala.web.service.ApiArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -42,7 +38,8 @@ public class ApiArticleV2Controller {
     public Response<Page<RecommendedArticleVO>> selectArticleList(@RequestParam(name = "categoryId", required = false) String categoryId,
                                                                   @RequestParam(name = "tagId", required = false) String tagId,
                                                                   @RequestParam(name = "orderByDescColumn", required = false) String orderByDescColumn) {
-        Page<RecommendedArticleVO> listArticleVOPage = articleService.selectArticleList(categoryId, tagId, orderByDescColumn);
+        String userId = StpUtil.getLoginIdAsString();
+        Page<RecommendedArticleVO> listArticleVOPage = articleService.selectArticleList(userId, categoryId, tagId, orderByDescColumn);
         return ResponseHelper.ok(listArticleVOPage);
     }
 
@@ -51,7 +48,9 @@ public class ApiArticleV2Controller {
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
     public Response<ArticleInfoVO> selectArticleInfo(@PathVariable(value = "id") String id) {
-        ArticleInfoVO articleInfoVO = articleService.selectArticleInfo(id);
+        String userId = StpUtil.getLoginIdAsString();
+        String ip = IpUtil.getIp();
+        ArticleInfoVO articleInfoVO = articleService.selectArticleInfo(userId, id, ip);
         return ResponseHelper.ok(articleInfoVO);
     }
 
@@ -68,42 +67,7 @@ public class ApiArticleV2Controller {
     @Operation(summary = "Archive article", method = "GET")
     @ApiResponse(responseCode = "200", description = "Archive article")
     public Response<ListPublishedArticleResponse> archiveV2() {
-        List<Article> articles = articleService.listPublished();
-
-        Map<String, List<Article>> monthlyArticleMap = articles.stream().collect(Collectors.groupingBy(a -> DateHelper.toYearAndMonth(a.getCreateTime())));
-        long total = monthlyArticleMap.values().stream().mapToLong(Collection::size).sum();
-        List<ListPublishedArticleResponse.MonthlyArticleView> monthlyArticleViews = monthlyArticleMap.entrySet().stream().map(entry -> {
-            List<PublishedArticleView> publishedArticleViews = entry.getValue().stream().map(article -> {
-                PublishedArticleView publishedArticleView = new PublishedArticleView();
-                publishedArticleView.setId(article.getId());
-                publishedArticleView.setUserId(article.getUserId());
-                publishedArticleView.setCategoryId(article.getCategoryId());
-                publishedArticleView.setTitle(article.getTitle());
-                publishedArticleView.setAvatar(article.getAvatar());
-                publishedArticleView.setSummary(article.getSummary());
-                publishedArticleView.setReadType(article.getReadType());
-                publishedArticleView.setIsStick(article.getIsStick());
-                publishedArticleView.setIsOriginal(article.getIsOriginal());
-                publishedArticleView.setOriginalUrl(article.getOriginalUrl());
-                publishedArticleView.setKeywords(article.getKeywords());
-                publishedArticleView.setAddress(article.getAddress());
-                publishedArticleView.setQuantity(article.getQuantity());
-                publishedArticleView.setIsCarousel(article.getIsCarousel());
-                publishedArticleView.setIsRecommend(article.getIsRecommend());
-                publishedArticleView.setCreateTime(article.getCreateTime());
-                publishedArticleView.setCreateMonthlyDate(article.getCreateTime());
-                publishedArticleView.setUpdateTime(article.getUpdateTime());
-                return publishedArticleView;
-            }).toList();
-            ListPublishedArticleResponse.MonthlyArticleView monthlyArticleView = new ListPublishedArticleResponse.MonthlyArticleView();
-            monthlyArticleView.setMonth(entry.getKey());
-            monthlyArticleView.setArticles(publishedArticleViews);
-            return monthlyArticleView;
-        }).toList();
-
-        ListPublishedArticleResponse response = new ListPublishedArticleResponse();
-        response.setTotal(total);
-        response.setMonthlyArticles(monthlyArticleViews);
+        ListPublishedArticleResponse response = articleService.listPublished();
         return ResponseHelper.ok(response);
     }
 
@@ -132,8 +96,10 @@ public class ApiArticleV2Controller {
     @BusinessLogger(value = "Create article", type = "add", desc = "Create article")
     @Operation(summary = "Create article", method = "POST")
     @ApiResponse(responseCode = "200", description = "Create article")
-    public EmptyResponse insertArticle(@RequestBody ArticlePostDTO dto) {
-        articleService.insertArticle(dto);
+    public EmptyResponse insertArticle(@RequestBody APICreateArticleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
+        articleService.insertArticle(userId, ipAddress, request);
         return ResponseHelper.ok();
     }
 
@@ -142,8 +108,10 @@ public class ApiArticleV2Controller {
     @BusinessLogger(value = "Update article", type = "update", desc = "Update article")
     @Operation(summary = "Update article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update article")
-    public EmptyResponse updateMyArticle(@RequestBody ArticlePostDTO dto) {
-        articleService.updateMyArticle(dto);
+    public EmptyResponse updateMyArticle(@RequestBody APIUpdateArticleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
+        articleService.updateMyArticle(userId, ipAddress, request);
         return ResponseHelper.ok();
     }
 

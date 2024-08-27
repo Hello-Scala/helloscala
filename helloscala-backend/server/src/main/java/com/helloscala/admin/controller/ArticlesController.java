@@ -2,16 +2,17 @@ package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.request.BOCreateArticleRequest;
+import com.helloscala.admin.controller.request.BOUpdateArticleRequest;
+import com.helloscala.admin.controller.view.BOArticleDetailView;
+import com.helloscala.admin.controller.view.BOArticleView;
+import com.helloscala.admin.service.BOArticleService;
 import com.helloscala.common.Constants;
 import com.helloscala.common.ResultCode;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.article.ArticleDTO;
-import com.helloscala.common.entity.Article;
-import com.helloscala.common.service.ArticleService;
 import com.helloscala.common.utils.IpUtil;
-import com.helloscala.common.vo.article.ArticleVO;
 import com.helloscala.common.web.exception.ForbiddenException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.common.web.response.EmptyResponse;
@@ -31,25 +32,24 @@ import java.util.List;
 @Tag(name = "Article")
 public class ArticlesController {
 
-    private final ArticleService articleService;
-
+    private final BOArticleService articleService;
 
     @GetMapping(value = "/list")
     @Operation(summary = "List articles", method = "GET")
     @ApiResponse(responseCode = "200", description = "文章列表")
-    public Response<Page<ArticleVO>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
-                                                       @RequestParam(name = "tagId", required = false) String tagId,
-                                                       @RequestParam(name = "categoryId", required = false) String categoryId,
-                                                       @RequestParam(name = "isPublish", required = false) Integer isPublish) {
-        Page<ArticleVO> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
+    public Response<Page<BOArticleView>> selectArticlePage(@RequestParam(name = "title", required = false) String title,
+                                                           @RequestParam(name = "tagId", required = false) String tagId,
+                                                           @RequestParam(name = "categoryId", required = false) String categoryId,
+                                                           @RequestParam(name = "isPublish", required = false) Integer isPublish) {
+        Page<BOArticleView> articlePage = articleService.selectArticlePage(title, tagId, categoryId, isPublish);
         return ResponseHelper.ok(articlePage);
     }
 
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get article detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Article detail")
-    public Response<ArticleDTO> selectArticleById(@PathVariable(value = "id") String id) {
-        ArticleDTO articleDTO = articleService.selectArticleById(id);
+    public Response<BOArticleDetailView> getById(@PathVariable(value = "id") String id) {
+        BOArticleDetailView articleDTO = articleService.getById(id);
         return ResponseHelper.ok(articleDTO);
     }
 
@@ -58,10 +58,10 @@ public class ArticlesController {
     @OperationLogger(value = "Save article")
     @Operation(summary = "Save article", method = "POST")
     @ApiResponse(responseCode = "200", description = "Save article")
-    public EmptyResponse addArticle(@RequestBody ArticleDTO article) {
-        article.setUserId(StpUtil.getLoginIdAsString());
+    public EmptyResponse create(@RequestBody BOCreateArticleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
         String ipAddress = IpUtil.getIp2region(IpUtil.getIp());
-        articleService.addArticle(ipAddress, article);
+        articleService.create(userId, ipAddress, request);
         return ResponseHelper.ok();
     }
 
@@ -70,16 +70,17 @@ public class ArticlesController {
     @OperationLogger(value = "Edit article")
     @Operation(summary = "Edit article", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Edit article")
-    public EmptyResponse updateArticle(@RequestBody ArticleDTO article) {
+    public EmptyResponse updateArticle(@RequestBody BOUpdateArticleRequest request) {
         String userId = StpUtil.getLoginIdAsString();
-        Article originArticle = articleService.getById(article.getId());
-        if (ObjectUtil.isNull(originArticle)) {
+        boolean exist = articleService.exist(request.getId());
+        if (!exist) {
             throw new NotFoundException(ResultCode.ARTICLE_NOT_FOUND.desc);
         }
-        if (!originArticle.getUserId().equals(userId) && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
+        boolean owned = articleService.ownArticles(userId, List.of(request.getId()));
+        if (!owned && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
             throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
         }
-        articleService.updateArticle(userId, article);
+        articleService.update(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -90,7 +91,12 @@ public class ArticlesController {
     @Operation(summary = "Delete article", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "删除文章")
     public EmptyResponse deleteBatchArticle(@RequestBody List<String> ids) {
-        articleService.deleteBatchArticle(ids);
+        String userId = StpUtil.getLoginIdAsString();
+        boolean owned = articleService.ownArticles(userId, ids);
+        if (!owned && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
+        }
+        articleService.deleteBatch(userId, ids);
         return ResponseHelper.ok();
     }
 
@@ -110,8 +116,13 @@ public class ArticlesController {
     @OperationLogger(value = "publish")
     @Operation(summary = "publish or withdraw", method = "PUT")
     @ApiResponse(responseCode = "200", description = "publish or withdraw")
-    public EmptyResponse psArticle(@RequestBody Article article) {
-        articleService.psArticle(article);
+    public EmptyResponse psArticle(@RequestBody BOUpdateArticleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        boolean owned = articleService.ownArticles(userId, List.of(request.getId()));
+        if (!owned && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
+            throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
+        }
+        articleService.update(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -129,7 +140,7 @@ public class ArticlesController {
     @Operation(summary = "randomly get image", method = "GET")
     @ApiResponse(responseCode = "200", description = "randomly get image")
     public Response<String> randomImg() {
-        String s = articleService.randomImg();
+        String s = "https://picsum.photos/500/300?random=" + System.currentTimeMillis();
         return ResponseHelper.ok(s);
     }
 

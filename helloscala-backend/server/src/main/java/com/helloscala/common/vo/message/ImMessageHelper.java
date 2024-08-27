@@ -1,8 +1,8 @@
 package com.helloscala.common.vo.message;
 
-import com.helloscala.common.enums.ContentTypeEnum;
-import com.helloscala.common.enums.MsgTypeEnum;
-import com.helloscala.web.service.client.coze.request.MsgContentTypeEnum;
+import com.helloscala.service.enums.ContentTypeEnum;
+import com.helloscala.service.enums.MsgTypeEnum;
+import com.helloscala.service.service.client.coze.request.MsgContentTypeEnum;
 
 /**
  * @author Steve Zou

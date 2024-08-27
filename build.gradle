@@ -192,6 +192,8 @@ project(':helloscala-backend:common') {
         implementation 'eu.bitwalker:UserAgentUtils:1.21' // todo replace
         implementation 'org.lionsoul:ip2region:2.7.0'
         implementation 'cn.hutool:hutool-all:5.8.27'
+        implementation 'org.quartz-scheduler:quartz:2.5.0-rc1'
+        implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6'
         implementation("cn.dev33:sa-token-spring-boot3-starter:$SA_TOKEN_VERSION") {
             exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-web')
         }

@@ -2,13 +2,13 @@ package com.helloscala.common.strategy.imp;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.common.entity.ArticleElastic;
-import com.helloscala.common.enums.PublishEnum;
-import com.helloscala.common.esmapper.EasyesMapper;
 import com.helloscala.common.strategy.SearchStrategy;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
+import com.helloscala.service.entity.ArticleElastic;
+import com.helloscala.service.enums.PublishEnum;
+import com.helloscala.service.esmapper.EasyesMapper;
 import jakarta.annotation.Resource;
 import org.dromara.easyes.core.biz.EsPageInfo;
 import org.dromara.easyes.core.conditions.select.LambdaEsQueryWrapper;

@@ -4,7 +4,7 @@ import cn.dev33.satoken.listener.SaTokenListener;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
-import com.helloscala.common.RedisConstants;
+import com.helloscala.service.service.RedisConstants;
 import com.helloscala.common.entity.User;
 import com.helloscala.common.mapper.UserMapper;
 import com.helloscala.common.service.RedisService;

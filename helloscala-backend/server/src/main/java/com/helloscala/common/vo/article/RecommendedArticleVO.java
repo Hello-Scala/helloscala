@@ -1,7 +1,7 @@
 package com.helloscala.common.vo.article;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.entity.Tag;
+import com.helloscala.admin.controller.view.BOTagView;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -76,12 +76,12 @@ public class RecommendedArticleVO {
     private String categoryId;
 
     @Schema(name = "创建时间")
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "格式化后的创建时间")
     private String formatCreateTime;
 
     @Schema(name = "标签集合")
-    private List<Tag> tagList;
+    private List<BOTagView> tagList;
 }

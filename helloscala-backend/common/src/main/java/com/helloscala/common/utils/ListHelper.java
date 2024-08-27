@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 public final class ListHelper {
     public static <T> List<T> ofNullable(List<T> tList) {
-        return Objects.isNull(tList) ? new ArrayList<>() : tList;
+        return Objects.isNull(tList) ? List.of() : tList;
     }
 
     public static <T> List<T> concat(List<T> ls1, List<T> ls2) {
