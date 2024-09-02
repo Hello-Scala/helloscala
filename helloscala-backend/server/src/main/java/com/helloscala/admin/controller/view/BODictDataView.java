@@ -1,27 +1,16 @@
-package com.helloscala.service.entity;
+package com.helloscala.admin.controller.view;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.helloscala.service.entity.Dict;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import java.io.Serializable;
-
 
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name="DictData对象", description="字典数据表")
-@TableName("b_dict_data")
-public class DictData implements Serializable {
+public class BODictDataView {
     @Schema(name = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
-    private String id;
+    private Long id;
 
     @Schema(name = "字典类型id")
-    private String dictId;
+    private Long dictId;
 
     @Schema(name = "字典标签")
     private String label;
@@ -44,6 +33,5 @@ public class DictData implements Serializable {
     @Schema(name = "备注")
     private String remark;
 
-    @TableField(exist = false)
     private Dict dict;
 }

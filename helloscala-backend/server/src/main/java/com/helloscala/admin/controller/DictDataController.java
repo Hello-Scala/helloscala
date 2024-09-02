@@ -3,10 +3,12 @@ package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.request.BOCreateDictDataRequest;
+import com.helloscala.admin.controller.request.BOUpdateDictDataRequest;
+import com.helloscala.admin.controller.view.BODictDataView;
+import com.helloscala.admin.controller.view.BODictView;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.dto.dict.DictView;
-import com.helloscala.common.entity.DictData;
-import com.helloscala.common.service.DictDataService;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -25,13 +27,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DictDataController {
 
-    private final DictDataService dictDataService;
+    private final BODictDataService dictDataService;
 
     @RequestMapping(value = "/list",method = RequestMethod.GET)
     @Operation(summary = "List dict data", method = "GET")
     @ApiResponse(responseCode = "200", description = "List dict data")
-    public Response<Page<DictData>> selectDictDataPage(@RequestParam(name = "dictId", required = false) Integer dictId,
-                                                       @RequestParam(name = "isPublish", required = false) Integer isPublish){
+    public Response<Page<BODictDataView>> selectDictDataPage(@RequestParam(name = "dictId", required = false) Integer dictId,
+                                                             @RequestParam(name = "isPublish", required = false) Integer isPublish){
         Page<DictData> dictPage = dictDataService.selectDictDataPage(dictId, isPublish);
         return ResponseHelper.ok(dictPage);
     }
@@ -41,7 +43,7 @@ public class DictDataController {
     @Operation(summary = "Add dict data", method = "POST")
     @ApiResponse(responseCode = "201", description = "Add dict data")
     @OperationLogger(value = "Add dict data")
-    public EmptyResponse addDictData(@RequestBody DictData dictData){
+    public EmptyResponse addDictData(@RequestBody BOCreateDictDataRequest request){
         dictDataService.addDictData(dictData);
         return ResponseHelper.ok();
     }
@@ -51,7 +53,7 @@ public class DictDataController {
     @Operation(summary = "Update dict data", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update dict data")
     @OperationLogger(value = "Update dict data")
-    public EmptyResponse update(@RequestBody DictData dictData){
+    public EmptyResponse update(@RequestBody BOUpdateDictDataRequest request){
         dictDataService.updateDictData(dictData);
         return ResponseHelper.ok();
     }
@@ -61,7 +63,7 @@ public class DictDataController {
     @Operation(summary = "Batch delete dict data", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Batch delete dict data")
     @OperationLogger(value = "Batch delete dict data")
-    public EmptyResponse deleteDictData(@RequestBody List<Long> ids){
+    public EmptyResponse deleteDictData(@RequestBody List<String> ids){
         dictDataService.deleteDictData(ids);
         return ResponseHelper.ok();
     }
@@ -74,7 +76,7 @@ public class DictDataController {
     }
 
     @RequestMapping(value = "/listByDictType",method = RequestMethod.POST)
-    public Response<List<DictView>> listByDictType(@RequestBody List<String> types){
+    public Response<List<BODictView>> listByDictType(@RequestBody List<String> types){
         List<DictView> dictViews = dictDataService.getDataByDictTypeV2(types);
         return ResponseHelper.ok(dictViews);
     }
