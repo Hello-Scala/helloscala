@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class BODictDataView {
     @Schema(name = "主键")
-    private Long id;
+    private String id;
 
     @Schema(name = "字典类型id")
-    private Long dictId;
+    private String dictId;
 
     @Schema(name = "字典标签")
     private String label;
@@ -33,5 +33,5 @@ public class BODictDataView {
     @Schema(name = "备注")
     private String remark;
 
-    private Dict dict;
+    private BODictView dict;
 }

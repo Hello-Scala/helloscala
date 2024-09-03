@@ -35,7 +35,7 @@ public class DictDataServiceImpl extends ServiceImpl<DictDataMapper, DictData> i
     private final DictMapper dictMapper;
 
     @Override
-    public Page<DictDataView> selectDictDataPage(Page<?> page, Integer dictId, Integer isPublish) {
+    public Page<DictDataView> listByPage(Page<?> page, Integer dictId, Integer isPublish) {
         LambdaQueryWrapper<DictData> dictDataQuery = new LambdaQueryWrapper<>();
         dictDataQuery.eq(DictData::getDictId, dictId)
                 .eq(isPublish != null, DictData::getStatus, isPublish);
@@ -116,68 +116,8 @@ public class DictDataServiceImpl extends ServiceImpl<DictDataMapper, DictData> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDictData(List<Long> ids) {
+    public void deleteDictData(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
-    }
-
-
-    @Override
-    public Map<String, Map<String, Object>> getDataByDictType(List<String> types) {
-        LambdaQueryWrapper<Dict> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Dict::getType, types)
-                .eq(Dict::getStatus, YesOrNoEnum.YES.getCode());
-        List<Dict> dictList = dictMapper.selectList(queryWrapper);
-
-        Set<String> dictIdSet = dictList.stream().map(Dict::getId).collect(Collectors.toSet());
-        LambdaQueryWrapper<DictData> sysDictDataQueryWrapper = new LambdaQueryWrapper<DictData>();
-        sysDictDataQueryWrapper.eq(DictData::getStatus, YesOrNoEnum.YES.getCode());
-        sysDictDataQueryWrapper.in(DictData::getDictId, dictIdSet);
-        sysDictDataQueryWrapper.orderByAsc(DictData::getSort);
-
-        List<DictData> dataList = baseMapper.selectList(sysDictDataQueryWrapper);
-        Map<String, List<DictData>> dictDataMap = dataList.stream().collect(Collectors.groupingBy(DictData::getDictId));
-
-        Map<String, Map<String, Object>> map = new HashMap<>();
-        dictList.forEach(item -> {
-            List<DictData> itemValueList = dictDataMap.get(item.getId());
-            String defaultValue = itemValueList.stream().filter(d -> YesOrNoEnum.YES.getCodeToString().equals(d.getIsDefault()))
-                    .findFirst().map(DictData::getValue).orElse(null);
-            Map<String, Object> result = new HashMap<>();
-            result.put("defaultValue", defaultValue);
-            result.put("list", itemValueList);
-            map.put(item.getType(), result);
-        });
-        return map;
-    }
-
-    @Override
-    public List<DictView> getDataByDictTypeV2(List<String> types) {
-        LambdaQueryWrapper<Dict> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Dict::getType, types)
-                .eq(Dict::getStatus, YesOrNoEnum.YES.getCode());
-        List<Dict> dictList = dictMapper.selectList(queryWrapper);
-
-        Set<String> dictIdSet = dictList.stream().map(Dict::getId).collect(Collectors.toSet());
-        LambdaQueryWrapper<DictData> sysDictDataQueryWrapper = new LambdaQueryWrapper<DictData>();
-        sysDictDataQueryWrapper.eq(DictData::getStatus, YesOrNoEnum.YES.getCode());
-        sysDictDataQueryWrapper.in(DictData::getDictId, dictIdSet);
-        sysDictDataQueryWrapper.orderByAsc(DictData::getSort);
-
-        List<DictData> dataList = baseMapper.selectList(sysDictDataQueryWrapper);
-        Map<String, List<DictData>> dictDataMap = dataList.stream().collect(Collectors.groupingBy(DictData::getDictId));
-
-        return dictList.stream().map(item -> {
-            List<DictData> itemValueList = dictDataMap.get(item.getId());
-            DictData defaultValue = itemValueList.stream().filter(d -> YesOrNoEnum.YES.getCodeToString().equals(d.getIsDefault()))
-                    .findFirst().orElse(null);
-
-            DictView dictView = new DictView();
-            dictView.setName(item.getName());
-            dictView.setType(item.getType());
-            dictView.setDefaultValue(defaultValue);
-            dictView.setValues(itemValueList);
-            return dictView;
-        }).toList();
     }
 
     @Override

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class BOCreateDictDataRequest {
     @Schema(name = "字典类型id")
-    private Long dictId;
+    private String dictId;
 
     @Schema(name = "字典标签")
     private String label;
