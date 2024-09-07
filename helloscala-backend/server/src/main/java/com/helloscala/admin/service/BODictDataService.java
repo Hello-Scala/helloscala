@@ -31,7 +31,7 @@ public class BODictDataService {
     private final DictService dictService;
     private final DictDataService dictDataService;
 
-    public Page<BODictDataView> listDictDataByPage(Integer dictId, Integer isPublish) {
+    public Page<BODictDataView> listDictDataByPage(String dictId, Integer isPublish) {
         Page<?> page = PageUtil.getPage();
         Page<DictDataView> dictDataViewPage = dictDataService.listByPage(page, dictId, isPublish);
         return PageHelper.convertTo(dictDataViewPage, BODictDataService::buildBoDictDataView);

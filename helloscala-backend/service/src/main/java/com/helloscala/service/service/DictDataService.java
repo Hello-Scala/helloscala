@@ -12,7 +12,7 @@ import java.util.Set;
 
 
 public interface DictDataService extends IService<DictData> {
-    Page<DictDataView> listByPage(Page<?> page, Integer dictId, Integer isPublish);
+    Page<DictDataView> listByPage(Page<?> page, String dictId, Integer isPublish);
 
     void addDictData(CreateDictDataRequest request);
 

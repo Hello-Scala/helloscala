@@ -33,7 +33,7 @@ public class DictDataController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @Operation(summary = "List dict data", method = "GET")
     @ApiResponse(responseCode = "200", description = "List dict data")
-    public Response<Page<BODictDataView>> selectDictDataPage(@RequestParam(name = "dictId", required = false) Integer dictId,
+    public Response<Page<BODictDataView>> selectDictDataPage(@RequestParam(name = "dictId", required = false) String dictId,
                                                              @RequestParam(name = "isPublish", required = false) Integer isPublish) {
         Page<BODictDataView> dictPage = dictDataService.listDictDataByPage(dictId, isPublish);
         return ResponseHelper.ok(dictPage);

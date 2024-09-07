@@ -35,7 +35,7 @@ public class DictDataServiceImpl extends ServiceImpl<DictDataMapper, DictData> i
     private final DictMapper dictMapper;
 
     @Override
-    public Page<DictDataView> listByPage(Page<?> page, Integer dictId, Integer isPublish) {
+    public Page<DictDataView> listByPage(Page<?> page, String dictId, Integer isPublish) {
         LambdaQueryWrapper<DictData> dictDataQuery = new LambdaQueryWrapper<>();
         dictDataQuery.eq(DictData::getDictId, dictId)
                 .eq(isPublish != null, DictData::getStatus, isPublish);
