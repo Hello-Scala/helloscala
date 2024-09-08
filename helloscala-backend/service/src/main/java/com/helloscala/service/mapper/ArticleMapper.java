@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.service.entity.Article;
 import com.helloscala.common.vo.article.*;
+import com.helloscala.service.web.view.ArticleSummaryView;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -23,7 +24,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     List<RecommendedArticleVO> selectRecommendArticle();
 
-    Page<ApiArticleSearchVO> selectSearchArticle(@Param("page") Page<Object> objectPage, @Param("keywords") String keywords);
+    Page<ArticleSummaryView> selectSearchArticle(@Param("page") Page<?> objectPage, @Param("keywords") String keywords);
 
     Page<RecommendedArticleVO> selectMyArticle(@Param("page") Page<Object> objectPage, @Param("userId") String userId, @Param("type") Integer type);
 }

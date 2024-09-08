@@ -1,4 +1,4 @@
-package com.helloscala.common.config;
+package com.helloscala.service.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

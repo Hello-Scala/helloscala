@@ -1,11 +1,11 @@
 package com.helloscala.admin.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.view.BOCategoryView;
 import com.helloscala.admin.controller.view.BOCreateCategoryRequest;
 import com.helloscala.admin.controller.view.BOUpdateCategoryRequest;
 import com.helloscala.common.utils.PageHelper;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.admin.controller.view.BOCategoryView;
 import com.helloscala.service.service.CategoryService;
 import com.helloscala.service.web.request.CreateCategoryRequest;
 import com.helloscala.service.web.request.SearchCategoryRequest;
@@ -25,7 +25,7 @@ public class BOCategoryService {
     private final CategoryService categoryService;
 
     public Page<BOCategoryView> listByPage(String name) {
-        Page<?> page = Page.of(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<?> page = PageUtil.getPage();
         SearchCategoryRequest searchCategoryRequest = new SearchCategoryRequest();
         searchCategoryRequest.setName(name);
         Page<CategoryView> categoryPage = categoryService.listCategoryPage(page, searchCategoryRequest);

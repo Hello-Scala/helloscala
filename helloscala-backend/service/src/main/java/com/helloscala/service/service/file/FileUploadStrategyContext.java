@@ -1,6 +1,6 @@
-package com.helloscala.common.strategy.context;
+package com.helloscala.service.service.file;
 
-import com.helloscala.common.strategy.FileStrategy;
+import com.helloscala.service.service.file.strategy.FileStrategy;
 import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,13 +1,13 @@
-package com.helloscala.common.file;
+package com.helloscala.service.service.file;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.ftp.Ftp;
 import com.helloscala.common.Constants;
-import com.helloscala.common.config.FtpConfig;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.common.web.exception.NotFoundException;
+import com.helloscala.service.config.FtpConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -38,7 +38,7 @@
         ORDER BY blog.date ASC
     </select>
 
-    <select id="selectSearchArticle" resultType="com.helloscala.common.vo.article.ApiArticleSearchVO">
+    <select id="selectSearchArticle" resultType="com.helloscala.service.web.view.ArticleSummaryView">
         select a.id,
                a.title,
                a.summary,

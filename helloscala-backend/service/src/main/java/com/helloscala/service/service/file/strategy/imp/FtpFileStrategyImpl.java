@@ -1,8 +1,8 @@
-package com.helloscala.common.strategy.imp;
+package com.helloscala.service.service.file.strategy.imp;
 
-import com.helloscala.common.config.FtpConfig;
-import com.helloscala.common.strategy.FileStrategy;
 import com.helloscala.common.utils.DateUtil;
+import com.helloscala.service.config.FtpConfig;
+import com.helloscala.service.service.file.strategy.FileStrategy;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;

@@ -24,7 +24,7 @@ public class BOAdminLogService {
     private final AdminLogService adminLogService;
 
     public Page<BOAdminLogView> selectAdminLogPage() {
-        Page<?> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
+        Page<?> page = PageUtil.getPage();
         Page<AdminLogView> adminLogPage = adminLogService.listByPage(page);
 
         return PageHelper.convertTo(adminLogPage, adminLog -> {

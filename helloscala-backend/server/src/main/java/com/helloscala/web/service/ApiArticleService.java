@@ -6,26 +6,28 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.admin.controller.view.BOArticleCategoryView;
 import com.helloscala.admin.controller.view.BOTagView;
 import com.helloscala.common.dto.article.ArticlePostDTO;
-import com.helloscala.common.strategy.context.SearchStrategyContext;
 import com.helloscala.common.utils.*;
-import com.helloscala.common.vo.article.*;
+import com.helloscala.common.vo.article.ApiArticleSearchVO;
+import com.helloscala.common.vo.article.ArticleInfoVO;
+import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
-import com.helloscala.service.entity.*;
+import com.helloscala.service.entity.Article;
+import com.helloscala.service.entity.ArticleTag;
+import com.helloscala.service.entity.SystemConfig;
+import com.helloscala.service.entity.Tag;
 import com.helloscala.service.enums.ReadTypeEnum;
 import com.helloscala.service.enums.SearchModelEnum;
 import com.helloscala.service.mapper.ArticleMapper;
 import com.helloscala.service.mapper.CollectMapper;
 import com.helloscala.service.mapper.FollowedMapper;
 import com.helloscala.service.service.*;
+import com.helloscala.service.service.article.ArticleSearchService;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
 import com.helloscala.service.web.request.SortingRule;
 import com.helloscala.service.web.request.UpdateArticleRequest;
-import com.helloscala.service.web.view.ArticleDetailView;
-import com.helloscala.service.web.view.ArticleView;
-import com.helloscala.service.web.view.CollectCountView;
-import com.helloscala.service.web.view.CommentView;
+import com.helloscala.service.web.view.*;
 import com.helloscala.web.controller.article.request.APICreateArticleRequest;
 import com.helloscala.web.controller.article.request.APIUpdateArticleRequest;
 import com.helloscala.web.handle.RelativeDateFormat;
@@ -61,7 +63,7 @@ public class ApiArticleService {
     private final FollowedMapper followedMapper;
     private final ArticleTagService articleTagService;
     private final SystemConfigService systemConfigService;
-    private final SearchStrategyContext searchStrategyContext;
+    private final ArticleSearchService articleSearchService;
 
 
     public Page<RecommendedArticleVO> selectArticleList(String userId, String categoryId, String tagId, String orderByDescColumn) {
@@ -220,12 +222,20 @@ public class ApiArticleService {
 
 
     public Page<ApiArticleSearchVO> searchArticle(String keywords) {
+        Page<?> page = PageUtil.getPage();
         if (StringUtils.isBlank(keywords)) {
             throw new BadRequestException(PARAMS_ILLEGAL.getDesc());
         }
         SystemConfig systemConfig = systemConfigService.getCustomizeOne();
         String strategy = SearchModelEnum.getStrategy(systemConfig.getSearchModel());
-        return searchStrategyContext.executeSearchStrategy(strategy, keywords);
+        Page<ArticleSummaryView> articleSummaryPage = articleSearchService.executeSearchStrategy(page, strategy, keywords);
+        return PageHelper.convertTo(articleSummaryPage, articleSummaryView -> {
+            ApiArticleSearchVO apiArticleSearchVO = new ApiArticleSearchVO();
+            apiArticleSearchVO.setId(articleSummaryView.getId());
+            apiArticleSearchVO.setTitle(articleSummaryView.getTitle());
+            apiArticleSearchVO.setSummary(articleSummaryView.getSummary());
+            return apiArticleSearchVO;
+        });
     }
 
 

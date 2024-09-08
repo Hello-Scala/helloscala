@@ -1,4 +1,4 @@
-package com.helloscala.common.strategy;
+package com.helloscala.service.service.file.strategy;
 
 import jakarta.servlet.ServletResponse;
 import org.springframework.web.multipart.MultipartFile;
