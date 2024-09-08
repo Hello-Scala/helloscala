@@ -1,33 +1,15 @@
-package com.helloscala.service.entity;
+package com.helloscala.admin.controller.view;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.Date;
 
-
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "BExceptionLog对象", description = "")
-@TableName("b_exception_log")
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ExceptionLog implements Serializable {
+public class BOExceptionLogView {
     @Schema(name = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @Schema(name = "用户名")
@@ -55,7 +37,6 @@ public class ExceptionLog implements Serializable {
     private String exceptionMessage;
 
     @Schema(name = "发生时间")
-    @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 }
