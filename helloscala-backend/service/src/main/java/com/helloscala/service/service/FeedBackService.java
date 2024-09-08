@@ -3,15 +3,17 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.FeedBack;
+import com.helloscala.service.web.request.UpdateFeedbackRequest;
+import com.helloscala.service.web.view.FeedbackView;
 
-import java.util.List;
+import java.util.Set;
 
 
 public interface FeedBackService extends IService<FeedBack> {
 
-    Page<FeedBack> selectFeedBackPage(Integer type);
+    Page<FeedbackView> listByPage(Page<?> page, Integer type);
 
-    void deleteFeedBack(List<Integer> ids);
+    void deleteFeedBack(Set<String> ids);
 
-    void updateFeedBack(FeedBack feedBack);
+    void updateFeedBack(UpdateFeedbackRequest request);
 }

@@ -1,27 +1,15 @@
-package com.helloscala.service.entity;
+package com.helloscala.service.web.view;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
-
 @Data
-@EqualsAndHashCode(callSuper = false)
-@TableName("b_feed_back")
-@Schema(name = "FeedBack对象", description = "")
-public class FeedBack implements Serializable {
+public class FeedbackView {
     @Schema(name = "ID")
-    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @Schema(name = "用户id")
@@ -34,7 +22,6 @@ public class FeedBack implements Serializable {
     private String content;
 
     @Schema(name = "添加时间")
-    @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
