@@ -1,6 +1,6 @@
 package com.helloscala.common.vo.system;
 
-import com.helloscala.common.entity.Article;
+import com.helloscala.admin.controller.view.BOArticleView;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +20,5 @@ public class SystemHomeDataVO {
     private List<Map<String,Object>> userAccess;
     private List<Map<String,Object>> tagsList;
     private String dashboard;
-    private List<Article> articles;
+    private List<BOArticleView> articles;
 }

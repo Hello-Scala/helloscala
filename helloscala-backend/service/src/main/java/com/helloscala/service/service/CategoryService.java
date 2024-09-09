@@ -8,11 +8,14 @@ import com.helloscala.service.web.request.SearchCategoryRequest;
 import com.helloscala.service.web.request.UpdateCategoryRequest;
 import com.helloscala.service.web.view.CategoryView;
 
+import java.util.List;
 import java.util.Set;
 
 
 public interface CategoryService extends IService<Category> {
     Page<CategoryView> listCategoryPage(Page<?> page, SearchCategoryRequest request);
+
+    List<CategoryView> listCategoryByIds(Set<String> ids);
 
     CategoryView getCategoryById(String id);
 

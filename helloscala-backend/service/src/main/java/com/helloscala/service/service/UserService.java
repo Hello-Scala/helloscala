@@ -36,4 +36,6 @@ public interface UserService extends IService<User> {
     void kick(String token);
 
     List<User> listByIds(Set<String> ids);
+
+    Long countAll();
 }

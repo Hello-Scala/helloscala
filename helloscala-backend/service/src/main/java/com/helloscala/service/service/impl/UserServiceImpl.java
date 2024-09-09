@@ -5,24 +5,30 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.helloscala.service.entity.User;
-import com.helloscala.service.mapper.UserMapper;
-import com.helloscala.service.service.MenuService;
-import com.helloscala.service.service.RedisService;
-import com.helloscala.service.service.UserService;
 import com.helloscala.common.utils.AesEncryptUtil;
 import com.helloscala.common.utils.BeanCopyUtil;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.common.web.exception.NotFoundException;
+import com.helloscala.service.entity.User;
+import com.helloscala.service.mapper.UserMapper;
+import com.helloscala.service.service.MenuService;
+import com.helloscala.service.service.RedisConstants;
+import com.helloscala.service.service.RedisService;
+import com.helloscala.service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.helloscala.common.ResultCode.ERROR_USER_NOT_EXIST;
 
@@ -143,5 +149,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return List.of();
         }
         return baseMapper.selectBatchIds(ids);
+    }
+
+    @Override
+    public Long countAll() {
+        return baseMapper.selectCount(null);
     }
 }

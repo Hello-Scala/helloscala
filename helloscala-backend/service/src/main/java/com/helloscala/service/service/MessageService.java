@@ -13,5 +13,5 @@ public interface MessageService extends IService<Message> {
 
     void deleteMessage(List<Integer> ids);
 
-
+    Long countAll();
 }

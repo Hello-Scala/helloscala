@@ -3,7 +3,7 @@ package com.helloscala.service.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.service.entity.Article;
-import com.helloscala.common.vo.article.*;
+import com.helloscala.service.web.view.ArticleContributeCountView;
 import com.helloscala.service.web.view.ArticleSummaryView;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface ArticleMapper extends BaseMapper<Article> {
-    List<SystemArticleContributeVO> contribute(@Param("lastTime") String lastTime, @Param("nowTime") String nowTime);
+    List<ArticleContributeCountView> contribute(@Param("lastTime") String lastTime, @Param("nowTime") String nowTime);
 
     Page<RecommendedArticleVO> selectPublicArticleList(Page<Object> page, @Param("categoryId") String categoryId, @Param("tagId") String tagId,
                                                        @Param("orderByDescColumn") String orderByDescColumn);

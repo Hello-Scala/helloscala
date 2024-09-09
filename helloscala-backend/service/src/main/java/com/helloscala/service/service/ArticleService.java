@@ -6,6 +6,7 @@ import com.helloscala.service.entity.Article;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
 import com.helloscala.service.web.request.UpdateArticleRequest;
+import com.helloscala.service.web.view.ArticleContributeCountView;
 import com.helloscala.service.web.view.ArticleDetailView;
 import com.helloscala.service.web.view.ArticleView;
 import com.helloscala.service.web.view.CategoryArticleCountView;
@@ -47,4 +48,10 @@ public interface ArticleService extends IService<Article> {
     boolean existAnyUnderCategory(Set<String> categoryIds);
 
     List<CategoryArticleCountView> countByCategories(Set<String> categoryIds);
+
+    List<CategoryArticleCountView> countAllCategories();
+
+    Long countAll();
+
+    List<ArticleContributeCountView> contributeCount(String startTime, String endTime);
 }

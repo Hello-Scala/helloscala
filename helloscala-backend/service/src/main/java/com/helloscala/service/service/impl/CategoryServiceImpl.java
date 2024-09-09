@@ -62,6 +62,23 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
+    public List<CategoryView> listCategoryByIds(Set<String> ids) {
+        List<Category> categories = listByIds(ids);
+        return categories.stream().map(category -> {
+            CategoryView categoryView = new CategoryView();
+            categoryView.setId(category.getId());
+            categoryView.setName(category.getName());
+            categoryView.setClickVolume(category.getClickVolume());
+            categoryView.setSort(category.getSort());
+            categoryView.setIcon(category.getIcon());
+            categoryView.setArticleCount(0);
+            categoryView.setCreateTime(category.getCreateTime());
+            categoryView.setUpdateTime(category.getUpdateTime());
+            return categoryView;
+        }).toList();
+    }
+
+    @Override
     public CategoryView getCategoryById(String id) {
 
         Category category = baseMapper.selectById(id);

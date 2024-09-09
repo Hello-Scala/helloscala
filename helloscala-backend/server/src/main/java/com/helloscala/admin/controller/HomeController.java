@@ -1,7 +1,7 @@
 package com.helloscala.admin.controller;
 
 
-import com.helloscala.common.service.impl.HomeServiceImpl;
+import com.helloscala.admin.service.BOHomeService;
 import com.helloscala.common.vo.service.SystemHardwareInfoVO;
 import com.helloscala.common.vo.system.SystemHomeDataVO;
 import com.helloscala.common.web.response.Response;
@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final HomeServiceImpl homeService;
+    private final BOHomeService homeService;
 
     // todo refactor
     @GetMapping(value = "/init")

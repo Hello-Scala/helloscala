@@ -13,17 +13,26 @@ import com.helloscala.common.utils.PageUtil;
 import com.helloscala.common.utils.SqlHelper;
 import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.common.web.exception.NotFoundException;
-import com.helloscala.service.entity.*;
+import com.helloscala.service.entity.Article;
+import com.helloscala.service.entity.ArticleTag;
+import com.helloscala.service.entity.Category;
+import com.helloscala.service.entity.Tag;
+import com.helloscala.service.entity.User;
 import com.helloscala.service.enums.DataEventEnum;
 import com.helloscala.service.mapper.ArticleMapper;
 import com.helloscala.service.mapper.CategoryMapper;
 import com.helloscala.service.mapper.TagMapper;
-import com.helloscala.service.service.*;
+import com.helloscala.service.service.ArticleService;
+import com.helloscala.service.service.ArticleTagService;
+import com.helloscala.service.service.CategoryService;
+import com.helloscala.service.service.TagService;
+import com.helloscala.service.service.UserService;
 import com.helloscala.service.service.event.DataEventPublisherService;
 import com.helloscala.service.service.util.ArticleEntityHelper;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
 import com.helloscala.service.web.request.UpdateArticleRequest;
+import com.helloscala.service.web.view.ArticleContributeCountView;
 import com.helloscala.service.web.view.ArticleDetailView;
 import com.helloscala.service.web.view.ArticleView;
 import com.helloscala.service.web.view.CategoryArticleCountView;
@@ -38,7 +47,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -406,8 +421,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(new Date());
 
         if (StrUtil.isNotBlank(ipAddress)
-                && !"UNKNOWN".equals(ipAddress)
-                && ipAddress.split("\\|").length > 1) {
+            && !"UNKNOWN".equals(ipAddress)
+            && ipAddress.split("\\|").length > 1) {
             String[] split = ipAddress.split("\\|");
             String address = split[1];
             article.setAddress(address);
@@ -530,7 +545,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> userArticles = baseMapper.selectList(queryWrapper);
 
         Set<String> userOwnedArticleIds = userArticles.stream().map(Article::getId)
-                .collect(Collectors.toSet());
+            .collect(Collectors.toSet());
         return userOwnedArticleIds.containsAll(ids);
     }
 
@@ -556,9 +571,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isEmpty(categoryIds)) {
             return List.of();
         }
+        return countArticleByCategories(categoryIds);
+    }
+
+    private @NotNull List<CategoryArticleCountView> countArticleByCategories(Set<String> categoryIds) {
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(Article::getId, Article::getCategoryId);
-        queryWrapper.in(Article::getCategoryId, categoryIds);
+        queryWrapper.in(ObjectUtil.isNotEmpty(categoryIds), Article::getCategoryId, categoryIds);
         List<Article> articleList = baseMapper.selectList(queryWrapper);
         Map<String, List<Article>> articleMap = articleList.stream().collect(Collectors.groupingBy(Article::getCategoryId));
         return articleMap.entrySet().stream().map(entry -> {
@@ -569,12 +588,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }).toList();
     }
 
+    @Override
+    public List<CategoryArticleCountView> countAllCategories() {
+        return countByCategories(new HashSet<>());
+    }
+
+    @Override
+    public Long countAll() {
+        return baseMapper.selectCount(null);
+    }
+
+    @Override
+    public List<ArticleContributeCountView> contributeCount(String startTime, String endTime) {
+        return baseMapper.contribute(startTime, endTime);
+    }
+
     private String getOrCreateCategory(String categoryId, String categoryName) {
         LambdaQueryWrapper<Category> categoryQuery = new LambdaQueryWrapper<>();
         categoryQuery.eq(StrUtil.isNotBlank(categoryId), Category::getId, categoryId)
-                .or()
-                .eq(Category::getName, categoryName)
-                .last(SqlHelper.LIMIT_1);
+            .or()
+            .eq(Category::getName, categoryName)
+            .last(SqlHelper.LIMIT_1);
         Category category = categoryMapper.selectOne(categoryQuery);
         if (Objects.nonNull(category)) {
             return category.getId();

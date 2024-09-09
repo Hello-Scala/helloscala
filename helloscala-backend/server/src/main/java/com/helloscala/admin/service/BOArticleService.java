@@ -5,7 +5,7 @@ import com.helloscala.admin.controller.request.BOCreateArticleRequest;
 import com.helloscala.admin.controller.request.BOUpdateArticleRequest;
 import com.helloscala.admin.controller.view.BOArticleDetailView;
 import com.helloscala.admin.controller.view.BOArticleView;
-import com.helloscala.common.utils.ListHelper;
+import com.helloscala.admin.service.helper.BOArticleHelper;
 import com.helloscala.common.utils.PageHelper;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.service.service.ArticleService;
@@ -40,23 +40,7 @@ public class BOArticleService {
         Page<?> page = PageUtil.getPage();
         Page<ArticleView> articlePage = articleService.listArticleSummary(page, request);
 
-        return PageHelper.convertTo(articlePage, article -> {
-            BOArticleView articleView = new BOArticleView();
-            articleView.setId(article.getId());
-            articleView.setUserId(article.getUserId());
-            articleView.setTitle(article.getTitle());
-            articleView.setNickname(article.getNickname());
-            articleView.setAvatar(article.getAvatar());
-            articleView.setReadType(article.getReadType());
-            articleView.setIsStick(article.getIsStick());
-            articleView.setIsOriginal(article.getIsOriginal());
-            articleView.setQuantity(article.getQuantity());
-            articleView.setCreateTime(article.getCreateTime());
-            articleView.setIsPublish(article.getIsPublish());
-            articleView.setCategoryName(article.getCategoryName());
-            articleView.setTagNames(String.join(",", ListHelper.ofNullable(article.getTagNames())));
-            return articleView;
-        });
+        return PageHelper.convertTo(articlePage, BOArticleHelper::buildBoArticleView);
     }
 
     public BOArticleDetailView getById(@PathVariable(value = "id") String id) {
