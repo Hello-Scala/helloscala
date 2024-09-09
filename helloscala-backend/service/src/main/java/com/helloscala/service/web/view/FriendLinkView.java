@@ -1,23 +1,18 @@
-package com.helloscala.service.entity;
+package com.helloscala.service.web.view;
 
-import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
-
+/**
+ * @author stevezou
+ */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "FriendLink对象", description = "友情链接表")
-@TableName("b_friend_link")
-public class FriendLink implements Serializable {
+public class FriendLinkView {
     @Schema(name = "主键ID")
-    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @Schema(name = "网站名称")
@@ -45,12 +40,10 @@ public class FriendLink implements Serializable {
     private String reason;
 
     @Schema(name = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "修改时间")
-    @TableField(fill = FieldFill.UPDATE)
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 }

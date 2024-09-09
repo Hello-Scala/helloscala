@@ -13,7 +13,7 @@ import java.util.List;
 public interface FriendLinkMapper extends BaseMapper<FriendLink> {
     Integer getMaxSort();
 
-    void top(@Param("id") Integer id, @Param("sort") int sort);
+    void top(@Param("id") String id, @Param("sort") int sort);
 
     List<ApiFriendLinkVO> selectLinkList(@Param("status") Integer status);
 }
