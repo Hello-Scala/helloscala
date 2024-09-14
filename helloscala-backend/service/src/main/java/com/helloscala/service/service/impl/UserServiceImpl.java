@@ -155,4 +155,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Long countAll() {
         return baseMapper.selectCount(null);
     }
+
+    @Override
+    public User getByNameAndPwd(String name, String pwd) {
+        return baseMapper.selectNameAndPassword(name, pwd);
+    }
 }

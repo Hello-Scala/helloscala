@@ -38,4 +38,6 @@ public interface UserService extends IService<User> {
     List<User> listByIds(Set<String> ids);
 
     Long countAll();
+
+    User getByNameAndPwd(String name, String pwd);
 }
