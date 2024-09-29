@@ -2,9 +2,11 @@ package com.helloscala.admin.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
+import com.helloscala.admin.controller.request.BOUpdateSystemConfigRequest;
+import com.helloscala.admin.controller.view.BOSystemConfigView;
+import com.helloscala.admin.service.BOSystemConfigService;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.entity.SystemConfig;
-import com.helloscala.common.service.SystemConfigService;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -22,13 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "System config management")
 @RequiredArgsConstructor
 public class SystemConfigController {
-    private final SystemConfigService systemConfigService;
+    private final BOSystemConfigService systemConfigService;
 
     @RequestMapping(value = "/getConfig", method = RequestMethod.GET)
     @Operation(summary = "Get system config", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get system config")
-    public Response<SystemConfig> getSystemConfig() {
-        SystemConfig systemConfig = systemConfigService.getSystemConfig();
+    public Response<BOSystemConfigView> getSystemConfig() {
+        BOSystemConfigView systemConfig = systemConfigService.getSystemConfig();
         return ResponseHelper.ok(systemConfig);
     }
 
@@ -37,8 +39,9 @@ public class SystemConfigController {
     @Operation(summary = "Update system config", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update system config")
     @OperationLogger(value = "Update system config")
-    public EmptyResponse updateSystemConfig(@RequestBody SystemConfig systemConfig) {
-        systemConfigService.updateSystemConfig(systemConfig);
+    public EmptyResponse updateSystemConfig(@RequestBody BOUpdateSystemConfigRequest systemConfig) {
+        String userId = StpUtil.getLoginIdAsString();
+        systemConfigService.updateSystemConfig(userId, systemConfig);
         return ResponseHelper.ok();
     }
 }

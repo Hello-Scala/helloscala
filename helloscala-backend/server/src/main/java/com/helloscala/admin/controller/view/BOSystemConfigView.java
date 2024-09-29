@@ -1,25 +1,14 @@
-package com.helloscala.service.entity;
+package com.helloscala.admin.controller.view;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
 
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "SystemConfig对象", description = "系统配置表")
-@TableName("b_system_config")
-public class SystemConfig implements Serializable {
+public class BOSystemConfigView {
     @Schema(name = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @Schema(name = "七牛云公钥")
@@ -75,11 +64,9 @@ public class SystemConfig implements Serializable {
     private int fileUploadWay;
 
     @Schema(name = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     @Schema(name = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @Schema(name = "阿里云AccessKey")

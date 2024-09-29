@@ -1,25 +1,16 @@
-package com.helloscala.service.entity;
+package com.helloscala.service.web.request;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
 
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "SystemConfig对象", description = "系统配置表")
-@TableName("b_system_config")
-public class SystemConfig implements Serializable {
+public class UpdateSystemConfigRequest {
     @Schema(name = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @Schema(name = "七牛云公钥")
@@ -91,4 +82,5 @@ public class SystemConfig implements Serializable {
     @Schema(name = "阿里云Endpoint")
     private String aliYunEndpoint;
 
+    private String requestBy;
 }
