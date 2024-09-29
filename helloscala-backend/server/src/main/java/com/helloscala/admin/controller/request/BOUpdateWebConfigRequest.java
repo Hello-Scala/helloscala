@@ -1,25 +1,16 @@
-package com.helloscala.service.entity;
+package com.helloscala.admin.controller.request;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
-
+/**
+ * @author stevezou
+ */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "TWebConfig对象", description = "网站配置表")
-@TableName("b_web_config")
-public class WebConfig implements Serializable {
-    @Schema(name = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
+public class BOUpdateWebConfigRequest {
+    @Schema(name = "id")
     private String id;
 
     @Schema(name = "logo(文件UID)")
@@ -44,11 +35,9 @@ public class WebConfig implements Serializable {
     private String recordNum;
 
     @Schema(name = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     @Schema(name = "更新时间")
-    @TableField(fill = FieldFill.UPDATE)
     private Date updateTime;
 
     @Schema(name = "支付宝收款码FileId")

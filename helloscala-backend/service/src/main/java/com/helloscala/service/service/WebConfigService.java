@@ -2,10 +2,12 @@ package com.helloscala.service.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.WebConfig;
+import com.helloscala.service.web.request.UpdateWebConfigRequest;
+import com.helloscala.service.web.view.WebConfigView;
 
 
 public interface WebConfigService extends IService<WebConfig> {
-    WebConfig getWebConfig();
+    WebConfigView getWebConfig();
 
-    void updateWebConfig(WebConfig webConfig);
+    void updateWebConfig(UpdateWebConfigRequest request);
 }
