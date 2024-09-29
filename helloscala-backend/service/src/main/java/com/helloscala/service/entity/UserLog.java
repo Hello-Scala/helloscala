@@ -20,15 +20,15 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Schema(name="UserLog对象", description="日志表")
+@Schema(name = "UserLog对象", description = "日志表")
 @TableName("b_user_log")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserLog implements Serializable {
     @Schema(name = "主键ID")
-      @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private String id;
 
     @Schema(name = "ip地址")
     private String ip;
@@ -54,8 +54,8 @@ public class UserLog implements Serializable {
     private String browser;
 
     @Schema(name = "操作时间")
-      @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "操作结果")

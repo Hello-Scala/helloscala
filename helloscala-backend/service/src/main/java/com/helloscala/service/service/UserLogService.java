@@ -3,12 +3,13 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.UserLog;
+import com.helloscala.service.web.view.UserLogView;
 
 import java.util.List;
 
 
 public interface UserLogService extends IService<UserLog> {
-    Page<UserLog> selectUserLogPage();
+    Page<UserLogView> selectUserLogPage(Page<?> page);
 
-    int deleteUserLog(List<Long> ids);
+    void deleteUserLog(List<String> ids);
 }
