@@ -13,7 +13,7 @@ import com.helloscala.service.enums.DataEventEnum;
 import com.helloscala.service.mapper.FriendLinkMapper;
 import com.helloscala.service.service.FriendLinkService;
 import com.helloscala.service.service.event.DataEventPublisherService;
-import com.helloscala.service.web.request.AddFriendLinkRequest;
+import com.helloscala.service.web.request.CreateFriendLinkRequest;
 import com.helloscala.service.web.request.UpdateFriendLinkRequest;
 import com.helloscala.service.web.view.FriendLinkView;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +36,8 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
     public Page<FriendLinkView> selectFriendLinkPage(Page<?> page, String name, Integer status) {
         LambdaQueryWrapper<FriendLink> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(StringUtils.isNotBlank(name), FriendLink::getName, name)
-            .eq(status != null, FriendLink::getStatus, status)
-            .orderByDesc(FriendLink::getSort);
+                .eq(status != null, FriendLink::getStatus, status)
+                .orderByDesc(FriendLink::getSort);
 
         Page<FriendLink> friendLinkPage = baseMapper.selectPage(PageHelper.of(page), queryWrapper);
         return PageHelper.convertTo(friendLinkPage, friendLink -> {
@@ -59,7 +59,7 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addFriendLink(AddFriendLinkRequest request) {
+    public void createFriendLink(CreateFriendLinkRequest request) {
         FriendLink friendLink = new FriendLink();
         friendLink.setName(request.getName());
         friendLink.setUrl(request.getUrl());

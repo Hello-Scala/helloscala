@@ -3,11 +3,8 @@ package com.helloscala.service.web.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-/**
- * @author stevezou
- */
 @Data
-public class AddFriendLinkRequest {
+public class CreateFriendLinkRequest {
     @Schema(name = "网站名称")
     private String name;
 

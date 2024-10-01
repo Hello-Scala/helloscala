@@ -17,18 +17,16 @@ import com.helloscala.service.service.MenuService;
 import com.helloscala.service.service.RedisConstants;
 import com.helloscala.service.service.RedisService;
 import com.helloscala.service.service.UserService;
+import com.helloscala.service.web.view.UserView;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.helloscala.common.ResultCode.ERROR_USER_NOT_EXIST;
 
@@ -39,6 +37,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final AesEncryptUtil aesEncryptUtil;
     private final MenuService menuService;
     private final RedisService redisService;
+
+    @Override
+    public UserView getByNameAndPwd(String userName, String pwd) {
+        User user = baseMapper.selectNameAndPassword(userName, pwd);
+        return buildUserView(user);
+    }
+
+    private static @NotNull UserView buildUserView(User user) {
+        UserView userView = new UserView();
+        userView.setId(user.getId());
+        userView.setUsername(user.getUsername());
+        userView.setStatus(user.getStatus());
+        userView.setCreateTime(user.getCreateTime());
+        userView.setUpdateTime(user.getUpdateTime());
+        userView.setLastLoginTime(user.getLastLoginTime());
+        userView.setRoleId(user.getRoleId());
+        userView.setIpAddress(user.getIpAddress());
+        userView.setIpSource(user.getIpSource());
+        userView.setOs(user.getOs());
+        userView.setBrowser(user.getBrowser());
+        userView.setLoginType(user.getLoginType());
+        userView.setNickname(user.getNickname());
+        userView.setAvatar(user.getAvatar());
+        userView.setIntro(user.getIntro());
+        userView.setWebSite(user.getWebSite());
+        userView.setBjCover(user.getBjCover());
+        return userView;
+    }
 
     @Override
     public Page<SystemUserInfoVO> selectUserPage(String username, Integer loginType) {
@@ -154,10 +180,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Long countAll() {
         return baseMapper.selectCount(null);
-    }
-
-    @Override
-    public User getByNameAndPwd(String name, String pwd) {
-        return baseMapper.selectNameAndPassword(name, pwd);
     }
 }

@@ -1,13 +1,13 @@
 package com.helloscala.admin.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.helloscala.admin.controller.request.BOAddFriendLinkRequest;
+import com.helloscala.admin.controller.request.BOCreateFriendLinkRequest;
 import com.helloscala.admin.controller.request.BOUpdateFriendLinkRequest;
 import com.helloscala.admin.controller.view.BOFriendLinkView;
 import com.helloscala.common.utils.PageHelper;
 import com.helloscala.common.utils.PageUtil;
 import com.helloscala.service.service.FriendLinkService;
-import com.helloscala.service.web.request.AddFriendLinkRequest;
+import com.helloscala.service.web.request.CreateFriendLinkRequest;
 import com.helloscala.service.web.request.UpdateFriendLinkRequest;
 import com.helloscala.service.web.view.FriendLinkView;
 import lombok.RequiredArgsConstructor;
@@ -27,36 +27,36 @@ public class BOFriendLinkService {
 
     public Page<BOFriendLinkView> listByPage(String name, Integer status) {
         Page<?> page = PageUtil.getPage();
-        Page<FriendLinkView> friendLinkViewPage = friendLinkService.selectFriendLinkPage(page, name, status);
-        return PageHelper.convertTo(friendLinkViewPage, friendLinkView -> {
-            BOFriendLinkView boFriendLinkView = new BOFriendLinkView();
-            boFriendLinkView.setId(friendLinkView.getId());
-            boFriendLinkView.setName(friendLinkView.getName());
-            boFriendLinkView.setUrl(friendLinkView.getUrl());
-            boFriendLinkView.setAvatar(friendLinkView.getAvatar());
-            boFriendLinkView.setInfo(friendLinkView.getInfo());
-            boFriendLinkView.setEmail(friendLinkView.getEmail());
-            boFriendLinkView.setSort(friendLinkView.getSort());
-            boFriendLinkView.setStatus(friendLinkView.getStatus());
-            boFriendLinkView.setReason(friendLinkView.getReason());
-            boFriendLinkView.setCreateTime(friendLinkView.getCreateTime());
-            boFriendLinkView.setUpdateTime(friendLinkView.getUpdateTime());
-            return boFriendLinkView;
+        Page<FriendLinkView> friendLinkPage = friendLinkService.selectFriendLinkPage(page, name, status);
+        return PageHelper.convertTo(friendLinkPage, friendLink -> {
+            BOFriendLinkView friendLinkView = new BOFriendLinkView();
+            friendLinkView.setId(friendLink.getId());
+            friendLinkView.setName(friendLink.getName());
+            friendLinkView.setUrl(friendLink.getUrl());
+            friendLinkView.setAvatar(friendLink.getAvatar());
+            friendLinkView.setInfo(friendLink.getInfo());
+            friendLinkView.setEmail(friendLink.getEmail());
+            friendLinkView.setSort(friendLink.getSort());
+            friendLinkView.setStatus(friendLink.getStatus());
+            friendLinkView.setReason(friendLink.getReason());
+            friendLinkView.setCreateTime(friendLink.getCreateTime());
+            friendLinkView.setUpdateTime(friendLink.getUpdateTime());
+            return friendLinkView;
         });
     }
 
-    public void create(String userId, BOAddFriendLinkRequest request) {
-        AddFriendLinkRequest addFriendLinkRequest = new AddFriendLinkRequest();
-        addFriendLinkRequest.setName(request.getName());
-        addFriendLinkRequest.setUrl(request.getUrl());
-        addFriendLinkRequest.setAvatar(request.getAvatar());
-        addFriendLinkRequest.setInfo(request.getInfo());
-        addFriendLinkRequest.setEmail(request.getEmail());
-        addFriendLinkRequest.setSort(request.getSort());
-        addFriendLinkRequest.setStatus(request.getStatus());
-        addFriendLinkRequest.setReason(request.getReason());
-        addFriendLinkRequest.setRequestBy(userId);
-        friendLinkService.addFriendLink(addFriendLinkRequest);
+    public void create(String userId, BOCreateFriendLinkRequest request) {
+        CreateFriendLinkRequest createFriendLinkRequest = new CreateFriendLinkRequest();
+        createFriendLinkRequest.setName(request.getName());
+        createFriendLinkRequest.setUrl(request.getUrl());
+        createFriendLinkRequest.setAvatar(request.getAvatar());
+        createFriendLinkRequest.setInfo(request.getInfo());
+        createFriendLinkRequest.setEmail(request.getEmail());
+        createFriendLinkRequest.setSort(request.getSort());
+        createFriendLinkRequest.setStatus(request.getStatus());
+        createFriendLinkRequest.setReason(request.getReason());
+        createFriendLinkRequest.setRequestBy(userId);
+        friendLinkService.createFriendLink(createFriendLinkRequest);
     }
 
     public void update(String userId, BOUpdateFriendLinkRequest request) {

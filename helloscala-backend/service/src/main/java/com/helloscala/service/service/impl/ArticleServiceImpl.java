@@ -31,6 +31,7 @@ import com.helloscala.service.service.event.DataEventPublisherService;
 import com.helloscala.service.service.util.ArticleEntityHelper;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
+import com.helloscala.service.web.request.SearchArticleRequest;
 import com.helloscala.service.web.request.UpdateArticleRequest;
 import com.helloscala.service.web.view.ArticleContributeCountView;
 import com.helloscala.service.web.view.ArticleDetailView;
@@ -103,34 +104,72 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             Category category = categoryMap.get(item.getCategoryId());
             List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
 
-            ArticleView articleView = new ArticleView();
-            articleView.setId(item.getId());
-            articleView.setUserId(item.getUserId());
-            articleView.setCategoryId(item.getCategoryId());
-            articleView.setTitle(item.getTitle());
-            if (Objects.nonNull(user)) {
-                articleView.setNickname(user.getNickname());
-            }
-            articleView.setAvatar(item.getAvatar());
-            articleView.setSummary(item.getSummary());
-            articleView.setReadType(item.getReadType());
-            articleView.setIsStick(item.getIsStick());
-            articleView.setIsOriginal(item.getIsOriginal());
-            articleView.setOriginalUrl(item.getOriginalUrl());
-            articleView.setKeywords(item.getKeywords());
-            articleView.setAddress(item.getAddress());
-            articleView.setQuantity(item.getQuantity());
-            articleView.setCreateTime(item.getCreateTime());
-            articleView.setUpdateTime(item.getUpdateTime());
-            articleView.setIsCarousel(item.getIsCarousel());
-            articleView.setIsRecommend(item.getIsRecommend());
-            articleView.setIsPublish(item.getIsPublish());
-            if (Objects.nonNull(category)) {
-                articleView.setCategoryName(category.getName());
-            }
-            articleView.setTagNames(tagNames);
-            return articleView;
+            return buildArticleView(item, user, category, tagNames);
         });
+    }
+
+    @Override
+    public Page<ArticleView> search(Page<?> page, SearchArticleRequest request) {
+
+        List<String> articleIds = StrUtil.isBlank(request.getTagId()) ? List.of() : articleTagService.listArticleIds(request.getTagId());
+
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
+        articleQuery.in(ObjectUtil.isNotEmpty(articleIds), Article::getId, articleIds);
+        articleQuery.like(StrUtil.isNotBlank(request.getTitle()), Article::getTitle, request.getTitle());
+        articleQuery.eq(Objects.nonNull(request.getCategoryId()), Article::getCategoryId, request.getCategoryId());
+        articleQuery.eq(Objects.nonNull(request.getPublished()), Article::getIsPublish, request.getPublished());
+
+        Page<Article> articlePage = baseMapper.selectPage(PageHelper.of(page), articleQuery);
+
+        List<Article> articles = articlePage.getRecords();
+        Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
+        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+
+        Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
+        List<Category> categories = categoryService.listByIds(categoryIds);
+        Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
+
+        Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
+        List<User> users = userService.listByIds(userIds);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+        return PageHelper.convertTo(articlePage, item -> {
+            User user = userMap.get(item.getUserId());
+            Category category = categoryMap.get(item.getCategoryId());
+            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
+
+            return buildArticleView(item, user, category, tagNames);
+        });
+    }
+
+    private static @NotNull ArticleView buildArticleView(Article item, User user, Category category, List<String> tagNames) {
+        ArticleView articleView = new ArticleView();
+        articleView.setId(item.getId());
+        articleView.setUserId(item.getUserId());
+        articleView.setCategoryId(item.getCategoryId());
+        articleView.setTitle(item.getTitle());
+        if (Objects.nonNull(user)) {
+            articleView.setNickname(user.getNickname());
+        }
+        articleView.setAvatar(item.getAvatar());
+        articleView.setSummary(item.getSummary());
+        articleView.setReadType(item.getReadType());
+        articleView.setIsStick(item.getIsStick());
+        articleView.setIsOriginal(item.getIsOriginal());
+        articleView.setOriginalUrl(item.getOriginalUrl());
+        articleView.setKeywords(item.getKeywords());
+        articleView.setAddress(item.getAddress());
+        articleView.setQuantity(item.getQuantity());
+        articleView.setCreateTime(item.getCreateTime());
+        articleView.setUpdateTime(item.getUpdateTime());
+        articleView.setIsCarousel(item.getIsCarousel());
+        articleView.setIsRecommend(item.getIsRecommend());
+        articleView.setIsPublish(item.getIsPublish());
+        if (Objects.nonNull(category)) {
+            articleView.setCategoryName(category.getName());
+        }
+        articleView.setTagNames(tagNames);
+        return articleView;
     }
 
     @Override
@@ -157,33 +196,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
             List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
-            ArticleView articleView = new ArticleView();
-            articleView.setId(item.getId());
-            articleView.setUserId(item.getUserId());
-            articleView.setCategoryId(item.getCategoryId());
-            articleView.setTitle(item.getTitle());
-            if (Objects.nonNull(user)) {
-                articleView.setNickname(user.getNickname());
-            }
-            articleView.setAvatar(item.getAvatar());
-            articleView.setSummary(item.getSummary());
-            articleView.setReadType(item.getReadType());
-            articleView.setIsStick(item.getIsStick());
-            articleView.setIsOriginal(item.getIsOriginal());
-            articleView.setOriginalUrl(item.getOriginalUrl());
-            articleView.setKeywords(item.getKeywords());
-            articleView.setAddress(item.getAddress());
-            articleView.setQuantity(item.getQuantity());
-            articleView.setCreateTime(item.getCreateTime());
-            articleView.setUpdateTime(item.getUpdateTime());
-            articleView.setIsCarousel(item.getIsCarousel());
-            articleView.setIsRecommend(item.getIsRecommend());
-            articleView.setIsPublish(item.getIsPublish());
-            if (Objects.nonNull(category)) {
-                articleView.setCategoryName(category.getName());
-            }
-            articleView.setTagNames(tagNames);
-            return articleView;
+            return buildArticleView(item, user, category, tagNames);
         });
     }
 
@@ -209,33 +222,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
             List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
-            ArticleView articleView = new ArticleView();
-            articleView.setId(item.getId());
-            articleView.setUserId(item.getUserId());
-            articleView.setCategoryId(item.getCategoryId());
-            articleView.setTitle(item.getTitle());
-            if (Objects.nonNull(user)) {
-                articleView.setNickname(user.getNickname());
-            }
-            articleView.setAvatar(item.getAvatar());
-            articleView.setSummary(item.getSummary());
-            articleView.setReadType(item.getReadType());
-            articleView.setIsStick(item.getIsStick());
-            articleView.setIsOriginal(item.getIsOriginal());
-            articleView.setOriginalUrl(item.getOriginalUrl());
-            articleView.setKeywords(item.getKeywords());
-            articleView.setAddress(item.getAddress());
-            articleView.setQuantity(item.getQuantity());
-            articleView.setCreateTime(item.getCreateTime());
-            articleView.setUpdateTime(item.getUpdateTime());
-            articleView.setIsCarousel(item.getIsCarousel());
-            articleView.setIsRecommend(item.getIsRecommend());
-            articleView.setIsPublish(item.getIsPublish());
-            if (Objects.nonNull(category)) {
-                articleView.setCategoryName(category.getName());
-            }
-            articleView.setTagNames(tagNames);
-            return articleView;
+            return buildArticleView(item, user, category, tagNames);
         }).toList();
     }
 

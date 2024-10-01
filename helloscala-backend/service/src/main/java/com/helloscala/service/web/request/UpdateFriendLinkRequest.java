@@ -3,12 +3,9 @@ package com.helloscala.service.web.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-/**
- * @author stevezou
- */
 @Data
 public class UpdateFriendLinkRequest {
-    @Schema(name = "主键ID")
+    @Schema(name = "主键")
     private String id;
 
     @Schema(name = "网站名称")

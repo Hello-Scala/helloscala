@@ -7,13 +7,10 @@ import lombok.Data;
 
 import java.util.Date;
 
-/**
- * @author stevezou
- */
 @Data
 public class BOFriendLinkView {
     @Schema(name = "主键ID")
-    private String id;
+    private Integer id;
 
     @Schema(name = "网站名称")
     private String name;

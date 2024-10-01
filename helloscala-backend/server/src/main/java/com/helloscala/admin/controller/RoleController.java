@@ -1,11 +1,14 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.request.BOAssignRoleMenuRequest;
+import com.helloscala.admin.controller.request.BOCreateRoleRequest;
+import com.helloscala.admin.controller.request.BOUpdateRoleRequest;
+import com.helloscala.admin.controller.view.BORoleView;
+import com.helloscala.admin.service.BORoleService;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.dto.role.RoleMenuDTO;
-import com.helloscala.common.entity.Role;
-import com.helloscala.common.service.RoleService;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -23,15 +26,14 @@ import java.util.List;
 @Tag(name = "Role management")
 @RequiredArgsConstructor
 public class RoleController {
-
-    private final RoleService roleService;
+    private final BORoleService roleService;
 
 
     @RequestMapping(value = "list", method = RequestMethod.GET)
     @Operation(summary = "List roles", method = "GET")
     @ApiResponse(responseCode = "200", description = "List roles")
-    public Response<Page<Role>> selectRolePage(@RequestParam(name = "name", required = false) String name) {
-        Page<Role> rolePage = roleService.selectRolePage(name);
+    public Response<Page<BORoleView>> listByPage(@RequestParam(name = "name", required = false) String name) {
+        Page<BORoleView> rolePage = roleService.listByPage(name);
         return ResponseHelper.ok(rolePage);
     }
 
@@ -39,8 +41,9 @@ public class RoleController {
     @RequestMapping(value = "queryUserRole", method = RequestMethod.GET)
     @Operation(summary = "Get user role", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get user role")
-    public Response<List<String>> getCurrentUserRole() {
-        List<String> currentUserRole = roleService.getCurrentUserRole();
+    public Response<List<String>> getCurrentUserRoleMenuIds() {
+        String userId = StpUtil.getLoginIdAsString();
+        List<String> currentUserRole = roleService.getUserRoleMenuIds(userId);
         return ResponseHelper.ok(currentUserRole);
     }
 
@@ -48,8 +51,8 @@ public class RoleController {
     @RequestMapping(value = "getRoleMenuIds", method = RequestMethod.GET)
     @Operation(summary = "Get role menu ids", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get role menu ids")
-    public Response<List<String>> selectRoleMenuById(@RequestParam(name = "roleId", required = true) String roleId) {
-        List<String> menuIds = roleService.selectRoleMenuById(roleId);
+    public Response<List<String>> listRoleMenuById(@RequestParam(name = "roleId", required = true) String roleId) {
+        List<String> menuIds = roleService.listRoleMenuById(roleId);
         return ResponseHelper.ok(menuIds);
     }
 
@@ -57,8 +60,9 @@ public class RoleController {
     @RequestMapping(value = "updateRoleMenus", method = RequestMethod.PUT)
     @Operation(summary = "Assign role menu", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Assign role menu")
-    public EmptyResponse assignRoleMenus(@RequestBody RoleMenuDTO roleMenuDTO) {
-        roleService.assignRoleMenus(roleMenuDTO);
+    public EmptyResponse assignRoleMenus(@RequestBody BOAssignRoleMenuRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        roleService.assignRoleMenus(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -67,8 +71,9 @@ public class RoleController {
     @Operation(summary = "Add role", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add role")
     @OperationLogger(value = "Add role")
-    public EmptyResponse addRole(@RequestBody Role role) {
-        roleService.addRole(role);
+    public EmptyResponse create(@RequestBody BOCreateRoleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        roleService.create(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -77,8 +82,9 @@ public class RoleController {
     @Operation(summary = "Update role", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update role")
     @OperationLogger(value = "Update role")
-    public EmptyResponse updateRole(@RequestBody Role role) {
-        roleService.updateRole(role);
+    public EmptyResponse update(@RequestBody BOUpdateRoleRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        roleService.update(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -88,7 +94,8 @@ public class RoleController {
     @ApiResponse(responseCode = "200", description = "Delete role")
     @OperationLogger(value = "Delete role")
     public EmptyResponse deleteRole(@RequestBody List<String> ids) {
-        roleService.deleteRole(ids);
+        String userId = StpUtil.getLoginIdAsString();
+        roleService.delete(userId, ids);
         return ResponseHelper.ok();
     }
 }

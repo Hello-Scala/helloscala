@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Article;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
+import com.helloscala.service.web.request.SearchArticleRequest;
 import com.helloscala.service.web.request.UpdateArticleRequest;
 import com.helloscala.service.web.view.ArticleContributeCountView;
 import com.helloscala.service.web.view.ArticleDetailView;
@@ -16,6 +17,8 @@ import java.util.Set;
 
 public interface ArticleService extends IService<Article> {
     Page<ArticleView> selectArticlePage(String title, String tagId, String categoryId, Integer isPublish);
+
+    Page<ArticleView> search(Page<?> page, SearchArticleRequest request);
 
     Page<ArticleView> listArticleSummary(Page<?> page, ListArticleRequest request);
 

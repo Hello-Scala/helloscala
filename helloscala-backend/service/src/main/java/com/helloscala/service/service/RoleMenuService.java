@@ -1,9 +1,7 @@
 package com.helloscala.service.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Menu;
-import com.helloscala.common.vo.menu.MenuOptionVO;
-import com.helloscala.common.vo.menu.RouterVO;
+import com.helloscala.service.web.request.AssignRoleMenuRequest;
 
 import java.util.List;
 
@@ -15,4 +13,6 @@ public interface RoleMenuService {
     List<String> listAllPerms();
 
     List<String> listRolePerms(String roleId);
+
+    void assignRoleMenus(AssignRoleMenuRequest request);
 }

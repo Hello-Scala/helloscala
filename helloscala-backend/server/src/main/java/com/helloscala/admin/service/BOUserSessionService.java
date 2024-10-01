@@ -14,6 +14,7 @@ import com.helloscala.common.web.exception.FailedDependencyException;
 import com.helloscala.service.entity.User;
 import com.helloscala.service.service.RedisService;
 import com.helloscala.service.service.UserService;
+import com.helloscala.service.web.view.UserView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,7 +61,7 @@ public class BOUserSessionService {
             throw new BadRequestException("Code expired or invalid!");
         }
 
-        User user = userService.getByNameAndPwd(request.getUsername(), aesEncryptUtil.aesEncrypt(request.getPassword()));
+        UserView user = userService.getByNameAndPwd(request.getUsername(), aesEncryptUtil.aesEncrypt(request.getPassword()));
         if (user == null) {
             throw new BadRequestException("Username or password incorrect!");
         }
@@ -73,5 +74,9 @@ public class BOUserSessionService {
 
         StpUtil.getSession().set(Constants.CURRENT_USER, user);
         return StpUtil.getTokenValueByLoginId(user.getId());
+    }
+
+    public void logout() {
+        StpUtil.logout();
     }
 }

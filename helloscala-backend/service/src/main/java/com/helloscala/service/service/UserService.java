@@ -8,6 +8,7 @@ import com.helloscala.service.entity.User;
 import com.helloscala.common.vo.menu.RouterVO;
 import com.helloscala.common.vo.user.SystemUserInfoVO;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.service.web.view.UserView;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import java.util.Set;
 
 
 public interface UserService extends IService<User> {
+    UserView getByNameAndPwd(String userName, String pwd);
+
     Page<SystemUserInfoVO> selectUserPage(String username, Integer loginType);
 
     SystemUserVO get(String id);
@@ -38,6 +41,4 @@ public interface UserService extends IService<User> {
     List<User> listByIds(Set<String> ids);
 
     Long countAll();
-
-    User getByNameAndPwd(String name, String pwd);
 }

@@ -21,7 +21,7 @@ import java.util.Date;
 @TableName(value = "b_resource")
 public class Resource {
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
 
     private String url;
 

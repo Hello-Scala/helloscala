@@ -1,6 +1,5 @@
 package com.helloscala.admin.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.helloscala.admin.controller.request.BOLoginRequest;
 import com.helloscala.admin.controller.view.BOVerificationCodeView;
 import com.helloscala.admin.service.BOUserSessionService;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = "Login management")
 @RequiredArgsConstructor
-public class LoginController {
+public class AuthController {
     private final BOUserSessionService userSessionService;
 
 
@@ -40,7 +39,7 @@ public class LoginController {
 
     @GetMapping("logout")
     public EmptyResponse logout() {
-        StpUtil.logout();
+        userSessionService.logout();
         return ResponseHelper.ok();
     }
 }

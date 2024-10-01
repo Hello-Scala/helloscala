@@ -3,17 +3,21 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Resource;
+import com.helloscala.service.web.view.CreateResourceRequest;
+import com.helloscala.service.web.view.ResourceView;
+import com.helloscala.service.web.view.UpdateResourceRequest;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ResourceService extends IService<Resource> {
-    Page<Resource> selectResourceList(String type);
+    Page<ResourceView> listByPage(Page<?> page, String type);
 
-    Resource selectResourceById(Integer id);
+    ResourceView getResourceById(String id);
 
-    void addResource(Resource resource);
+    void createResource(CreateResourceRequest request);
 
-    void updateResource(Resource resource);
+    void updateResource(UpdateResourceRequest request);
 
-    void deleteResourceByIds(List<Long> ids);
+    void deleteResourceByIds(Set<String> ids);
 }
