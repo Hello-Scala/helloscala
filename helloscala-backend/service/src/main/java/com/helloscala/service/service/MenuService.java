@@ -2,30 +2,35 @@ package com.helloscala.service.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Menu;
-import com.helloscala.common.vo.menu.MenuOptionVO;
-import com.helloscala.common.vo.menu.RouterVO;
+import com.helloscala.service.web.request.CreateMenuRequest;
+import com.helloscala.service.web.request.UpdateMenuRequest;
+import com.helloscala.service.web.view.MenuOptionView;
+import com.helloscala.service.web.view.MenuView;
+import com.helloscala.service.web.view.RouteView;
 
 import java.util.List;
 import java.util.Set;
 
 public interface MenuService extends IService<Menu>{
-    List<Menu> listMenuTree(Set<String> menuIds);
+    MenuView get(String id);
 
-    List<Menu> listAllMenuTree();
+    List<MenuView> listMenuTree(Set<String> menuIds);
+
+    List<MenuView> listAllMenuTree();
 
     List<String> listAllPerms();
 
     List<String> listMenuPerms(Set<String> menuIds);
 
-    void addMenu(Menu menu);
+    void addMenu(CreateMenuRequest request);
 
-    void updateMenu(Menu menu);
+    void updateMenu(UpdateMenuRequest request);
 
-    void deleteMenu(Integer id);
+    void deleteMenu(String id);
 
-    List<RouterVO> buildRouterTree(List<Menu> menus);
+    List<RouteView> buildRouterTree(List<Menu> menus);
 
-    List<MenuOptionVO> getMenuOptions();
+    List<MenuOptionView> getMenuOptions();
 
     List<String> selectButtonPermissions(String userId);
 }

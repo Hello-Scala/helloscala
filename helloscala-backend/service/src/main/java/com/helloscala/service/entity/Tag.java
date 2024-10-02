@@ -37,7 +37,7 @@ public class Tag implements Serializable {
     private Integer sort;
 
     @Schema(name = "点击量")
-    private Long clickVolume;
+    private Integer clickVolume;
 
     @Schema(name = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -49,7 +49,7 @@ public class Tag implements Serializable {
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
 
-    public Tag(String id, Long clickVolume) {
+    public Tag(String id, Integer clickVolume) {
         this.id = id;
         this.clickVolume = clickVolume;
     }

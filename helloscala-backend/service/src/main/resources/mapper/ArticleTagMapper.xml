@@ -7,4 +7,17 @@
             (null, #{articleId}, #{tagId}, now())
         </foreach>
     </insert>
+
+    <select id="countByTags" resultMap="com.helloscala.service.web.view.ArticleTagCountView">
+        select tag_id,count(id) as articleCount from b_article_tag
+        <where>
+            <if test="roleIds != null and roleIds.size() > 0">
+                and role_id in
+                <foreach item="roleId" collection="roleIds" open="(" separator="," close=")">
+                    #{roleId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY tag_id;
+    </select>
 </mapper>

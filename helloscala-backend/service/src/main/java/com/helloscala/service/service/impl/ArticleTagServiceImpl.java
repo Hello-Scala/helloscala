@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.helloscala.service.entity.ArticleTag;
 import com.helloscala.service.mapper.ArticleTagMapper;
 import com.helloscala.service.service.ArticleTagService;
+import com.helloscala.service.web.view.ArticleTagCountView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,5 +69,10 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
         articleTagQuery.eq(ArticleTag::getTagId, tagId);
         List<ArticleTag> articleTags = baseMapper.selectList(articleTagQuery);
         return articleTags.stream().map(a -> String.valueOf(a.getArticleId())).toList();
+    }
+
+    @Override
+    public List<ArticleTagCountView> countByTags(Set<String> tagIds) {
+        return baseMapper.countByTagIds(tagIds);
     }
 }

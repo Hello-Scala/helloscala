@@ -1,10 +1,13 @@
 package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
+import com.helloscala.admin.controller.request.BOCreateMenuRequest;
+import com.helloscala.admin.controller.request.BOUpdateMenuRequest;
+import com.helloscala.admin.controller.view.BOMenuOptionView;
+import com.helloscala.admin.controller.view.BOMenuView;
+import com.helloscala.admin.service.BOMenuService;
 import com.helloscala.common.annotation.OperationLogger;
-import com.helloscala.common.entity.Menu;
-import com.helloscala.common.service.MenuService;
-import com.helloscala.common.vo.menu.MenuOptionVO;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
@@ -23,21 +26,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MenuController {
 
-    private final MenuService menuService;
+    private final BOMenuService menuService;
 
     @GetMapping(value = "/getMenuTree")
     @Operation(summary = "Get menu tree", method = "GET")
     @ApiResponse(responseCode = "200", description = "获取菜单树")
-    public Response<List<Menu>> selectMenuTreeList() {
-        List<Menu> menus = menuService.listAllMenuTree();
+    public Response<List<BOMenuView>> list() {
+        List<BOMenuView> menus = menuService.list();
         return ResponseHelper.ok(menus);
     }
 
     @GetMapping(value = "/getMenuOptions")
     @Operation(summary = "Get menu options", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get menu options")
-    public Response<List<MenuOptionVO>> getMenuOptions() {
-        List<MenuOptionVO> menuOptions = menuService.getMenuOptions();
+    public Response<List<BOMenuOptionView>> getMenuOptions() {
+        List<BOMenuOptionView> menuOptions = menuService.getMenuOptions();
         return ResponseHelper.ok(menuOptions);
     }
 
@@ -45,9 +48,9 @@ public class MenuController {
     @GetMapping(value = "/info/{id}")
     @Operation(summary = "Get menu detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get menu detail")
-    public Response<Menu> selectMenuById(@PathVariable(value = "id") Integer id) {
-        Menu menu = menuService.getById(id);
-        return ResponseHelper.ok(menu);
+    public Response<BOMenuView> get(@PathVariable(value = "id") String id) {
+        BOMenuView menuView = menuService.get(id);
+        return ResponseHelper.ok(menuView);
     }
 
     @PostMapping(value = "/add")
@@ -55,8 +58,9 @@ public class MenuController {
     @Operation(summary = "Add menue", method = "POST")
     @ApiResponse(responseCode = "200", description = "Add menue")
     @OperationLogger(value = "Add menue")
-    public EmptyResponse addMenu(@RequestBody Menu menu) {
-        menuService.addMenu(menu);
+    public EmptyResponse create(@RequestBody BOCreateMenuRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        menuService.create(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -65,8 +69,9 @@ public class MenuController {
     @Operation(summary = "Update menu", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update menu")
     @OperationLogger(value = "Update menu")
-    public EmptyResponse updateMenu(@RequestBody Menu menu) {
-        menuService.updateMenu(menu);
+    public EmptyResponse update(@RequestBody BOUpdateMenuRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        menuService.update(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -75,8 +80,9 @@ public class MenuController {
     @Operation(summary = "Delte menu", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Delte menu")
     @OperationLogger(value = "Delte menu")
-    public EmptyResponse deleteMenu(@PathVariable(value = "id") Integer id) {
-        menuService.deleteMenu(id);
+    public EmptyResponse delete(@PathVariable(value = "id") String id) {
+        String userId = StpUtil.getLoginIdAsString();
+        menuService.delete(userId, id);
         return ResponseHelper.ok();
     }
 }

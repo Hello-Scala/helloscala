@@ -2,8 +2,10 @@ package com.helloscala.service.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.ArticleTag;
+import com.helloscala.service.web.view.ArticleTagCountView;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface ArticleTagService extends IService<ArticleTag> {
@@ -17,4 +19,6 @@ public interface ArticleTagService extends IService<ArticleTag> {
     List<ArticleTag> listByArticleIds(Set<String> articleIds);
 
     List<String> listArticleIds(String tagId);
+
+    List<ArticleTagCountView> countByTags(Set<String> tagIds);
 }

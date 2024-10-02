@@ -65,7 +65,7 @@ public class BlogQuartz {
         List<Tag> tagsList = new ArrayList<>();
         for (Map.Entry<String, Object> stringEntry : map.entrySet()) {
             String id = stringEntry.getKey();
-            Long value = (Long) stringEntry.getValue();
+            Integer value = (Integer) stringEntry.getValue();
             Tag tags = new Tag(id, value);
             tagsList.add(tags);
         }

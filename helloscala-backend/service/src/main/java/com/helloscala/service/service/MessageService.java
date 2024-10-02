@@ -3,15 +3,15 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Message;
+import com.helloscala.service.web.view.MessageView;
 
-import java.util.List;
-
+import java.util.Set;
 
 
 public interface MessageService extends IService<Message> {
-    Page<Message> selectMessagePage(String name);
+    Page<MessageView> selectMessagePage(Page<?> page, String name);
 
-    void deleteMessage(List<Integer> ids);
+    void deleteMessage(Set<String> ids);
 
-    Long countAll();
+    Integer countAll();
 }

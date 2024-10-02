@@ -1,7 +1,5 @@
-package com.helloscala.service.web.view;
+package com.helloscala.admin.controller.view;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,14 +7,16 @@ import lombok.Data;
 
 import java.util.Date;
 
-/**
- * @author Steve Zou
- */
 @Data
-public class TagView {
+public class BOListTagView {
+    @Schema(name = "主键id")
     private String id;
 
+    @Schema(name = "标签名称")
     private String name;
+
+    @Schema(name = "封面图")
+    private String avatar;
 
     @Schema(name = "排序")
     private Integer sort;
@@ -25,8 +25,13 @@ public class TagView {
     private Integer clickVolume;
 
     @Schema(name = "创建时间")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
     @Schema(name = "最后更新时间")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date updateTime;
+
+    @Schema(name = "文章量")
+    private int articleCount;
 }
