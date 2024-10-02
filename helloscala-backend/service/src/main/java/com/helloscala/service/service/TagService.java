@@ -22,9 +22,12 @@ public interface TagService extends IService<Tag> {
 
     TagView getTagsById(String id);
 
-    List<TagView> listByIds(Set<String> idSet);
+    List<TagView> listTagByIds(Set<String> idSet);
 
     List<TagView> listByNames(Set<String> nameSet);
 
     List<TagView> bulkCreateByNames(Set<String> nameSet);
+
+    List<TagView> listAllTags();
+
 }

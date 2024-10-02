@@ -90,7 +90,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     }
 
     @Override
-    public List<TagView> listByIds(Set<String> idSet) {
+    public List<TagView> listTagByIds(Set<String> idSet) {
         if (ObjectUtil.isEmpty(idSet)) {
             return List.of();
         }
@@ -120,6 +120,17 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
                 .map(name -> Tag.builder().name(name).sort(0).build()).toList();
         saveBatch(tagToCreateList);
         return ListHelper.ofNullable(tagToCreateList).stream().map(TagServiceImpl::buildTagView).toList();
+    }
+
+    @Override
+    public List<TagView> listAllTags() {
+        List<Tag> tags = baseMapper.selectList(null);
+        return ListHelper.ofNullable(tags).stream().map(tag -> {
+            TagView tagView = new TagView();
+            tagView.setId(tag.getId());
+            tagView.setName(tag.getName());
+            return tagView;
+        }).toList();
     }
 
     private void validateTagIdIsExistArticle(String id) {

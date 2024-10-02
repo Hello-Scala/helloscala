@@ -16,28 +16,20 @@ import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.service.entity.Article;
 import com.helloscala.service.entity.ArticleTag;
 import com.helloscala.service.entity.Category;
-import com.helloscala.service.entity.Tag;
 import com.helloscala.service.entity.User;
 import com.helloscala.service.enums.DataEventEnum;
+import com.helloscala.service.enums.PublishEnum;
 import com.helloscala.service.mapper.ArticleMapper;
 import com.helloscala.service.mapper.CategoryMapper;
 import com.helloscala.service.mapper.TagMapper;
-import com.helloscala.service.service.ArticleService;
-import com.helloscala.service.service.ArticleTagService;
-import com.helloscala.service.service.CategoryService;
-import com.helloscala.service.service.TagService;
-import com.helloscala.service.service.UserService;
+import com.helloscala.service.service.*;
 import com.helloscala.service.service.event.DataEventPublisherService;
 import com.helloscala.service.service.util.ArticleEntityHelper;
 import com.helloscala.service.web.request.CreateArticleRequest;
 import com.helloscala.service.web.request.ListArticleRequest;
 import com.helloscala.service.web.request.SearchArticleRequest;
 import com.helloscala.service.web.request.UpdateArticleRequest;
-import com.helloscala.service.web.view.ArticleContributeCountView;
-import com.helloscala.service.web.view.ArticleDetailView;
-import com.helloscala.service.web.view.ArticleView;
-import com.helloscala.service.web.view.CategoryArticleCountView;
-import com.helloscala.service.web.view.TagView;
+import com.helloscala.service.web.view.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -48,13 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -89,7 +75,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<Article> articles = articlePage.getRecords();
         Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
@@ -102,7 +88,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return PageHelper.convertTo(articlePage, item -> {
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
-            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
+            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(TagView::getName).toList();
 
             return buildArticleView(item, user, category, tagNames);
         });
@@ -123,7 +109,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<Article> articles = articlePage.getRecords();
         Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
@@ -136,7 +122,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return PageHelper.convertTo(articlePage, item -> {
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
-            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
+            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(TagView::getName).toList();
 
             return buildArticleView(item, user, category, tagNames);
         });
@@ -182,7 +168,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<Article> articles = articlePage.getRecords();
         Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
@@ -195,7 +181,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return PageHelper.convertTo(articlePage, item -> {
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
-            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
+            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(TagView::getName).toList();
             return buildArticleView(item, user, category, tagNames);
         });
     }
@@ -208,7 +194,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articles = baseMapper.selectList(articleQuery);
 
         Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
@@ -221,9 +207,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return articles.stream().map(item -> {
             User user = userMap.get(item.getUserId());
             Category category = categoryMap.get(item.getCategoryId());
-            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(Tag::getName).toList();
+            List<String> tagNames = ListHelper.ofNullable(articleTagMap.get(item.getId())).stream().map(TagView::getName).toList();
             return buildArticleView(item, user, category, tagNames);
         }).toList();
+    }
+
+    @Override
+    public List<ArticleView> listTopReading(Integer limit) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Article::getQuantity, Article::getTitle, Article::getId)
+                .eq(Article::getIsPublish, PublishEnum.PUBLISH.getCode())
+                .orderByDesc(Article::getQuantity).last("limit " + limit);
+
+        List<Article> articles = baseMapper.selectList(queryWrapper);
+        return ListHelper.ofNullable(articles).stream().map(article -> buildArticleView(article, null, null, null)).toList();
     }
 
     @NotNull
@@ -260,7 +257,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<Article> articles = articlePage.getRecords();
         Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(articleIdSet);
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
         List<Category> categories = categoryService.listByIds(categoryIds);
@@ -313,16 +310,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @NotNull
-    private Map<String, List<Tag>> fetchArticleTagMap(Set<String> articleIdSet) {
+    private Map<String, List<TagView>> fetchArticleTagMap(Set<String> articleIdSet) {
         List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
         Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
         Set<String> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
-        List<Tag> tags = tagService.listByIds(tagIds);
-        Map<String, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
-        Map<String, List<Tag>> result = new HashMap<>();
+        List<TagView> tags = tagService.listTagByIds(tagIds);
+        Map<String, TagView> tagMap = tags.stream().collect(Collectors.toMap(TagView::getId, Function.identity()));
+        Map<String, List<TagView>> result = new HashMap<>();
         articleTagMap.forEach((articleId, tagList) -> {
-            List<Tag> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
+            List<TagView> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
             result.put(articleId, articleTagList);
         });
         return result;
@@ -336,7 +333,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         User user = userService.getById(article.getUserId());
         Category category = categoryService.getById(article.getCategoryId());
-        Map<String, List<Tag>> articleTagMap = fetchArticleTagMap(Set.of(id));
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(Set.of(id));
         List<TagView> tagViews = ListHelper.ofNullable(articleTagMap.get(id)).stream().map(tag -> {
             TagView tagView = new TagView();
             tagView.setId(tag.getId());
@@ -382,11 +379,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         String categoryId = getOrCreateCategory(request.getCategoryId(), request.getCategoryName());
 
         Set<String> tagNames = new HashSet<>(request.getTags());
-        List<Tag> tags = ObjectUtil.isNotEmpty(request.getTagIds()) ? tagService.listByIds(request.getTagIds()) : tagService.listByNames(tagNames);
-        Set<String> existTagNames = tags.stream().map(Tag::getName).collect(Collectors.toSet());
+        List<TagView> tags = ObjectUtil.isNotEmpty(request.getTagIds()) ? tagService.listTagByIds(new HashSet<>(request.getTagIds())) : tagService.listByNames(tagNames);
+        Set<String> existTagNames = tags.stream().map(TagView::getName).collect(Collectors.toSet());
         Set<String> tagNameToCreateList = tagNames.stream().filter(n -> !existTagNames.contains(n)).collect(Collectors.toSet());
-        List<Tag> tagsCreated = tagService.bulkCreateByNames(tagNameToCreateList);
-        List<Tag> articleTags = ListHelper.concat(tags, tagsCreated);
+        List<TagView> tagsCreated = tagService.bulkCreateByNames(tagNameToCreateList);
+        List<TagView> articleTags = ListHelper.concat(tags, tagsCreated);
 
         Article article = new Article();
         article.setUserId(userId);
@@ -408,8 +405,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(new Date());
 
         if (StrUtil.isNotBlank(ipAddress)
-            && !"UNKNOWN".equals(ipAddress)
-            && ipAddress.split("\\|").length > 1) {
+                && !"UNKNOWN".equals(ipAddress)
+                && ipAddress.split("\\|").length > 1) {
             String[] split = ipAddress.split("\\|");
             String address = split[1];
             article.setAddress(address);
@@ -420,7 +417,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (insert <= 0) {
             throw new ConflictException("Create article failed, article={}", JSONObject.toJSON(article));
         }
-        Set<String> tagIds = articleTags.stream().map(Tag::getId).collect(Collectors.toSet());
+        Set<String> tagIds = articleTags.stream().map(TagView::getId).collect(Collectors.toSet());
         articleTagService.resetArticleTags(article.getId(), tagIds);
 
         //发布消息去同步es 不进行判断是否是发布状态了，因为后面修改成下架的话就还得去删除es里面的数据，多次一举了，在查询时添加条件发布状态为已发布
@@ -437,13 +434,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         String categoryId = getOrCreateCategory(request.getCategoryId(), request.getCategoryName());
 
         Set<String> tagNames = new HashSet<>(request.getTags());
-        List<Tag> tags = ObjectUtil.isNotEmpty(request.getTagIds()) ? tagService.listByIds(request.getTagIds()) : tagService.listByNames(tagNames);
+        List<TagView> tags = ObjectUtil.isNotEmpty(request.getTagIds()) ? tagService.listTagByIds(new HashSet<>(request.getTagIds())) : tagService.listByNames(tagNames);
 
-        Set<String> existTagNames = tags.stream().map(Tag::getName).collect(Collectors.toSet());
+        Set<String> existTagNames = tags.stream().map(TagView::getName).collect(Collectors.toSet());
         Set<String> tagNameToCreateList = tagNames.stream().filter(n -> !existTagNames.contains(n)).collect(Collectors.toSet());
-        List<Tag> tagsCreated = tagService.bulkCreateByNames(tagNameToCreateList);
-        List<Tag> articleTags = ListHelper.concat(tags, tagsCreated);
-        Set<String> newTagIds = articleTags.stream().map(Tag::getId).collect(Collectors.toSet());
+        List<TagView> tagsCreated = tagService.bulkCreateByNames(tagNameToCreateList);
+        List<TagView> articleTags = ListHelper.concat(tags, tagsCreated);
+        Set<String> newTagIds = articleTags.stream().map(TagView::getId).collect(Collectors.toSet());
 
         article.setUserId(userId);
         article.setCategoryId(categoryId);
@@ -532,7 +529,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> userArticles = baseMapper.selectList(queryWrapper);
 
         Set<String> userOwnedArticleIds = userArticles.stream().map(Article::getId)
-            .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
         return userOwnedArticleIds.containsAll(ids);
     }
 
@@ -569,7 +566,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<Article>> articleMap = articleList.stream().collect(Collectors.groupingBy(Article::getCategoryId));
         return articleMap.entrySet().stream().map(entry -> {
             CategoryArticleCountView countView = new CategoryArticleCountView();
-            countView.setCategoryId(entry.getKey());
+            countView.setId(entry.getKey());
             countView.setCount((long) entry.getValue().size());
             return countView;
         }).toList();
@@ -593,9 +590,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String getOrCreateCategory(String categoryId, String categoryName) {
         LambdaQueryWrapper<Category> categoryQuery = new LambdaQueryWrapper<>();
         categoryQuery.eq(StrUtil.isNotBlank(categoryId), Category::getId, categoryId)
-            .or()
-            .eq(Category::getName, categoryName)
-            .last(SqlHelper.LIMIT_1);
+                .or()
+                .eq(Category::getName, categoryName)
+                .last(SqlHelper.LIMIT_1);
         Category category = categoryMapper.selectOne(categoryQuery);
         if (Objects.nonNull(category)) {
             return category.getId();

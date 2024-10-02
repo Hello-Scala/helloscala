@@ -1,4 +1,4 @@
-package com.helloscala.service.web.view;
+package com.helloscala.admin.controller.view;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import lombok.Data;
  * @author Steve Zou
  */
 @Data
-public class CategoryArticleCountView {
+public class BOCategoryArticleCountView {
     private String id;
 
     private String name;

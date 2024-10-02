@@ -1,6 +1,8 @@
 package com.helloscala.common.vo.system;
 
 import com.helloscala.admin.controller.view.BOArticleView;
+import com.helloscala.admin.controller.view.BOTagView;
+import com.helloscala.admin.controller.view.BOUserIPCountView;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +19,8 @@ import java.util.Map;
 public class SystemHomeDataVO {
     private Map<String, Object> contribute;
     private Map<String, Object> categoryList;
-    private List<Map<String,Object>> userAccess;
-    private List<Map<String,Object>> tagsList;
+    private List<BOUserIPCountView> userAccess;
+    private List<BOTagView> tagsList;
     private String dashboard;
     private List<BOArticleView> articles;
 }

@@ -24,6 +24,8 @@ public interface ArticleService extends IService<Article> {
 
     List<ArticleView> listArticleSummary(ListArticleRequest request);
 
+    List<ArticleView> listTopReading(Integer limit);
+
     Page<ArticleDetailView> listArticleDetail(Page<?> page, ListArticleRequest request);
 
     ArticleDetailView getDetailById(String id);

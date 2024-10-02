@@ -14,8 +14,6 @@ import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.service.entity.Article;
 import com.helloscala.service.entity.ArticleTag;
-import com.helloscala.service.entity.SystemConfig;
-import com.helloscala.service.entity.Tag;
 import com.helloscala.service.enums.ReadTypeEnum;
 import com.helloscala.service.enums.SearchModelEnum;
 import com.helloscala.service.mapper.ArticleMapper;
@@ -95,7 +93,7 @@ public class ApiArticleService {
         List<CollectCountView> articleCollectCounts = collectService.countByArticles(articleIdSet);
         Map<String, Long> collectCountMap = articleCollectCounts.stream().collect(Collectors.toMap(CollectCountView::getArticleId, CollectCountView::getCount));
 
-        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(articleIdSet);
+        Map<String, List<TagView>> articleTagListMap = getArticleTagListMap(articleIdSet);
 
         List<CommentView> comments = commentService.listArticleComment(articleIdSet);
         Map<String, List<CommentView>> commentMap = comments.stream().collect(Collectors.groupingBy(CommentView::getArticleId));
@@ -105,7 +103,7 @@ public class ApiArticleService {
 
         return PageHelper.convertTo(articleViewPage, articleDetailView -> {
             List<CommentView> articleComments = commentMap.getOrDefault(articleDetailView.getId(), List.of());
-            List<Tag> tagList = articleTagListMap.getOrDefault(articleDetailView.getId(), List.of());
+            List<TagView> tagList = articleTagListMap.getOrDefault(articleDetailView.getId(), List.of());
             Integer likeCount = (Integer) articleLikeCountMap.getOrDefault(articleDetailView.getId(), 0);
             Long collectCount = collectCountMap.getOrDefault(articleDetailView.getId(), 0L);
             List<BOTagView> tagViews = tagList.stream().map(tag -> {
@@ -141,8 +139,7 @@ public class ApiArticleService {
     }
 
     @NotNull
-
-    public Map<String, List<Tag>> getArticleTagListMap(Set<String> articleIdSet) {
+    public Map<String, List<TagView>> getArticleTagListMap(Set<String> articleIdSet) {
         if (ObjectUtil.isEmpty(articleIdSet)) {
             return Map.of();
         }
@@ -150,8 +147,8 @@ public class ApiArticleService {
         Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
         Set<String> tagIdSet = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
-        List<Tag> tags = tagService.listByIds(tagIdSet);
-        Map<String, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
+        List<TagView> tags = tagService.listTagByIds(tagIdSet);
+        Map<String, TagView> tagMap = tags.stream().collect(Collectors.toMap(TagView::getId, Function.identity()));
         return articleTagMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList()));
     }
 
@@ -226,7 +223,7 @@ public class ApiArticleService {
         if (StringUtils.isBlank(keywords)) {
             throw new BadRequestException(PARAMS_ILLEGAL.getDesc());
         }
-        SystemConfig systemConfig = systemConfigService.getCustomizeOne();
+        SystemConfigView systemConfig = systemConfigService.getCustomizeOne();
         String strategy = SearchModelEnum.getStrategy(systemConfig.getSearchModel());
         Page<ArticleSummaryView> articleSummaryPage = articleSearchService.executeSearchStrategy(page, strategy, keywords);
         return PageHelper.convertTo(articleSummaryPage, articleSummaryView -> {
@@ -370,8 +367,8 @@ public class ApiArticleService {
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
-        Map<String, List<Tag>> articleTagListMap = getArticleTagListMap(Set.of(id));
-        List<String> tagIds = articleTagListMap.get(article.getId()).stream().map(Tag::getId).toList();
+        Map<String, List<TagView>> articleTagListMap = getArticleTagListMap(Set.of(id));
+        List<String> tagIds = articleTagListMap.get(article.getId()).stream().map(TagView::getId).toList();
 
         ArticlePostDTO articlePostDTO = new ArticlePostDTO();
         articlePostDTO.setId(article.getId());

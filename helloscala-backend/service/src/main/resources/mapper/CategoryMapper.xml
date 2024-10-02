@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.helloscala.common.mapper.CategoryMapper">
     <select id="countArticle" resultType="com.helloscala.common.vo.category.SystemCategoryCountVO">
-        select a.name, count(b.id) as value
+        select a.id, a.name, count(b.id) as value
         from b_category a left join b_article b
         on a.id=b.category_id
         GROUP BY a.id

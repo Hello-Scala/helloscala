@@ -42,7 +42,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         Set<String> categoryIds = categoryPage.getRecords().stream().map(Category::getId).collect(Collectors.toSet());
         List<CategoryArticleCountView> categoryCountList = articleService.countByCategories(categoryIds);
-        Map<String, CategoryArticleCountView> categoryCountMap = categoryCountList.stream().collect(Collectors.toMap(CategoryArticleCountView::getCategoryId, Function.identity()));
+        Map<String, CategoryArticleCountView> categoryCountMap = categoryCountList.stream().collect(Collectors.toMap(CategoryArticleCountView::getId, Function.identity()));
 
         return PageHelper.convertTo(categoryPage, category -> {
             CategoryArticleCountView countView = categoryCountMap.get(category.getId());
@@ -86,7 +86,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             throw new NotFoundException("Category not found, id={}!", id);
         }
         List<CategoryArticleCountView> categoryCountList = articleService.countByCategories(Set.of(id));
-        Map<String, CategoryArticleCountView> categoryCountMap = categoryCountList.stream().collect(Collectors.toMap(CategoryArticleCountView::getCategoryId, Function.identity()));
+        Map<String, CategoryArticleCountView> categoryCountMap = categoryCountList.stream().collect(Collectors.toMap(CategoryArticleCountView::getId, Function.identity()));
 
         CategoryArticleCountView countView = categoryCountMap.get(category.getId());
         long count = Optional.ofNullable(countView).map(CategoryArticleCountView::getCount).orElse(0L);

@@ -7,6 +7,7 @@ import com.helloscala.common.utils.PageHelper;
 import com.helloscala.service.entity.UserLog;
 import com.helloscala.service.mapper.UserLogMapper;
 import com.helloscala.service.service.UserLogService;
+import com.helloscala.service.web.view.UserIPCountView;
 import com.helloscala.service.web.view.UserLogView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,5 +43,10 @@ public class LogServiceImpl extends ServiceImpl<UserLogMapper, UserLog> implemen
     @Transactional(rollbackFor = Exception.class)
     public void deleteUserLog(List<String> ids) {
         baseMapper.deleteBatchIds(ids);
+    }
+
+    @Override
+    public List<UserIPCountView> countIP(String date) {
+        return baseMapper.countUserIP(date);
     }
 }
