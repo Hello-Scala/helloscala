@@ -1,27 +1,13 @@
-package com.helloscala.service.entity;
+package com.helloscala.admin.controller.view;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
-
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Schema(name = "Job对象", description = "定时任务调度表")
-@TableName("b_job")
-public class Job implements Serializable {
+public class BOJobView {
     @Schema(name = "任务ID")
-    @TableId(value = "job_id", type = IdType.AUTO)
     private String jobId;
 
     @Schema(name = "任务名称")
@@ -49,22 +35,16 @@ public class Job implements Serializable {
     private String createBy;
 
     @Schema(name = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
     private Date createTime;
 
     @Schema(name = "更新者")
     private String updateBy;
 
     @Schema(name = "更新时间")
-    @TableField(fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
     private Date updateTime;
 
     @Schema(name = "备注信息")
     private String remark;
 
-    @TableField(exist = false)
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING,timezone="GMT+8")
     private Date nextValidTime;
 }

@@ -3,15 +3,16 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.JobLog;
+import com.helloscala.service.web.request.SearchJobLogRequest;
+import com.helloscala.service.web.view.JobLogView;
 
-import java.util.List;
+import java.util.Set;
 
 
 public interface JobLogService extends IService<JobLog> {
-    Page<JobLog> selectJobLogPage(String jobName, String jobGroup, String status, String startTime,
-                                  String endTime, Long jobId);
+    Page<JobLogView> selectJobLogPage(SearchJobLogRequest request);
 
-    void deleteJobLog(List<Long> ids);
+    void deleteJobLog(Set<String> ids);
 
     void cleanJobLog();
 }

@@ -1,14 +1,20 @@
-package com.helloscala.job.controller;
+package com.helloscala.admin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helloscala.admin.controller.request.BOChangeJobStatusRequest;
+import com.helloscala.admin.controller.request.BOCreateJobRequest;
+import com.helloscala.admin.controller.request.BORunJobRequest;
+import com.helloscala.admin.controller.request.BOUpdateJobRequest;
+import com.helloscala.admin.controller.view.BOJobView;
+import com.helloscala.admin.service.BOJobService;
 import com.helloscala.common.annotation.OperationLogger;
 import com.helloscala.common.entity.Job;
 import com.helloscala.common.web.exception.TaskException;
 import com.helloscala.common.web.response.EmptyResponse;
 import com.helloscala.common.web.response.Response;
 import com.helloscala.common.web.response.ResponseHelper;
-import com.helloscala.service.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.quartz.SchedulerException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -25,23 +32,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobController {
 
-    private final JobService jobService;
+    private final BOJobService jobService;
 
     @GetMapping(value = "/list")
     @Operation(summary = "List scheduled job", method = "GET")
     @ApiResponse(responseCode = "200", description = "List scheduled job")
-    public Response<Page<Job>> selectJobPage(@RequestParam(name = "jobName", required = false) String jobName,
-                                             @RequestParam(name = "jobGroup", required = false) String jobGroup,
-                                             @RequestParam(name = "status", required = false) String status) {
-        Page<Job> jobPage = jobService.selectJobPage(jobName, jobGroup, status);
+    public Response<Page<BOJobView>> selectJobPage(@RequestParam(name = "jobName", required = false) String jobName,
+                                                   @RequestParam(name = "jobGroup", required = false) String jobGroup,
+                                                   @RequestParam(name = "status", required = false) String status) {
+        Page<BOJobView> jobPage = jobService.listByPage(jobName, jobGroup, status);
         return ResponseHelper.ok(jobPage);
     }
 
     @GetMapping(value = "/info")
     @Operation(summary = "Get scheduled job detail", method = "GET")
     @ApiResponse(responseCode = "200", description = "Get scheduled job detail")
-    public Response<Job> selectJobById(@RequestParam(name = "jobId", required = true) Long jobId) {
-        Job job = jobService.selectJobById(jobId);
+    public Response<BOJobView> selectJobById(@RequestParam(name = "jobId", required = true) String jobId) {
+        BOJobView job = jobService.get(jobId);
         return ResponseHelper.ok(job);
     }
 
@@ -50,8 +57,9 @@ public class JobController {
     @Operation(summary = "Schedule new job", method = "POST")
     @ApiResponse(responseCode = "200", description = "Schedule new job")
     @OperationLogger(value = "Schedule new job")
-    public EmptyResponse addJob(@RequestBody Job job) throws SchedulerException, TaskException {
-        jobService.addJob(job);
+    public EmptyResponse create(@RequestBody BOCreateJobRequest request) throws SchedulerException, TaskException {
+        String userId = StpUtil.getLoginIdAsString();
+        jobService.create(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -60,8 +68,9 @@ public class JobController {
     @Operation(summary = "Update scheduled job", method = "PUT")
     @ApiResponse(responseCode = "200", description = "Update scheduled job")
     @OperationLogger(value = "Update scheduled job")
-    public EmptyResponse updateJob(@RequestBody Job job) throws SchedulerException, TaskException {
-        jobService.updateJob(job);
+    public EmptyResponse update(@RequestBody BOUpdateJobRequest request) throws SchedulerException, TaskException {
+        String userId = StpUtil.getLoginIdAsString();
+        jobService.update(userId, request);
         return ResponseHelper.ok();
     }
 
@@ -70,8 +79,9 @@ public class JobController {
     @Operation(summary = "Bulk delete scheduled job", method = "DELETE")
     @ApiResponse(responseCode = "200", description = "Bulk delete scheduled job")
     @OperationLogger(value = "Bulk delete scheduled job")
-    public EmptyResponse deleteJob(@RequestBody List<Long> ids) {
-        jobService.deleteJob(ids);
+    public EmptyResponse deleteJob(@RequestBody List<String> ids) {
+        String userId = StpUtil.getLoginIdAsString();
+        jobService.delete(userId, new HashSet<>(ids));
         return ResponseHelper.ok();
     }
 
@@ -80,8 +90,9 @@ public class JobController {
     @Operation(summary = "Run job", method = "POST")
     @ApiResponse(responseCode = "200", description = "Run job")
     @OperationLogger(value = "Run job")
-    public EmptyResponse runJob(@RequestBody Job job) {
-        jobService.runJob(job);
+    public EmptyResponse run(@RequestBody BORunJobRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        jobService.run(userId, request.getJobId());
         return ResponseHelper.ok();
     }
 
@@ -90,8 +101,9 @@ public class JobController {
     @Operation(summary = "Change job status", method = "POST")
     @ApiResponse(responseCode = "200", description = "Change job status")
     @OperationLogger(value = "Change job status")
-    public EmptyResponse changeStatus(@RequestBody Job job) throws SchedulerException {
-        jobService.changeStatus(job);
+    public EmptyResponse changeStatus(@RequestBody BOChangeJobStatusRequest request) throws SchedulerException {
+        String userId = StpUtil.getLoginIdAsString();
+        jobService.changeStatus(userId, request);
         return ResponseHelper.ok();
     }
 }

@@ -13,17 +13,17 @@ public class ScheduleUtil {
         return isConcurrent ? AllowConcurrentJob.class : DisallowConcurrentJob.class;
     }
 
-    public static TriggerKey getTriggerKey(Long jobId, String jobGroup) {
+    public static TriggerKey getTriggerKey(String jobId, String jobGroup) {
         return TriggerKey.triggerKey(ScheduleConstants.TASK_CLASS_NAME + jobId, jobGroup);
     }
 
-    public static JobKey getJobKey(Long jobId, String jobGroup) {
+    public static JobKey getJobKey(String jobId, String jobGroup) {
         return JobKey.jobKey(ScheduleConstants.TASK_CLASS_NAME + jobId, jobGroup);
     }
 
     public static void createScheduleJob(Scheduler scheduler, Job job) throws SchedulerException, TaskException {
         Class<? extends org.quartz.Job> jobClass = getQuartzJobClass(job);
-        Long jobId = job.getJobId();
+        String jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
         JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(getJobKey(jobId, jobGroup)).build();
 
