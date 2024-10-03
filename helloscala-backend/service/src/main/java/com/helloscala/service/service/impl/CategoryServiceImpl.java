@@ -46,7 +46,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         return PageHelper.convertTo(categoryPage, category -> {
             CategoryArticleCountView countView = categoryCountMap.get(category.getId());
-            long count = Optional.ofNullable(countView).map(CategoryArticleCountView::getCount).orElse(0L);
+            Integer count = Optional.ofNullable(countView).map(CategoryArticleCountView::getCount).orElse(0);
 
             CategoryView categoryView = new CategoryView();
             categoryView.setId(category.getId());
@@ -54,7 +54,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             categoryView.setClickVolume(category.getClickVolume());
             categoryView.setSort(category.getSort());
             categoryView.setIcon(category.getIcon());
-            categoryView.setArticleCount((int) count);
+            categoryView.setArticleCount(count);
             categoryView.setCreateTime(category.getCreateTime());
             categoryView.setUpdateTime(category.getUpdateTime());
             return categoryView;
@@ -63,6 +63,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public List<CategoryView> listCategoryByIds(Set<String> ids) {
+        if (ObjectUtil.isEmpty(ids)) {
+            return List.of();
+        }
         List<Category> categories = listByIds(ids);
         return categories.stream().map(category -> {
             CategoryView categoryView = new CategoryView();
@@ -89,7 +92,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         Map<String, CategoryArticleCountView> categoryCountMap = categoryCountList.stream().collect(Collectors.toMap(CategoryArticleCountView::getId, Function.identity()));
 
         CategoryArticleCountView countView = categoryCountMap.get(category.getId());
-        long count = Optional.ofNullable(countView).map(CategoryArticleCountView::getCount).orElse(0L);
+        Integer count = Optional.ofNullable(countView).map(CategoryArticleCountView::getCount).orElse(0);
 
         CategoryView categoryView = new CategoryView();
         categoryView.setId(category.getId());
@@ -97,7 +100,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         categoryView.setClickVolume(category.getClickVolume());
         categoryView.setSort(category.getSort());
         categoryView.setIcon(category.getIcon());
-        categoryView.setArticleCount((int) count);
+        categoryView.setArticleCount(count);
         categoryView.setCreateTime(category.getCreateTime());
         categoryView.setUpdateTime(category.getUpdateTime());
         return categoryView;

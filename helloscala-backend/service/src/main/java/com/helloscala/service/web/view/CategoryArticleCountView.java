@@ -11,6 +11,7 @@ public class CategoryArticleCountView {
 
     private String name;
 
+    private String icon;
 
-    private Long count;
+    private Integer count;
 }

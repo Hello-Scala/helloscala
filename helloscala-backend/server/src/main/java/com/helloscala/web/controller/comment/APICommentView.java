@@ -1,11 +1,10 @@
-package com.helloscala.service.web.view;
+package com.helloscala.web.controller.comment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
  * @author Steve Zou
  */
 @Data
-public class CommentView {
+public class APICommentView {
     @Schema(name = "主键ID")
     private String id;
 
@@ -66,5 +65,10 @@ public class CommentView {
     @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
     private Date createTime;
 
-    private List<CommentView> children = List.of();
+    @Deprecated
+    @Schema(name = "发表时间")
+    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
+    private Date createTimeStr;
+
+    private List<APICommentView> children;
 }

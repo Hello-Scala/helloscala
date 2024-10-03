@@ -1,16 +1,22 @@
-package com.helloscala.web.handle;
+package com.helloscala.service.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.helloscala.common.entity.ImMessage;
-import com.helloscala.common.mapper.ImMessageMapper;
 import com.helloscala.common.utils.IpUtil;
 import com.helloscala.common.utils.SpringUtil;
+import com.helloscala.service.entity.ImMessage;
+import com.helloscala.service.mapper.ImMessageMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class SystemNoticeHandle {
-    public static void sendNotice(String toUserId, Integer noticeType, Integer noticeCode, String articleId, Integer commentMark, String content) {
+    private final ImMessageMapper imMessageMapper;
+
+    public void sendNotice(String toUserId, Integer noticeType, Integer noticeCode, String articleId, Integer commentMark, String content) {
         ImMessageMapper imMessageMapper = SpringUtil.getBean(ImMessageMapper.class);
         try {
             String ip = IpUtil.getIp();

@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 
 @RestController
@@ -96,7 +97,7 @@ public class ArticlesController {
         if (!owned && !StpUtil.hasRole(Constants.ADMIN_CODE)) {
             throw new ForbiddenException(ResultCode.NO_PERMISSION.desc);
         }
-        articleService.deleteBatch(userId, ids);
+        articleService.deleteBatch(userId, new HashSet<>(ids));
         return ResponseHelper.ok();
     }
 

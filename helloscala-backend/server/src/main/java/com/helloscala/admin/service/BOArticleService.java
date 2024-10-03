@@ -16,16 +16,19 @@ import com.helloscala.service.web.view.ArticleDetailView;
 import com.helloscala.service.web.view.ArticleView;
 import com.helloscala.service.web.view.TagView;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Steve Zou
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BOArticleService {
@@ -128,9 +131,9 @@ public class BOArticleService {
         articleService.updateArticle(userId, request.getId(), updateArticleRequest);
     }
 
-    public void deleteBatch(String userId, List<String> ids) {
-        // todo soft delete
+    public void deleteBatch(String userId, Set<String> ids) {
         articleService.deleteBatchArticle(ids);
+        log.info("userId={}, deleted Articles ids=[{}]", userId, String.join(",", ids));
     }
 
     public void stick(String id, boolean stick) {

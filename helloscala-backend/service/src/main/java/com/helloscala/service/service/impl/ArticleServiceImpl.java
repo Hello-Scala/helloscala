@@ -21,8 +21,10 @@ import com.helloscala.service.enums.DataEventEnum;
 import com.helloscala.service.enums.PublishEnum;
 import com.helloscala.service.mapper.ArticleMapper;
 import com.helloscala.service.mapper.CategoryMapper;
-import com.helloscala.service.mapper.TagMapper;
-import com.helloscala.service.service.*;
+import com.helloscala.service.service.ArticleService;
+import com.helloscala.service.service.ArticleTagService;
+import com.helloscala.service.service.TagService;
+import com.helloscala.service.service.UserService;
 import com.helloscala.service.service.event.DataEventPublisherService;
 import com.helloscala.service.service.util.ArticleEntityHelper;
 import com.helloscala.service.web.request.CreateArticleRequest;
@@ -51,9 +53,7 @@ import java.util.stream.Collectors;
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
     private final CategoryMapper categoryMapper;
     private final UserService userService;
-    private final TagMapper tagMapper;
     private final TagService tagService;
-    private final CategoryService categoryService;
     private final RestTemplate restTemplate;
     private final ArticleTagService articleTagService;
     private final DataEventPublisherService dataEventPublisherService;
@@ -78,7 +78,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
-        List<Category> categories = categoryService.listByIds(categoryIds);
+        List<Category> categories = listCategoryByIds(categoryIds);
         Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
@@ -112,7 +112,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
-        List<Category> categories = categoryService.listByIds(categoryIds);
+        List<Category> categories = listCategoryByIds(categoryIds);
         Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
@@ -171,7 +171,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
-        List<Category> categories = categoryService.listByIds(categoryIds);
+        List<Category> categories = listCategoryByIds(categoryIds);
         Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
@@ -197,7 +197,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
-        List<Category> categories = categoryService.listByIds(categoryIds);
+        List<Category> categories = listCategoryByIds(categoryIds);
         Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
@@ -260,7 +260,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
 
         Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
-        List<Category> categories = categoryService.listByIds(categoryIds);
+        List<Category> categories = listCategoryByIds(categoryIds);
         Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
 
         Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
@@ -276,72 +276,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 tagView.setName(tag.getName());
                 return tagView;
             }).toList();
-
-            ArticleDetailView articleDetailView = new ArticleDetailView();
-            articleDetailView.setId(article.getId());
-            articleDetailView.setTitle(article.getTitle());
-            if (Objects.nonNull(user)) {
-                articleDetailView.setUserId(user.getId());
-                articleDetailView.setUserAvatar(user.getAvatar());
-                articleDetailView.setUserNickname(user.getNickname());
-            }
-            articleDetailView.setAvatar(article.getAvatar());
-            articleDetailView.setSummary(article.getSummary());
-            articleDetailView.setQuantity(article.getQuantity());
-            articleDetailView.setContent(article.getContent());
-            articleDetailView.setContentMd(article.getContentMd());
-            articleDetailView.setKeywords(article.getKeywords());
-            articleDetailView.setReadType(article.getReadType());
-            articleDetailView.setIsStick(article.getIsStick());
-            articleDetailView.setIsOriginal(article.getIsOriginal());
-            articleDetailView.setOriginalUrl(article.getOriginalUrl());
-            if (Objects.nonNull(category)) {
-                articleDetailView.setCategoryId(category.getId());
-                articleDetailView.setCategoryName(category.getName());
-            }
-            articleDetailView.setIsPublish(article.getIsPublish());
-            articleDetailView.setIsCarousel(article.getIsCarousel());
-            articleDetailView.setIsRecommend(article.getIsRecommend());
-            articleDetailView.setTags(tagViews);
-            articleDetailView.setCreateTime(article.getCreateTime());
-            articleDetailView.setUpdateTime(article.getUpdateTime());
-            return articleDetailView;
+            return buildArticleDetailView(article, user, category, tagViews);
         });
     }
 
-    @NotNull
-    private Map<String, List<TagView>> fetchArticleTagMap(Set<String> articleIdSet) {
-        List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
-        Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
-
-        Set<String> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
-        List<TagView> tags = tagService.listTagByIds(tagIds);
-        Map<String, TagView> tagMap = tags.stream().collect(Collectors.toMap(TagView::getId, Function.identity()));
-        Map<String, List<TagView>> result = new HashMap<>();
-        articleTagMap.forEach((articleId, tagList) -> {
-            List<TagView> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
-            result.put(articleId, articleTagList);
-        });
-        return result;
-    }
-
-    @Override
-    public ArticleDetailView getDetailById(String id) {
-        Article article = getById(id);
-        if (Objects.isNull(article)) {
-            throw new NotFoundException("Article not found, id={}!", id);
-        }
-        User user = userService.getById(article.getUserId());
-        Category category = categoryService.getById(article.getCategoryId());
-        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(Set.of(id));
-        List<TagView> tagViews = ListHelper.ofNullable(articleTagMap.get(id)).stream().map(tag -> {
-            TagView tagView = new TagView();
-            tagView.setId(tag.getId());
-            tagView.setName(tag.getName());
-            return tagView;
-        }).toList();
-
-
+    private static @NotNull ArticleDetailView buildArticleDetailView(Article article, User user, Category category, List<TagView> tagViews) {
         ArticleDetailView articleDetailView = new ArticleDetailView();
         articleDetailView.setId(article.getId());
         articleDetailView.setTitle(article.getTitle());
@@ -371,6 +310,70 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleDetailView.setCreateTime(article.getCreateTime());
         articleDetailView.setUpdateTime(article.getUpdateTime());
         return articleDetailView;
+    }
+
+    @Override
+    public List<ArticleDetailView> listArticleDetailByIds(Set<String> ids) {
+        if (ObjectUtil.isEmpty(ids)) {
+            return List.of();
+        }
+        List<Article> articles = baseMapper.selectBatchIds(ids);
+        Set<String> articleIdSet = articles.stream().map(Article::getId).collect(Collectors.toSet());
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(articleIdSet);
+
+        Set<String> categoryIds = articles.stream().map(a -> String.valueOf(a.getCategoryId())).collect(Collectors.toSet());
+        List<Category> categories = listCategoryByIds(categoryIds);
+        Map<String, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
+
+        Set<String> userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
+        List<User> users = userService.listByIds(userIds);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+        return articles.stream().map(article -> {
+            User user = userMap.get(article.getUserId());
+            Category category = categoryMap.get(article.getCategoryId());
+            List<TagView> tagViews = ListHelper.ofNullable(articleTagMap.get(article.getId())).stream().map(tag -> {
+                TagView tagView = new TagView();
+                tagView.setId(tag.getId());
+                tagView.setName(tag.getName());
+                return tagView;
+            }).toList();
+            return buildArticleDetailView(article, user, category, tagViews);
+        }).toList();
+    }
+
+    @NotNull
+    private Map<String, List<TagView>> fetchArticleTagMap(Set<String> articleIdSet) {
+        List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
+        Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+
+        Set<String> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        List<TagView> tags = tagService.listTagByIds(tagIds);
+        Map<String, TagView> tagMap = tags.stream().collect(Collectors.toMap(TagView::getId, Function.identity()));
+        Map<String, List<TagView>> result = new HashMap<>();
+        articleTagMap.forEach((articleId, tagList) -> {
+            List<TagView> articleTagList = tagList.stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList();
+            result.put(articleId, articleTagList);
+        });
+        return result;
+    }
+
+    @Override
+    public ArticleDetailView getDetailById(String id) {
+        Article article = getById(id);
+        if (Objects.isNull(article)) {
+            throw new NotFoundException("Article not found, id={}!", id);
+        }
+        User user = userService.getById(article.getUserId());
+        Category category = categoryMapper.selectById(article.getCategoryId());
+        Map<String, List<TagView>> articleTagMap = fetchArticleTagMap(Set.of(id));
+        List<TagView> tagViews = ListHelper.ofNullable(articleTagMap.get(id)).stream().map(tag -> {
+            TagView tagView = new TagView();
+            tagView.setId(tag.getId());
+            tagView.setName(tag.getName());
+            return tagView;
+        }).toList();
+        return buildArticleDetailView(article, user, category, tagViews);
     }
 
     @Override
@@ -470,7 +473,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteBatchArticle(List<String> ids) {
+    public void deleteBatchArticle(Set<String> ids) {
         baseMapper.deleteBatchIds(ids);
         articleTagService.deleteByArticleIds(new HashSet<>(ids));
         dataEventPublisherService.publishData(DataEventEnum.ES_DELETE_ARTICLE, ids);
@@ -564,17 +567,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         queryWrapper.in(ObjectUtil.isNotEmpty(categoryIds), Article::getCategoryId, categoryIds);
         List<Article> articleList = baseMapper.selectList(queryWrapper);
         Map<String, List<Article>> articleMap = articleList.stream().collect(Collectors.groupingBy(Article::getCategoryId));
+        List<Category> categoryViews = listCategoryByIds(categoryIds);
+        Map<String, Category> categoryViewMap = categoryViews.stream().collect(Collectors.toMap(Category::getId, Function.identity()));
         return articleMap.entrySet().stream().map(entry -> {
+            Category categoryView = categoryViewMap.get(entry.getKey());
             CategoryArticleCountView countView = new CategoryArticleCountView();
             countView.setId(entry.getKey());
-            countView.setCount((long) entry.getValue().size());
+            countView.setName(countView.getName());
+            countView.setIcon(categoryView.getIcon());
+            countView.setCount(entry.getValue().size());
             return countView;
         }).toList();
     }
 
+    private List<Category> listCategoryByIds(Set<String> categoryIds) {
+        return categoryIds.isEmpty() ? List.of() : categoryMapper.selectBatchIds(categoryIds);
+    }
+
     @Override
     public List<CategoryArticleCountView> countAllCategories() {
-        return countByCategories(new HashSet<>());
+        return countArticleByCategories(new HashSet<>());
     }
 
     @Override

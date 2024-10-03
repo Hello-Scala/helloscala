@@ -9,16 +9,11 @@ import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.utils.*;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
 import com.helloscala.common.vo.article.ArticleInfoVO;
-import com.helloscala.common.vo.article.RecommendedArticleVO;
 import com.helloscala.common.web.exception.BadRequestException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.service.entity.Article;
-import com.helloscala.service.entity.ArticleTag;
 import com.helloscala.service.enums.ReadTypeEnum;
 import com.helloscala.service.enums.SearchModelEnum;
-import com.helloscala.service.mapper.ArticleMapper;
-import com.helloscala.service.mapper.CollectMapper;
-import com.helloscala.service.mapper.FollowedMapper;
 import com.helloscala.service.service.*;
 import com.helloscala.service.service.article.ArticleSearchService;
 import com.helloscala.service.web.request.CreateArticleRequest;
@@ -28,6 +23,7 @@ import com.helloscala.service.web.request.UpdateArticleRequest;
 import com.helloscala.service.web.view.*;
 import com.helloscala.web.controller.article.request.APICreateArticleRequest;
 import com.helloscala.web.controller.article.request.APIUpdateArticleRequest;
+import com.helloscala.web.controller.article.view.APIRecommendedArticleView;
 import com.helloscala.web.handle.RelativeDateFormat;
 import com.helloscala.web.response.ListPublishedArticleResponse;
 import com.helloscala.web.response.PublishedArticleView;
@@ -39,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.helloscala.common.ResultCode.ERROR_EXCEPTION_MOBILE_CODE;
@@ -49,22 +44,17 @@ import static com.helloscala.service.service.RedisConstants.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ApiArticleService {
+public class APIArticleService {
     private final ArticleService articleService;
-    private final ArticleMapper articleMapper;
     private final RedisService redisService;
-    private final TagService tagService;
     private final CommentService commentService;
-    private final CollectMapper collectMapper;
     private final CollectService collectService;
     private final FollowedService followedService;
-    private final FollowedMapper followedMapper;
-    private final ArticleTagService articleTagService;
     private final SystemConfigService systemConfigService;
     private final ArticleSearchService articleSearchService;
+    private final APIArticleTagService apiArticleTagService;
 
-
-    public Page<RecommendedArticleVO> selectArticleList(String userId, String categoryId, String tagId, String orderByDescColumn) {
+    public Page<APIRecommendedArticleView> selectArticleList(String userId, String categoryId, String tagId, String orderByDescColumn) {
         Page<?> page = PageUtil.getPage();
 
         SortingRule sortingRule = new SortingRule();
@@ -84,7 +74,7 @@ public class ApiArticleService {
     }
 
     @NotNull
-    private Page<RecommendedArticleVO> searchRecommendedArticlePage(String userId, Page<?> page, ListArticleRequest listArticleRequest) {
+    public Page<APIRecommendedArticleView> searchRecommendedArticlePage(String userId, Page<?> page, ListArticleRequest listArticleRequest) {
         Page<ArticleDetailView> articleViewPage = articleService.listArticleDetail(page, listArticleRequest);
         List<ArticleDetailView> records = articleViewPage.getRecords();
 
@@ -93,7 +83,7 @@ public class ApiArticleService {
         List<CollectCountView> articleCollectCounts = collectService.countByArticles(articleIdSet);
         Map<String, Long> collectCountMap = articleCollectCounts.stream().collect(Collectors.toMap(CollectCountView::getArticleId, CollectCountView::getCount));
 
-        Map<String, List<TagView>> articleTagListMap = getArticleTagListMap(articleIdSet);
+        Map<String, List<TagView>> articleTagListMap = apiArticleTagService.getArticleTagListMap(articleIdSet);
 
         List<CommentView> comments = commentService.listArticleComment(articleIdSet);
         Map<String, List<CommentView>> commentMap = comments.stream().collect(Collectors.groupingBy(CommentView::getArticleId));
@@ -112,44 +102,30 @@ public class ApiArticleService {
                 tagView.setName(tag.getName());
                 return tagView;
             }).toList();
-            RecommendedArticleVO recommendedArticleVO = new RecommendedArticleVO();
-            recommendedArticleVO.setId(articleDetailView.getId());
-            recommendedArticleVO.setNickname(articleDetailView.getUserNickname());
-            recommendedArticleVO.setUserAvatar(articleDetailView.getUserAvatar());
-            recommendedArticleVO.setUserId(articleDetailView.getUserId());
-            recommendedArticleVO.setTitle(articleDetailView.getTitle());
-            recommendedArticleVO.setAvatar(articleDetailView.getAvatar());
-            recommendedArticleVO.setSummary(articleDetailView.getSummary());
-            recommendedArticleVO.setContent(articleDetailView.getContent());
-            recommendedArticleVO.setIsStick(articleDetailView.getIsStick());
-            recommendedArticleVO.setIsOriginal(articleDetailView.getIsOriginal());
-            recommendedArticleVO.setIsPublish(articleDetailView.getIsPublish());
-            recommendedArticleVO.setQuantity(articleDetailView.getQuantity());
-            recommendedArticleVO.setCommentCount(articleComments.size());
-            recommendedArticleVO.setLikeCount(likeCount);
-            recommendedArticleVO.setCollectCount(collectCount.intValue());
-            recommendedArticleVO.setIsCollect(collectArticleIds.contains(articleDetailView.getId()));
-            recommendedArticleVO.setCategoryName(articleDetailView.getCategoryName());
-            recommendedArticleVO.setCategoryId(articleDetailView.getCategoryId());
-            recommendedArticleVO.setCreateTime(articleDetailView.getCreateTime());
-            recommendedArticleVO.setFormatCreateTime(RelativeDateFormat.format(articleDetailView.getCreateTime()));
-            recommendedArticleVO.setTagList(tagViews);
-            return recommendedArticleVO;
+            APIRecommendedArticleView recommendedArticle = new APIRecommendedArticleView();
+            recommendedArticle.setId(articleDetailView.getId());
+            recommendedArticle.setNickname(articleDetailView.getUserNickname());
+            recommendedArticle.setUserAvatar(articleDetailView.getUserAvatar());
+            recommendedArticle.setUserId(articleDetailView.getUserId());
+            recommendedArticle.setTitle(articleDetailView.getTitle());
+            recommendedArticle.setAvatar(articleDetailView.getAvatar());
+            recommendedArticle.setSummary(articleDetailView.getSummary());
+            recommendedArticle.setContent(articleDetailView.getContent());
+            recommendedArticle.setIsStick(articleDetailView.getIsStick());
+            recommendedArticle.setIsOriginal(articleDetailView.getIsOriginal());
+            recommendedArticle.setIsPublish(articleDetailView.getIsPublish());
+            recommendedArticle.setQuantity(articleDetailView.getQuantity());
+            recommendedArticle.setCommentCount(articleComments.size());
+            recommendedArticle.setLikeCount(likeCount);
+            recommendedArticle.setCollectCount(collectCount.intValue());
+            recommendedArticle.setIsCollect(collectArticleIds.contains(articleDetailView.getId()));
+            recommendedArticle.setCategoryName(articleDetailView.getCategoryName());
+            recommendedArticle.setCategoryId(articleDetailView.getCategoryId());
+            recommendedArticle.setCreateTime(articleDetailView.getCreateTime());
+            recommendedArticle.setFormatCreateTime(RelativeDateFormat.format(articleDetailView.getCreateTime()));
+            recommendedArticle.setTagList(tagViews);
+            return recommendedArticle;
         });
-    }
-
-    @NotNull
-    public Map<String, List<TagView>> getArticleTagListMap(Set<String> articleIdSet) {
-        if (ObjectUtil.isEmpty(articleIdSet)) {
-            return Map.of();
-        }
-        List<ArticleTag> articleTags = articleTagService.listByArticleIds(articleIdSet);
-        Map<String, List<ArticleTag>> articleTagMap = articleTags.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
-
-        Set<String> tagIdSet = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
-        List<TagView> tags = tagService.listTagByIds(tagIdSet);
-        Map<String, TagView> tagMap = tags.stream().collect(Collectors.toMap(TagView::getId, Function.identity()));
-        return articleTagMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(at -> tagMap.get(at.getTagId())).filter(Objects::nonNull).toList()));
     }
 
 
@@ -338,7 +314,7 @@ public class ApiArticleService {
     }
 
 
-    public Page<RecommendedArticleVO> listByUserId(String userId, Integer type) {
+    public Page<APIRecommendedArticleView> listByUserId(String userId, Integer type) {
         userId = StringUtils.isNotBlank(userId) ? userId : StpUtil.getLoginIdAsString();
         Page<Object> page = new Page<>(PageUtil.getPageNo(), PageUtil.getPageSize());
         ListArticleRequest listArticleRequest = new ListArticleRequest();
@@ -350,12 +326,12 @@ public class ApiArticleService {
 
     @Transactional(rollbackFor = Exception.class)
     public void deleteMyArticle(String id) {
-        Article article = articleMapper.selectById(id);
-        if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
+        String userId = StpUtil.getLoginIdAsString();
+        boolean ownArticle = articleService.ownArticle(userId, id);
+        if (!ownArticle) {
             throw new BadRequestException("Can only delete your own article!");
         }
-        articleMapper.deleteById(id);
-        articleTagService.deleteByArticleIds(Set.of(id));
+        articleService.deleteBatchArticle(Set.of(id));
     }
 
 
@@ -367,7 +343,7 @@ public class ApiArticleService {
         if (!article.getUserId().equals(StpUtil.getLoginIdAsString())) {
             throw new BadRequestException("Can only read your own article detail!");
         }
-        Map<String, List<TagView>> articleTagListMap = getArticleTagListMap(Set.of(id));
+        Map<String, List<TagView>> articleTagListMap = apiArticleTagService.getArticleTagListMap(Set.of(id));
         List<String> tagIds = articleTagListMap.get(article.getId()).stream().map(TagView::getId).toList();
 
         ArticlePostDTO articlePostDTO = new ArticlePostDTO();

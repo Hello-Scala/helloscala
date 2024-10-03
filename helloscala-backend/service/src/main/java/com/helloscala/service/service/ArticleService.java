@@ -28,13 +28,15 @@ public interface ArticleService extends IService<Article> {
 
     Page<ArticleDetailView> listArticleDetail(Page<?> page, ListArticleRequest request);
 
+    List<ArticleDetailView> listArticleDetailByIds(Set<String> ids);
+
     ArticleDetailView getDetailById(String id);
 
     void addArticle(String userId, String ipAddress, CreateArticleRequest request);
 
     void updateArticle(String userId, String articleId, UpdateArticleRequest request);
 
-    void deleteBatchArticle(List<String> ids);
+    void deleteBatchArticle(Set<String> ids);
 
     int stick(String id, boolean stick);
 

@@ -11,6 +11,5 @@ public class BOCategoryArticleCountView {
 
     private String name;
 
-
-    private Long count;
+    private Integer count;
 }
