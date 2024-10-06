@@ -19,7 +19,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @TableName("b_feed_back")
 @Schema(name = "FeedBack对象", description = "")
-public class FeedBack implements Serializable {
+public class Feedback implements Serializable {
     @Schema(name = "ID")
     @TableId(value = "id", type = IdType.AUTO)
     private String id;

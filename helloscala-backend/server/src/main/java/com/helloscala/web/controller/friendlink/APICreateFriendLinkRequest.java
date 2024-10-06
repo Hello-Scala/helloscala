@@ -1,17 +1,10 @@
-package com.helloscala.service.web.view;
+package com.helloscala.web.controller.friendlink;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.helloscala.common.utils.DateUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
-public class FriendLinkView {
-    @Schema(name = "主键ID")
-    private String id;
-
+public class APICreateFriendLinkRequest {
     @Schema(name = "网站名称")
     private String name;
 
@@ -35,12 +28,4 @@ public class FriendLinkView {
 
     @Schema(name = "下架原因")
     private String reason;
-
-    @Schema(name = "创建时间")
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
-    private Date createTime;
-
-    @Schema(name = "修改时间")
-    @JsonFormat(pattern = DateUtil.FORMAT_STRING, timezone = "GMT+8")
-    private Date updateTime;
 }

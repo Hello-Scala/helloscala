@@ -8,6 +8,7 @@ import com.helloscala.service.entity.User;
 import com.helloscala.common.vo.menu.RouterVO;
 import com.helloscala.common.vo.user.SystemUserInfoVO;
 import com.helloscala.common.vo.user.SystemUserVO;
+import com.helloscala.service.web.request.UpdateLoginRequest;
 import com.helloscala.service.web.view.UserView;
 
 import java.util.List;
@@ -18,9 +19,11 @@ import java.util.Set;
 public interface UserService extends IService<User> {
     UserView getByNameAndPwd(String userName, String pwd);
 
+    void updateLogin(UpdateLoginRequest request);
+
     Page<SystemUserInfoVO> selectUserPage(String username, Integer loginType);
 
-    SystemUserVO get(String id);
+    UserView get(String id);
 
     User addUser(SystemUserDTO user);
 

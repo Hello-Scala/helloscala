@@ -7,11 +7,14 @@ import com.helloscala.service.web.request.CreateFriendLinkRequest;
 import com.helloscala.service.web.request.UpdateFriendLinkRequest;
 import com.helloscala.service.web.view.FriendLinkView;
 
+import java.util.List;
 import java.util.Set;
 
 
 public interface FriendLinkService extends IService<FriendLink> {
     Page<FriendLinkView> selectFriendLinkPage(Page<?> page, String name, Integer status);
+
+    List<FriendLinkView> listVisible();
 
     void createFriendLink(CreateFriendLinkRequest request);
 

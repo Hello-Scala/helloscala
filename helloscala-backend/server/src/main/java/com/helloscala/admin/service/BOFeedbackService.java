@@ -5,7 +5,7 @@ import com.helloscala.admin.controller.request.BOUpdateFeedbackRequest;
 import com.helloscala.admin.controller.view.BOFeedbackView;
 import com.helloscala.common.utils.PageHelper;
 import com.helloscala.common.utils.PageUtil;
-import com.helloscala.service.service.FeedBackService;
+import com.helloscala.service.service.FeedbackService;
 import com.helloscala.service.web.request.UpdateFeedbackRequest;
 import com.helloscala.service.web.view.FeedbackView;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class BOFeedbackService {
-    private final FeedBackService feedBackService;
+    private final FeedbackService feedBackService;
 
     public Page<BOFeedbackView> listByPage(Integer type) {
         Page<?> page = PageUtil.getPage();
@@ -38,7 +38,7 @@ public class BOFeedbackService {
     }
 
     public void deleteBatch(String userId, Set<String> ids) {
-        feedBackService.deleteFeedBack(ids);
+        feedBackService.deleteFeedback(ids);
         log.info("userId={}, deleted feedback ids=[{}]", userId, String.join(",", ids));
     }
 
@@ -52,6 +52,6 @@ public class BOFeedbackService {
         updateFeedbackRequest.setType(request.getType());
         updateFeedbackRequest.setStatus(request.getStatus());
         updateFeedbackRequest.setRequestBy(userId);
-        feedBackService.updateFeedBack(updateFeedbackRequest);
+        feedBackService.updateFeedback(updateFeedbackRequest);
     }
 }

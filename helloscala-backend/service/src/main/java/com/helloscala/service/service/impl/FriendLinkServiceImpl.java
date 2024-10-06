@@ -10,6 +10,7 @@ import com.helloscala.common.web.exception.ConflictException;
 import com.helloscala.common.web.exception.NotFoundException;
 import com.helloscala.service.entity.FriendLink;
 import com.helloscala.service.enums.DataEventEnum;
+import com.helloscala.service.enums.FriendLinkEnum;
 import com.helloscala.service.mapper.FriendLinkMapper;
 import com.helloscala.service.service.FriendLinkService;
 import com.helloscala.service.service.event.DataEventPublisherService;
@@ -18,10 +19,12 @@ import com.helloscala.service.web.request.UpdateFriendLinkRequest;
 import com.helloscala.service.web.view.FriendLinkView;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,21 +43,32 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
                 .orderByDesc(FriendLink::getSort);
 
         Page<FriendLink> friendLinkPage = baseMapper.selectPage(PageHelper.of(page), queryWrapper);
-        return PageHelper.convertTo(friendLinkPage, friendLink -> {
-            FriendLinkView friendLinkView = new FriendLinkView();
-            friendLinkView.setId(friendLink.getId());
-            friendLinkView.setName(friendLink.getName());
-            friendLinkView.setUrl(friendLink.getUrl());
-            friendLinkView.setAvatar(friendLink.getAvatar());
-            friendLinkView.setInfo(friendLink.getInfo());
-            friendLinkView.setEmail(friendLink.getEmail());
-            friendLinkView.setSort(friendLink.getSort());
-            friendLinkView.setStatus(friendLink.getStatus());
-            friendLinkView.setReason(friendLink.getReason());
-            friendLinkView.setCreateTime(friendLink.getCreateTime());
-            friendLinkView.setUpdateTime(friendLink.getUpdateTime());
-            return friendLinkView;
-        });
+        return PageHelper.convertTo(friendLinkPage, FriendLinkServiceImpl::buildFriendLinkView);
+    }
+
+    private static @NotNull FriendLinkView buildFriendLinkView(FriendLink friendLink) {
+        FriendLinkView friendLinkView = new FriendLinkView();
+        friendLinkView.setId(friendLink.getId());
+        friendLinkView.setName(friendLink.getName());
+        friendLinkView.setUrl(friendLink.getUrl());
+        friendLinkView.setAvatar(friendLink.getAvatar());
+        friendLinkView.setInfo(friendLink.getInfo());
+        friendLinkView.setEmail(friendLink.getEmail());
+        friendLinkView.setSort(friendLink.getSort());
+        friendLinkView.setStatus(friendLink.getStatus());
+        friendLinkView.setReason(friendLink.getReason());
+        friendLinkView.setCreateTime(friendLink.getCreateTime());
+        friendLinkView.setUpdateTime(friendLink.getUpdateTime());
+        return friendLinkView;
+    }
+
+    @Override
+    public List<FriendLinkView> listVisible() {
+        LambdaQueryWrapper<FriendLink> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FriendLink::getStatus, FriendLinkEnum.UP.code)
+                .orderByDesc(FriendLink::getSort);
+        List<FriendLink> friendLinks = baseMapper.selectList(queryWrapper);
+        return friendLinks.stream().map(FriendLinkServiceImpl::buildFriendLinkView).toList();
     }
 
     @Override

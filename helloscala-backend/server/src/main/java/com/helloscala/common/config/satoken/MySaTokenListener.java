@@ -4,12 +4,13 @@ import cn.dev33.satoken.listener.SaTokenListener;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
-import com.helloscala.service.service.RedisConstants;
-import com.helloscala.common.entity.User;
-import com.helloscala.common.mapper.UserMapper;
-import com.helloscala.common.service.RedisService;
+import com.helloscala.common.cache.RedisService;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.utils.IpUtil;
+import com.helloscala.service.service.RedisConstants;
+import com.helloscala.service.service.UserService;
+import com.helloscala.service.web.request.UpdateLoginRequest;
+import com.helloscala.service.web.view.UserView;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -25,9 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class MySaTokenListener implements SaTokenListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MySaTokenListener.class);
-
-    private final UserMapper userMapper;
-
+    private final UserService userService;
     private final RedisService redisService;
 
     @Value("${sa-token.timeout}")
@@ -39,23 +38,33 @@ public class MySaTokenListener implements SaTokenListener {
         String ip = IpUtil.getIp();
         String cityInfo = IpUtil.getCityInfo(ip);
         UserAgent userAgent = IpUtil.getUserAgent(Objects.requireNonNull(IpUtil.getRequest()));
-        userMapper.updateLoginInfo(id, ip, cityInfo, userAgent.getOperatingSystem().getName(), userAgent.getBrowser().getName());
+        String os = userAgent.getOperatingSystem().getName();
+        String browser = userAgent.getBrowser().getName();
 
-        User user = userMapper.selectById(id);
+        UpdateLoginRequest updateLoginRequest = new UpdateLoginRequest();
+        updateLoginRequest.setId(id);
+        updateLoginRequest.setIp(ip);
+        updateLoginRequest.setCity(cityInfo);
+        updateLoginRequest.setOs(os);
+        updateLoginRequest.setBrowser(browser);
+        updateLoginRequest.setRequestBy(id);
+        userService.updateLogin(updateLoginRequest);
+
+        UserView userView = userService.get(id);
+
         String token = StpUtil.getTokenValueByLoginId(loginId);
 
         OnlineUser build = OnlineUser.builder()
-                .avatar(user.getAvatar())
+                .avatar(userView.getAvatar())
                 .ip(ip)
                 .city(cityInfo)
                 .loginTime(DateUtil.getNowDate())
-                .os(userAgent.getOperatingSystem().getName())
+                .os(os)
                 .userId(id)
                 .tokenValue(token)
-                .nickname(userMapper.getById(id).getNickname())
-                .browser(userAgent.getBrowser().getName()).build();
+                .nickname(userView.getNickname())
+                .browser(browser).build();
         redisService.setCacheObject(RedisConstants.LOGIN_TOKEN + token, JSONUtil.toJsonStr(build), timeout, TimeUnit.SECONDS);
-
         logger.info("User login, useId:{}, token:{}", loginId, token);
     }
 

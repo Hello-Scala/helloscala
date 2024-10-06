@@ -17,8 +17,8 @@ import com.helloscala.service.service.MenuService;
 import com.helloscala.service.service.RedisConstants;
 import com.helloscala.service.service.RedisService;
 import com.helloscala.service.service.UserService;
+import com.helloscala.service.web.request.UpdateLoginRequest;
 import com.helloscala.service.web.view.UserView;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +42,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public UserView getByNameAndPwd(String userName, String pwd) {
         User user = baseMapper.selectNameAndPassword(userName, pwd);
         return buildUserView(user);
+    }
+
+    @Override
+    public void updateLogin(UpdateLoginRequest request) {
+        LambdaQueryWrapper<User> updateWrapper = new LambdaQueryWrapper<>();
+        updateWrapper.eq(User::getId, request.getId());
+        User userToUpdate = new User();
+        userToUpdate.setId(request.getId());
+        userToUpdate.setIpAddress(request.getIp());
+        userToUpdate.setIpSource(request.getCity());
+        userToUpdate.setOs(request.getOs());
+        userToUpdate.setBrowser(request.getBrowser());
+        userToUpdate.setUpdateTime(new Date());
+        baseMapper.updateById(userToUpdate);
     }
 
     private static @NotNull UserView buildUserView(User user) {
@@ -73,8 +87,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public SystemUserVO get(String id) {
-        return baseMapper.getById(id);
+    public UserView get(String id) {
+        User user = baseMapper.selectById(id);
+        return buildUserView(user);
     }
 
     @Override

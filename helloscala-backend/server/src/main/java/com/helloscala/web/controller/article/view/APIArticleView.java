@@ -13,6 +13,9 @@ public class APIArticleView {
     @Schema(name = "id", description = "文章id")
     private String id;
 
+    @Schema(name = "userId", description = "用户id")
+    private String userId;
+
     @Schema(name = "title", description = "文章标题")
     private String title;
 
@@ -42,9 +45,6 @@ public class APIArticleView {
 
     @Schema(name = "关键词")
     private String keywords;
-
-    @Schema(name = "userId", description = "用户id")
-    private String userId;
 
     @Schema(name = "文章标签id集合")
     private List<String> tagList;

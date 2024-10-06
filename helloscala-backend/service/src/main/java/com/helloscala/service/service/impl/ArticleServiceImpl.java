@@ -27,10 +27,7 @@ import com.helloscala.service.service.TagService;
 import com.helloscala.service.service.UserService;
 import com.helloscala.service.service.event.DataEventPublisherService;
 import com.helloscala.service.service.util.ArticleEntityHelper;
-import com.helloscala.service.web.request.CreateArticleRequest;
-import com.helloscala.service.web.request.ListArticleRequest;
-import com.helloscala.service.web.request.SearchArticleRequest;
-import com.helloscala.service.web.request.UpdateArticleRequest;
+import com.helloscala.service.web.request.*;
 import com.helloscala.service.web.view.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -221,6 +218,41 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<Article> articles = baseMapper.selectList(queryWrapper);
         return ListHelper.ofNullable(articles).stream().map(article -> buildArticleView(article, null, null, null)).toList();
+    }
+
+    @Override
+    public List<BannerArticleView> searchBanner(SearchBannerArticleRequest request) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Article::getQuantity, Article::getTitle, Article::getId)
+                .eq(Objects.nonNull(request.getIsPublish()), Article::getIsPublish, request.getIsPublish())
+                .eq(Objects.nonNull(request.getIsCarousel()), Article::getIsCarousel, request.getIsCarousel())
+                .eq(Article::getIsCarousel, 1);
+
+        List<SortingRule> sortingRules = request.getSortingRules();
+        if (ObjectUtil.isNotEmpty(sortingRules)) {
+            sortingRules.forEach(sortingRule -> {
+                if (sortingRule.getDesc()) {
+                    queryWrapper.orderByDesc(SqlHelper.toFieldFunc(Article.class, sortingRule.getField()));
+                } else {
+                    queryWrapper.orderByAsc(SqlHelper.toFieldFunc(Article.class, sortingRule.getField()));
+                }
+            });
+        } else {
+            queryWrapper.orderByDesc(Article::getCreateTime);
+        }
+        
+
+        List<Article> articles = baseMapper.selectList(queryWrapper);
+
+        return ListHelper.ofNullable(articles).stream().map(article -> {
+            BannerArticleView bannerArticleView = new BannerArticleView();
+            bannerArticleView.setId(article.getId());
+            bannerArticleView.setTitle(article.getTitle());
+            bannerArticleView.setAvatar(article.getAvatar());
+            bannerArticleView.setCreateTime(article.getCreateTime());
+            return bannerArticleView;
+        }).toList();
+
     }
 
     @NotNull

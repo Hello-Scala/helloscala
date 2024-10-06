@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class BOArticleView {
@@ -48,4 +49,7 @@ public class BOArticleView {
 
     @Schema(name = "标签名集合")
     private String tagNames;
+
+    @Schema(name = "文章标签id集合")
+    private List<String> tagList;
 }

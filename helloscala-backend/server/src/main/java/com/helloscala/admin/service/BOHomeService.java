@@ -6,14 +6,13 @@ import com.helloscala.admin.controller.view.BOTagView;
 import com.helloscala.admin.controller.view.BOUserIPCountView;
 import com.helloscala.admin.service.helper.BOArticleHelper;
 import com.helloscala.admin.service.helper.RedisConstants;
+import com.helloscala.common.cache.RedisService;
 import com.helloscala.common.utils.DateUtil;
 import com.helloscala.common.vo.system.SystemHomeDataVO;
-import com.helloscala.service.mapper.TagMapper;
 import com.helloscala.service.service.*;
 import com.helloscala.service.web.view.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,13 +21,12 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class BOHomeService {
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisService redisService;
     private final ArticleService articleService;
     private final MessageService messageService;
     private final UserService userService;
     private final UserLogService userLogService;
     private final TagService tagService;
-    private final TagMapper tagMapper;
     private final SystemConfigService systemConfigService;
 
     // todo SiteSummaryView
@@ -135,7 +133,7 @@ public class BOHomeService {
     }
 
     private Integer getViewsCount() {
-        Object count = redisTemplate.opsForValue().get(RedisConstants.BLOG_VIEWS_COUNT);
+        Object count = redisService.getCacheObject(RedisConstants.BLOG_VIEWS_COUNT);
         return (Integer) Optional.ofNullable(count).orElse(0);
     }
 }

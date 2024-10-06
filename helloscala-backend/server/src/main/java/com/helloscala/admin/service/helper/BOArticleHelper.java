@@ -24,6 +24,7 @@ public final class BOArticleHelper {
   articleView.setIsPublish(article.getIsPublish());
   articleView.setCategoryName(article.getCategoryName());
   articleView.setTagNames(String.join(",", ListHelper.ofNullable(article.getTagNames())));
+  articleView.setTagList(article.getTagNames());
   return articleView;
  }
 }

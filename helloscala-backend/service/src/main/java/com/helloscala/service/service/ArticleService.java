@@ -3,14 +3,8 @@ package com.helloscala.service.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.helloscala.service.entity.Article;
-import com.helloscala.service.web.request.CreateArticleRequest;
-import com.helloscala.service.web.request.ListArticleRequest;
-import com.helloscala.service.web.request.SearchArticleRequest;
-import com.helloscala.service.web.request.UpdateArticleRequest;
-import com.helloscala.service.web.view.ArticleContributeCountView;
-import com.helloscala.service.web.view.ArticleDetailView;
-import com.helloscala.service.web.view.ArticleView;
-import com.helloscala.service.web.view.CategoryArticleCountView;
+import com.helloscala.service.web.request.*;
+import com.helloscala.service.web.view.*;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +19,8 @@ public interface ArticleService extends IService<Article> {
     List<ArticleView> listArticleSummary(ListArticleRequest request);
 
     List<ArticleView> listTopReading(Integer limit);
+
+    List<BannerArticleView> searchBanner(SearchBannerArticleRequest request);
 
     Page<ArticleDetailView> listArticleDetail(Page<?> page, ListArticleRequest request);
 

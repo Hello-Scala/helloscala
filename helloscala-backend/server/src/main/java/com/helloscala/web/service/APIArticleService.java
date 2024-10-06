@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.helloscala.admin.controller.view.BOArticleCategoryView;
 import com.helloscala.admin.controller.view.BOTagView;
+import com.helloscala.common.cache.RedisService;
 import com.helloscala.common.dto.article.ArticlePostDTO;
 import com.helloscala.common.utils.*;
 import com.helloscala.common.vo.article.ApiArticleSearchVO;
@@ -39,7 +40,6 @@ import java.util.stream.Collectors;
 
 import static com.helloscala.common.ResultCode.ERROR_EXCEPTION_MOBILE_CODE;
 import static com.helloscala.common.ResultCode.PARAMS_ILLEGAL;
-import static com.helloscala.service.service.RedisConstants.*;
 
 @Slf4j
 @Service
@@ -89,7 +89,7 @@ public class APIArticleService {
         Map<String, List<CommentView>> commentMap = comments.stream().collect(Collectors.groupingBy(CommentView::getArticleId));
 
         List<String> collectArticleIds = collectService.listCollectArticleIds(userId);
-        Map<String, Object> articleLikeCountMap = MapHelper.ofNullable(redisService.getCacheMap(ARTICLE_LIKE_COUNT));
+        Map<String, Object> articleLikeCountMap = MapHelper.ofNullable(redisService.getCacheMap(RedisConstants.ARTICLE_LIKE_COUNT));
 
         return PageHelper.convertTo(articleViewPage, articleDetailView -> {
             List<CommentView> articleComments = commentMap.getOrDefault(articleDetailView.getId(), List.of());
@@ -135,7 +135,6 @@ public class APIArticleService {
             throw new NotFoundException("Article not found, id={}!", id);
         }
         Long commentCount = commentService.countByArticleId(id);
-        List<Object> cacheList = redisService.getCacheList(RedisConstants.CHECK_CODE_IP);
 
         List<CollectCountView> articleCollectCounts = collectService.countByArticles(Set.of(id));
         Map<String, Long> collectCountMap = articleCollectCounts.stream().collect(Collectors.toMap(CollectCountView::getArticleId, CollectCountView::getCount));
@@ -145,13 +144,14 @@ public class APIArticleService {
         Long userCommentCount = commentService.countByUserId(userId);
 
         List<String> collectArticleIds = collectService.listCollectArticleIds(userId);
-        Map<String, Object> articleLikeCountMap = MapHelper.ofNullable(redisService.getCacheMap(ARTICLE_LIKE_COUNT));
-        String articleLikeKey = ARTICLE_USER_LIKE + userId;
-        boolean like = Optional.ofNullable(redisService.sIsMember(articleLikeKey, id)).orElse(false);
+        Map<String, Object> articleLikeCountMap = MapHelper.ofNullable(redisService.getCacheMap(RedisConstants.ARTICLE_LIKE_COUNT));
+        String articleLikeKey = RedisConstants.ARTICLE_USER_LIKE + userId;
+        boolean like = Optional.ofNullable(redisService.isMember(articleLikeKey, id)).orElse(false);
+        List<Object> checkCodeIpCache = redisService.getCacheList(RedisConstants.CHECK_CODE_IP);
 
         boolean activeReadeType = like && articleDetailView.getReadType() == ReadTypeEnum.LIKE.index
                 || articleDetailView.getReadType() == ReadTypeEnum.COMMENT.index && Optional.ofNullable(userCommentCount).orElse(0L) > 0L
-                || articleDetailView.getReadType() == ReadTypeEnum.CODE.index && cacheList.contains(ip);
+                || articleDetailView.getReadType() == ReadTypeEnum.CODE.index && checkCodeIpCache.contains(ip);
 
         BOArticleCategoryView boCategoryView = new BOArticleCategoryView();
         boCategoryView.setId(articleDetailView.getCategoryId());
@@ -164,7 +164,7 @@ public class APIArticleService {
             return boTagView;
         }).toList();
 
-        redisService.incrArticle(id, ARTICLE_READING, IpUtil.getIp());
+        redisService.incrArticle(id, RedisConstants.ARTICLE_READING, IpUtil.getIp());
 
         ArticleInfoVO articleInfoVO = new ArticleInfoVO();
         articleInfoVO.setId(articleDetailView.getId());
@@ -257,13 +257,13 @@ public class APIArticleService {
 
     public void articleLike(String articleId) {
         String userId = StpUtil.getLoginIdAsString();
-        String articleLikeKey = ARTICLE_USER_LIKE + userId;
-        if (redisService.sIsMember(articleLikeKey, articleId)) {
+        String articleLikeKey = RedisConstants.ARTICLE_USER_LIKE + userId;
+        if (redisService.isMember(articleLikeKey, articleId)) {
             redisService.sRemove(articleLikeKey, articleId);
-            redisService.hDecr(ARTICLE_LIKE_COUNT, articleId, 1L);
+            redisService.hDecr(RedisConstants.ARTICLE_LIKE_COUNT, articleId, 1L);
         } else {
             redisService.sAdd(articleLikeKey, articleId);
-            redisService.hIncr(ARTICLE_LIKE_COUNT, articleId, 1L);
+            redisService.hIncr(RedisConstants.ARTICLE_LIKE_COUNT, articleId, 1L);
         }
     }
 
@@ -371,12 +371,12 @@ public class APIArticleService {
             throw new BadRequestException(ERROR_EXCEPTION_MOBILE_CODE.getDesc());
         }
 
-        List<Object> cacheList = redisService.getCacheList(CHECK_CODE_IP);
+        List<Object> cacheList = redisService.getCacheList(RedisConstants.CHECK_CODE_IP);
         if (cacheList.isEmpty()) {
             cacheList = new ArrayList<>();
         }
         cacheList.add(IpUtil.getIp());
-        redisService.setCacheList(CHECK_CODE_IP, cacheList);
-        redisService.deleteObject(key);
+        redisTemplate.opsForList().rightPushAll(RedisConstants.CHECK_CODE_IP, cacheList);
+        redisTemplate.delete(key);
     }
 }

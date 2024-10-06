@@ -1,7 +1,10 @@
 package com.helloscala.common.utils;
 
+import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
+import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.helloscala.common.web.exception.GenericException;
+import org.apache.ibatis.reflection.property.PropertyNamer;
 
 import java.lang.reflect.Field;
 
@@ -18,5 +21,10 @@ public class SqlHelper {
         } catch (NoSuchFieldException e) {
             throw new GenericException("Field not fund in tableClass={}", tableClass.getSimpleName());
         }
+    }
+
+    public static <T> String getFieldName(SFunction<T, ?> func) {
+        LambdaMeta meta = LambdaUtils.extract(func);
+        return PropertyNamer.methodToProperty(meta.getImplMethodName());
     }
 }

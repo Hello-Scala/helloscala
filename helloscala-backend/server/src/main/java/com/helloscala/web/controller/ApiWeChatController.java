@@ -1,9 +1,8 @@
 package com.helloscala.web.controller;
 
+import com.helloscala.common.cache.RedisService;
 import com.helloscala.service.service.RedisConstants;
-import com.helloscala.common.service.RedisService;
 import com.helloscala.common.web.exception.BadRequestException;
-import com.helloscala.web.service.ApiUserService;
 import com.helloscala.web.utils.RandomUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
